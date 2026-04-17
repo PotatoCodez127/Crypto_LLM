@@ -26,6 +26,7 @@ class TradingAgentClient:
             base_url=base_url,
             api_key=api_key 
         )
+        
 
         self._build_system_prompt()
 

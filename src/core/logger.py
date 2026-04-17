@@ -24,7 +24,8 @@ class TradingLogger:
         # Prevent duplicate handlers
         if not self.logger.handlers:
             # Create file handler
-            file_handler = logging.FileHandler(log_file)
+            # file_handler = logging.FileHandler(log_file)
+            file_handler = logging.FileHandler(log_file, encoding='utf-8')
             file_formatter = logging.Formatter(
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )

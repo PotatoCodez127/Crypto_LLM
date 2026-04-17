@@ -1,18 +1,18 @@
 # main_live.py
-# Add this import to the top of main_live.py
-from src.ai_agent.llm_client import TradingAgentClient
-from dotenv import load_dotenv # Also add this to load your .env file
-import os
-
-load_dotenv() # Load environment variables on startup
 import time
 import pandas as pd
+import os
 from datetime import datetime, timezone
+from dotenv import load_dotenv
 
 from src.core.logger import trading_logger
 from src.data_feed.handler import DataHandler
 from src.features.extractor import FeatureExtractor
 from src.ai_agent.tape_generator import SemanticTapeGenerator
+from src.ai_agent.llm_client import TradingAgentClient
+
+# Load the environment variables (.env file)
+load_dotenv()
 
 class LiveTradingEngine:
     """Continuous execution engine for the AI Crypto Bot."""
@@ -23,17 +23,18 @@ class LiveTradingEngine:
         self.feature_extractor = FeatureExtractor()
         self.tape_generator = SemanticTapeGenerator()
         
-        self.ai_client = TradingAgentClient(provider="ollama")
-
+        # Initialize the AI Client
+        self.ai_client = TradingAgentClient() 
+        
         # Configuration
-        self.loop_delay_seconds = 60  # Check market every 60 seconds
-        self.tape_lookback = 5        # Number of candles to feed the AI at once
+        self.loop_delay_seconds = 60  
+        self.tape_lookback = 5        
 
     def initialize(self):
         """Startup sequence."""
-        self.logger.info("🟢 Initializing Live Crypto LLM Engine...")
+        # Removed the emoji to prevent Windows encoding errors just in case!
+        self.logger.info("Initializing Live Crypto LLM Engine...")
         self.logger.info("Updating historical data to ensure feature accuracy...")
-        # Fetch enough data to calculate slow indicators (like MACD/Bollinger Bands)
         self.data_handler.update_historical_data(days_back=3) 
         self.logger.info("Initialization complete. Entering live monitoring loop.")
 
@@ -46,8 +47,7 @@ class LiveTradingEngine:
                 now = datetime.now(timezone.utc).strftime('%H:%M:%S UTC')
                 print(f"[{now}] 📡 Scanning market...", end='\r')
 
-                # 1. Fetch the latest batch of data (we need a small window for indicator math)
-                # Note: Adjust limit based on your longest indicator lookback (e.g., 30 for BBs)
+                # 1. Fetch latest data
                 recent_ohlcv = self.data_handler.fetch_ohlcv(limit=50) 
                 
                 if not recent_ohlcv or len(recent_ohlcv) == 0:
@@ -60,19 +60,36 @@ class LiveTradingEngine:
                 # 2. Extract Quantitative Features
                 features_df = self.feature_extractor.extract_features(df)
 
-                # 3. Generate Semantic Tape (The AI's "Eyes")
+                # 3. Generate Semantic Tape
                 semantic_tape = self.tape_generator.build_tape(
                     df=df, 
                     features_df=features_df, 
                     lookback=self.tape_lookback
                 )
 
-                # Print the tape to console (Eventually, this gets sent to the LLM)
                 print(f"\n\n--- NEW MARKET TAPE GENERATED ---")
                 print(semantic_tape)
                 print("---------------------------------\n")
 
-                # TODO: Pass `semantic_tape` to RAG / LLM for trade decision here!
+                # 4. 🔥 ASK THE AI BRAIN 🔥
+                print("🧠 Sending tape to Ollama Cloud for analysis...")
+                ai_decision = self.ai_client.analyze_tape(semantic_tape)
+
+                if ai_decision:
+                    decision = ai_decision.get("decision", "NONE")
+                    confidence = ai_decision.get("confidence", 0)
+                    reasoning = ai_decision.get("reasoning", "No reasoning provided.")
+
+                    print(f"=====================================")
+                    print(f"🤖 AI DECISION: {decision} (Confidence: {confidence}%)")
+                    print(f"📝 REASONING:   {reasoning}")
+                    print(f"=====================================\n")
+
+                    if decision in ["LONG", "SHORT"] and confidence >= 75:
+                        print("🔔 HIGH CONFIDENCE SIGNAL DETECTED! (Ready for execution routing)")
+                        
+                else:
+                    print("⚠️ No valid response received from AI.")
 
                 # Sleep until the next candle
                 time.sleep(self.loop_delay_seconds)
@@ -82,7 +99,7 @@ class LiveTradingEngine:
                 break
             except Exception as e:
                 self.logger.error(f"⚠️ Live Feed Error: {e}")
-                time.sleep(30) # Brief pause on error before retrying
+                time.sleep(30)
 
 if __name__ == "__main__":
     engine = LiveTradingEngine()

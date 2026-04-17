@@ -17,12 +17,14 @@ class TradingAgentClient:
         base_url = os.environ.get("OLLAMA_HOST_URL", "http://localhost:11434/v1")
         
         # We specify the model here, but allow override via .env
-        self.model = os.environ.get("OLLAMA_MODEL", "llama3.1")
+        self.model = os.environ.get("OLLAMA_MODEL", "deepseek-v3.2")
+        # Pull the real API key from .env (fallback to 'ollama' if local)
+        api_key = os.environ.get("OLLAMA_API_KEY", "ollama")
 
-        # Initialize the OpenAI SDK client to talk to the Ollama endpoint
+        # Initialize the OpenAI SDK client
         self.client = OpenAI(
             base_url=base_url,
-            api_key='ollama' # The SDK requires an API key string, but Ollama ignores it
+            api_key=api_key 
         )
 
         self._build_system_prompt()

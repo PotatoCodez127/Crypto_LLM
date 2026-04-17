@@ -6,7 +6,7 @@ import ccxt
 import pandas as pd
 from datetime import datetime
 import os
-from config.settings import EXCHANGE_NAME, TIMEFRAME, SYMBOL, DATA_STORAGE_PATH
+from src.config.settings import EXCHANGE_NAME, TIMEFRAME, SYMBOL, DATA_STORAGE_PATH
 
 
 class DataHandler:

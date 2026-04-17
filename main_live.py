@@ -1,4 +1,10 @@
 # main_live.py
+# Add this import to the top of main_live.py
+from src.ai_agent.llm_client import TradingAgentClient
+from dotenv import load_dotenv # Also add this to load your .env file
+import os
+
+load_dotenv() # Load environment variables on startup
 import time
 import pandas as pd
 from datetime import datetime, timezone
@@ -17,6 +23,8 @@ class LiveTradingEngine:
         self.feature_extractor = FeatureExtractor()
         self.tape_generator = SemanticTapeGenerator()
         
+        self.ai_client = TradingAgentClient(provider="ollama")
+
         # Configuration
         self.loop_delay_seconds = 60  # Check market every 60 seconds
         self.tape_lookback = 5        # Number of candles to feed the AI at once

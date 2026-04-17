@@ -1,11 +1,9 @@
 """
 Core trading engine that coordinates all system components.
 """
-Core trading engine that coordinates all system components.
-"""
-from data.handler import DataHandler
-from features.extractor import FeatureExtractor
-from core.logger import trading_logger
+from src.data_feed.handler import DataHandler
+from src.features.extractor import FeatureExtractor
+from src.core.logger import trading_logger
 
 class TradingEngine:
     """Main trading engine that orchestrates all system components."""

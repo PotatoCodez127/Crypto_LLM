@@ -2,7 +2,7 @@
 Main entry point for the AI-powered cryptocurrency trading system.
 """
 
-from core.engine import TradingEngine
+from src.core.engine import TradingEngine
 
 
 def main():

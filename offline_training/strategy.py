@@ -3,14 +3,18 @@ import numpy as np
 
 def get_signals(df):
     """
-    Enhanced Trend-Following Strategy with ATR trailing stop-loss.
-    - Long (1) when 20 EMA > 50 EMA and RSI > 60
-    - Short (-1) when 20 EMA < 50 EMA and RSI < 40
-    - Apply trailing stop-loss based on 2*ATR(14)
+    MACD + RSI strategy with ATR stop-loss.
+    - Long when MACD histogram > 0 and RSI > 50
+    - Short when MACD histogram < 0 and RSI < 50
+    - Stop-loss at 2*ATR
     """
-    # 1. Calculate Indicators
-    df['ema_20'] = df['close'].ewm(span=20, adjust=False).mean()
-    df['ema_50'] = df['close'].ewm(span=50, adjust=False).mean()
+    # 1. Calculate MACD
+    exp1 = df['close'].ewm(span=12, adjust=False).mean()
+    exp2 = df['close'].ewm(span=26, adjust=False).mean()
+    macd = exp1 - exp2
+    signal = macd.ewm(span=9, adjust=False).mean()
+    histogram = macd - signal
+    df['macd_hist'] = histogram
     
     # RSI calculation
     delta = df['close'].diff()
@@ -27,10 +31,10 @@ def get_signals(df):
     df['atr'] = tr.rolling(window=14).mean()
     df['atr'] = df['atr'].fillna(method='bfill').fillna(0)
 
-    # 2. Generate raw signals with stricter thresholds
+    # 2. Generate raw signals
     df['raw_signal'] = 0
-    df.loc[(df['ema_20'] > df['ema_50']) & (df['rsi'] > 60), 'raw_signal'] = 1
-    df.loc[(df['ema_20'] < df['ema_50']) & (df['rsi'] < 40), 'raw_signal'] = -1
+    df.loc[(df['macd_hist'] > 0) & (df['rsi'] > 50), 'raw_signal'] = 1
+    df.loc[(df['macd_hist'] < 0) & (df['rsi'] < 50), 'raw_signal'] = -1
 
     # 3. Apply trailing stop-loss
     df['signal'] = 0
@@ -39,12 +43,10 @@ def get_signals(df):
     atr_multiplier = 2.0
 
     for i in range(len(df)):
-        # Current values
         raw = df['raw_signal'].iloc[i]
         close = df['close'].iloc[i]
         atr = df['atr'].iloc[i]
 
-        # Entry logic
         if position == 0:
             if raw == 1:
                 position = 1
@@ -56,7 +58,6 @@ def get_signals(df):
                 df.iloc[i, df.columns.get_loc('signal')] = -1
             else:
                 df.iloc[i, df.columns.get_loc('signal')] = 0
-        # Manage existing position
         elif position == 1:
             # Update trailing stop (only move up)
             new_stop = close - atr_multiplier * atr
@@ -64,7 +65,6 @@ def get_signals(df):
                 stop_price = new_stop
             # Check stop loss
             if close <= stop_price:
-                # Exit long
                 position = 0
                 df.iloc[i, df.columns.get_loc('signal')] = 0
             else:

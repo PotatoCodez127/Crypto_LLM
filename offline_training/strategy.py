@@ -31,16 +31,22 @@ def get_signals(df):
     df['atr'] = tr.rolling(window=14).mean()
     df['atr'] = df['atr'].fillna(method='bfill').fillna(0)
 
+    # SMA for trend filter
+    df['sma200'] = df['close'].rolling(window=200).mean()
+    df['sma200'] = df['sma200'].fillna(method='bfill').fillna(df['close'])
+
     # 2. Generate raw signals
     df['raw_signal'] = 0
-    df.loc[(df['macd_hist'] > 0) & (df['rsi'] > 50), 'raw_signal'] = 1
-    df.loc[(df['macd_hist'] < 0) & (df['rsi'] < 50), 'raw_signal'] = -1
+    long_condition = (df['macd_hist'] > 0.001) & (df['rsi'] > 55) & (df['close'] > df['sma200'])
+    short_condition = (df['macd_hist'] < -0.001) & (df['rsi'] < 45) & (df['close'] < df['sma200'])
+    df.loc[long_condition, 'raw_signal'] = 1
+    df.loc[short_condition, 'raw_signal'] = -1
 
     # 3. Apply trailing stop-loss
     df['signal'] = 0
     position = 0  # 0: flat, 1: long, -1: short
     stop_price = 0.0
-    atr_multiplier = 2.0
+    atr_multiplier = 1.5
 
     for i in range(len(df)):
         raw = df['raw_signal'].iloc[i]

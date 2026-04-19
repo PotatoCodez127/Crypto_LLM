@@ -25,3 +25,4 @@ results.tsv
 
 #Private files
 .env
+.aider*

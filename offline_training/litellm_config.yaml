@@ -1,27 +1,22 @@
 model_list:
   - model_name: deepseek-v3.2
     litellm_params:
-      model: openai/deepseek-v3.2
-      api_base: https://ollama.com/v1
-      api_key: os.environ/OLLAMA_KEY_1
+      model: ollama_chat/deepseek-v3.2:cloud
+      # Reverted to domain name. The hosts file will handle the routing.
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_1
 
   - model_name: deepseek-v3.2
     litellm_params:
-      model: openai/deepseek-v3.2
-      api_base: https://ollama.com/v1
-      api_key: os.environ/OLLAMA_KEY_2
+      model: ollama_chat/deepseek-v3.2:cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_2
 
   - model_name: deepseek-v3.2
     litellm_params:
-      model: openai/deepseek-v3.2
-      api_base: https://ollama.com/v1
-      api_key: os.environ/OLLAMA_KEY_3
-
-  - model_name: deepseek-v3.2
-    litellm_params:
-      model: openai/deepseek-v3.2
-      api_base: https://ollama.com/v1
-      api_key: os.environ/OLLAMA_KEY_4
+      model: ollama_chat/deepseek-v3.2:cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_3
 
 router_settings:
   routing_strategy: least-busy

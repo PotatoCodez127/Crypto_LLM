@@ -149,23 +149,35 @@ def evaluate_strategy(target_period):
         importlib.reload(strategy)
         from strategy import get_signals
 
+        # 1. Get Data
         df = fetch_data(target_period)
-        if df.empty: return -1
+        if df.empty: 
+            print("[!] Error: No data found.")
+            return -1.0
 
+        # 2. Run Strategy
         df = get_signals(df)
+        
+        # Ensure signal column exists and handle NaNs
+        if 'signal' not in df.columns:
+            print("[!] Error: strategy.py must return a dataframe with a 'signal' column.")
+            return -1.0
+            
         df['signal'] = np.sign(df['signal'].fillna(0))
-        df = df.dropna()
-
-        # Returns
+        
+        # 3. Calculate Returns
+        # We use log returns for mathematical accuracy across 3y periods
         df['market_log_ret'] = np.log(df['close'] / df['close'].shift(1))
         df['strat_ret'] = df['signal'].shift(1) * df['market_log_ret']
 
-        # Fees
+        # 4. Apply Fees (FEE is defined in your CONFIG)
+        # Every time signal changes, we pay a fee
         trades = df['signal'].diff().abs().fillna(0)
         df['strat_ret'] -= (trades * FEE)
+        
         df = df.dropna()
 
-        # Metrics
+        # 5. Calculate Metrics
         df['equity'] = np.exp(df['strat_ret'].cumsum())
         df['peak'] = df['equity'].cummax()
         df['drawdown'] = (df['equity'] - df['peak']) / df['peak']
@@ -174,23 +186,40 @@ def evaluate_strategy(target_period):
         total_return = df['equity'].iloc[-1] - 1
         
         returns = df['strat_ret']
-        ann_factor = np.sqrt(TIMEFRAME_MULTIPLIERS.get(TIMEFRAME, 365))
+        ann_factor = np.sqrt(TIMEFRAME_MULTIPLIERS.get(TIMEFRAME, 8760))
         std = returns.std()
         sharpe = (returns.mean() / std) * ann_factor if std > 1e-8 else 0
         
-        win_rate = (returns > 0).mean()
+        win_rate = (returns > 0).mean() if len(returns) > 0 else 0
         gross_profit = returns[returns > 0].sum()
         gross_loss = abs(returns[returns < 0].sum())
         profit_factor = gross_profit / gross_loss if gross_loss != 0 else 0
         
-        trade_count = int((df['signal'].diff().abs().sum()) / 2)
+        # Count trades (Buy and Sell)
+        trade_count = int(trades.sum() / 2)
 
-        if trade_count < MIN_TRADES or max_dd < -0.25:
-            reason = "Low trade count" if trade_count < MIN_TRADES else "Excessive Drawdown"
-            print(f"[!] Rejected: {reason}")
-            return 0.0
+        # 6. High-Resolution Scoring Logic
+        # Raw score based on performance metrics
+        # Weights: Sharpe (35%), Return (25%), Profit Factor (20%), Drawdown Safety (20%)
+        raw_score = (sharpe * 0.35 + total_return * 0.25 + profit_factor * 0.20 + (1 + max_dd) * 0.20)
 
-        score = (sharpe * 0.35 + total_return * 0.25 + profit_factor * 0.20 + (1 + max_dd) * 0.20)
+        # 7. Apply Penalties (The "Researcher Feedback" System)
+        penalty = 1.0
+        
+        # Penalty for low activity (Statistical Significance)
+        if trade_count < MIN_TRADES:
+            trade_ratio = trade_count / MIN_TRADES
+            penalty *= trade_ratio 
+            print(f"[!] Penalty applied: Low trade count ({trade_count}/{MIN_TRADES})")
+
+        # Penalty for dangerous risk (Account Safety)
+        if max_dd < -0.25:
+            # Drop the score significantly if we breach the 25% DD limit
+            dd_penalty = 0.5 if max_dd >= -0.50 else 0.1
+            penalty *= dd_penalty
+            print(f"[!] Penalty applied: Excessive Drawdown ({max_dd:.2%})")
+
+        final_score = raw_score * penalty
 
         print(f"""
             --- PERFORMANCE REPORT [{target_period}] ---
@@ -201,12 +230,17 @@ def evaluate_strategy(target_period):
             Win Rate      : {win_rate:.2%}
             Total Trades  : {trade_count}
             ---------------------------------
-            FINAL SCORE   : {score:.4f}
+            RAW SCORE     : {raw_score:.4f}
+            PENALTY MULTI : {penalty:.2f}
+            FINAL SCORE   : {final_score:.4f}
             """)
-        return score
+            
+        return final_score
 
     except Exception as e:
         print(f"[!] Critical Judge Error: {e}")
+        import traceback
+        traceback.print_exc()
         return -1.0
 
 if __name__ == "__main__":

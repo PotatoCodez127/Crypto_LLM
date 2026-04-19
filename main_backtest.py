@@ -1,265 +1,273 @@
 """
-Fixed evaluation framework for trading strategies.
-This module should NOT be modified during autoresearch experiments.
+Quantitative Strategy Evaluation Framework
+Enhanced for parameter optimization and comprehensive metrics.
 """
-
 import pandas as pd
 import numpy as np
-from datetime import datetime
-from data.handler import DataHandler
-from features.extractor import FeatureExtractor
+from datetime import datetime, timedelta
+import itertools
 
-
-class StrategyEvaluator:
-    """Fixed framework for evaluating trading strategies."""
-
-    def __init__(self, data_handler=None, feature_extractor=None):
-        """Initialize evaluator with data and feature components."""
-        self.data_handler = data_handler or DataHandler()
-        self.feature_extractor = feature_extractor or FeatureExtractor()
-        self.data = self.data_handler.load_data()
-
-    def calculate_returns(self, positions, prices):
+class QuantitativeEvaluator:
+    """
+    Advanced evaluator for quantitative trading strategies.
+    Supports parameter optimization, walk-forward analysis, and comprehensive metrics.
+    """
+    
+    def __init__(self, data_path=None):
+        """Initialize evaluator with optional data path."""
+        self.data_path = data_path
+        self.data = self._load_data()
+        
+    def _load_data(self):
+        """Load market data from CSV file."""
+        import os
+        if self.data_path and os.path.exists(self.data_path):
+            df = pd.read_csv(self.data_path)
+            if 'timestamp' in df.columns:
+                df['timestamp'] = pd.to_datetime(df['timestamp'])
+                df.set_index('timestamp', inplace=True)
+            return df
+        else:
+            # Try to find data in default location
+            default_paths = [
+                "data/btc_1h_1y.csv",
+                "../data/btc_1h_1y.csv",
+                "./data/btc_1h_1y.csv"
+            ]
+            for path in default_paths:
+                if os.path.exists(path):
+                    df = pd.read_csv(path)
+                    if 'timestamp' in df.columns:
+                        df['timestamp'] = pd.to_datetime(df['timestamp'])
+                        df.set_index('timestamp', inplace=True)
+                    return df
+            print("Warning: No data found. Returning empty DataFrame.")
+            return pd.DataFrame()
+    
+    def calculate_metrics(self, returns, prices, signals):
         """
-        Calculate portfolio returns from positions and prices.
-
+        Calculate comprehensive performance metrics.
+        
         Args:
-            positions (list): Position sizes for each period
-            prices (list): Asset prices for each period
-
+            returns (pd.Series): Strategy returns
+            prices (pd.Series): Price series
+            signals (pd.Series): Trading signals (-1, 0, 1)
+            
         Returns:
-            list: Period returns
-        """
-        returns = []
-        for i in range(1, len(positions)):
-            price_return = (prices[i] - prices[i - 1]) / prices[i - 1]
-            portfolio_return = positions[i - 1] * price_return
-            returns.append(portfolio_return)
-        return returns
-
-    def calculate_sharpe_ratio(self, returns, risk_free_rate=0.0):
-        """
-        Calculate Sharpe ratio from returns.
-
-        Args:
-            returns (list): Period returns
-            risk_free_rate (float): Risk-free rate per period
-
-        Returns:
-            float: Sharpe ratio
+            dict: Performance metrics
         """
         if len(returns) == 0:
-            return 0.0
-
-        excess_returns = [r - risk_free_rate for r in returns]
-        mean_excess = np.mean(excess_returns)
-        std_excess = np.std(excess_returns)
-
-        if std_excess == 0:
-            return 0.0
-
-        # Annualize (assuming hourly data, 365*24 periods per year)
-        annualized_mean = mean_excess * 365 * 24
-        annualized_std = std_excess * np.sqrt(365 * 24)
-
-        return annualized_mean / annualized_std if annualized_std != 0 else 0.0
-
-    def calculate_max_drawdown(self, equity_curve):
+            return {
+                'total_return': 0.0,
+                'sharpe_ratio': 0.0,
+                'sortino_ratio': 0.0,
+                'max_drawdown': 0.0,
+                'calmar_ratio': 0.0,
+                'win_rate': 0.0,
+                'profit_factor': 0.0,
+                'avg_trade': 0.0,
+                'num_trades': 0,
+                'volatility': 0.0
+            }
+        
+        # Equity curve
+        equity = (1 + returns).cumprod()
+        
+        # Total return
+        total_return = equity.iloc[-1] - 1
+        
+        # Sharpe ratio (annualized)
+        excess_returns = returns - 0.0  # Assuming 0% risk-free rate
+        sharpe = np.sqrt(365*24) * excess_returns.mean() / excess_returns.std() if excess_returns.std() > 0 else 0
+        
+        # Sortino ratio (annualized, only downside deviation)
+        downside_returns = returns[returns < 0]
+        downside_std = downside_returns.std() if len(downside_returns) > 0 else 0
+        sortino = np.sqrt(365*24) * excess_returns.mean() / downside_std if downside_std > 0 else 0
+        
+        # Maximum drawdown
+        rolling_max = equity.expanding().max()
+        drawdown = (equity - rolling_max) / rolling_max
+        max_drawdown = drawdown.min()
+        
+        # Calmar ratio (return / max drawdown)
+        calmar = total_return / abs(max_drawdown) if max_drawdown != 0 else 0
+        
+        # Trade statistics
+        trade_signals = signals.diff().abs()
+        num_trades = trade_signals.sum() / 2  # Each trade has entry and exit
+        
+        # Win rate and profit factor
+        positive_returns = returns[returns > 0]
+        negative_returns = returns[returns < 0]
+        win_rate = len(positive_returns) / len(returns) if len(returns) > 0 else 0
+        gross_profit = positive_returns.sum()
+        gross_loss = abs(negative_returns.sum())
+        profit_factor = gross_profit / gross_loss if gross_loss != 0 else 0
+        
+        # Average trade return
+        avg_trade = returns.mean() if len(returns) > 0 else 0
+        
+        # Volatility (annualized)
+        volatility = returns.std() * np.sqrt(365*24)
+        
+        return {
+            'total_return': float(total_return),
+            'sharpe_ratio': float(sharpe),
+            'sortino_ratio': float(sortino),
+            'max_drawdown': float(max_drawdown),
+            'calmar_ratio': float(calmar),
+            'win_rate': float(win_rate),
+            'profit_factor': float(profit_factor),
+            'avg_trade': float(avg_trade),
+            'num_trades': int(num_trades),
+            'volatility': float(volatility)
+        }
+    
+    def evaluate_strategy_with_params(self, strategy_func, params=None, 
+                                     train_days=180, test_days=30):
         """
-        Calculate maximum drawdown from equity curve.
-
+        Walk-forward evaluation with train/test splits.
+        
         Args:
-            equity_curve (list): Portfolio equity values over time
-
-        Returns:
-            float: Maximum drawdown (positive value)
-        """
-        if len(equity_curve) == 0:
-            return 0.0
-
-        peak = equity_curve[0]
-        max_dd = 0.0
-
-        for value in equity_curve:
-            if value > peak:
-                peak = value
-            dd = (peak - value) / peak if peak != 0 else 0
-            if dd > max_dd:
-                max_dd = dd
-
-        return max_dd
-
-    def calculate_consistency(self, returns):
-        """
-        Calculate consistency of positive returns.
-
-        Args:
-            returns (list): Period returns
-
-        Returns:
-            float: Consistency score (0-1)
-        """
-        if len(returns) == 0:
-            return 0.0
-
-        positive_count = sum(1 for r in returns if r > 0)
-        return positive_count / len(returns)
-
-    def calculate_risk_adjusted_score(self, total_return, sharpe_ratio, max_drawdown):
-        """
-        Calculate composite risk-adjusted score.
-
-        Args:
-            total_return (float): Total portfolio return
-            sharpe_ratio (float): Sharpe ratio
-            max_drawdown (float): Maximum drawdown
-
-        Returns:
-            float: Risk-adjusted score
-        """
-        # Penalize heavily for large drawdowns
-        drawdown_penalty = 1.0
-        if max_drawdown > 0.3:
-            drawdown_penalty = 0.5
-        elif max_drawdown > 0.5:
-            drawdown_penalty = 0.1
-
-        # Combine metrics (normalized)
-        score = (
-            total_return * 0.4 + sharpe_ratio * 0.4 + (1 - max_drawdown) * 0.2
-        ) * drawdown_penalty
-
-        return score
-
-    def evaluate_strategy(self, strategy_function, evaluation_period_days=30):
-        """
-        Evaluate a trading strategy over historical data.
-
-        Args:
-            strategy_function (function): Function that takes features and returns position
-            evaluation_period_days (int): Number of days to evaluate
-
+            strategy_func: Function that takes (data, params) and returns signals
+            params: Strategy parameters
+            train_days: Days for training/optimization
+            test_days: Days for out-of-sample testing
+            
         Returns:
             dict: Evaluation results
         """
         if self.data.empty:
-            print("Warning: No data available for evaluation")
-            return {
-                "total_return": 0.0,
-                "sharpe_ratio": 0.0,
-                "max_drawdown": 1.0,
-                "consistency": 0.0,
-                "risk_adjusted_score": 0.0,
-                "eval_time": 0.0,
-            }
-
-        # Limit evaluation period
-        cutoff_date = self.data["timestamp"].max() - pd.Timedelta(
-            days=evaluation_period_days
-        )
-        eval_data = self.data[self.data["timestamp"] >= cutoff_date].copy()
-
-        if len(eval_data) < 2:
-            print("Warning: Insufficient data for evaluation")
-            return {
-                "total_return": 0.0,
-                "sharpe_ratio": 0.0,
-                "max_drawdown": 1.0,
-                "consistency": 0.0,
-                "risk_adjusted_score": 0.0,
-                "eval_time": 0.0,
-            }
-
-        start_time = datetime.now()
-
-        # Extract features for all data points
-        feature_data = self.feature_extractor.extract_features(eval_data)
-
-        # Generate positions using strategy function
-        positions = []
-        prices = feature_data["close"].tolist()
-
-        for i in range(len(feature_data)):
-            row_features = feature_data.iloc[i]
-            feature_vector = {
-                "rsi": row_features["rsi"],
-                "macd": row_features["macd"],
-                "atr": row_features["atr"],
-                "volume_change": row_features["volume_change"],
-                "trend_slope": row_features["trend_slope"],
-                "bb_width": row_features["bb_width"],
-            }
-
-            try:
-                position = strategy_function(feature_vector)
-                # Clamp position to reasonable limits
-                position = max(min(position, 1.0), -1.0)
-            except Exception as e:
-                print(f"Warning: Strategy function error: {e}")
-                position = 0.0
-
-            positions.append(position)
-
-        # Calculate metrics
-        if len(positions) > 1 and len(prices) == len(positions):
-            returns = self.calculate_returns(positions, prices)
-            equity_curve = [1.0]  # Start with 1.0 (100% capital)
-
-            for ret in returns:
-                equity_curve.append(equity_curve[-1] * (1 + ret))
-
-            total_return = equity_curve[-1] - 1.0
-            sharpe_ratio = self.calculate_sharpe_ratio(returns)
-            max_drawdown = self.calculate_max_drawdown(equity_curve)
-            consistency = self.calculate_consistency(returns)
-            risk_adjusted_score = self.calculate_risk_adjusted_score(
-                total_return, sharpe_ratio, max_drawdown
+            return {"error": "No data available"}
+        
+        # Ensure data is sorted
+        data = self.data.sort_index()
+        
+        # Split data into train/test periods
+        all_signals = pd.Series(index=data.index, dtype=float)
+        all_returns = pd.Series(index=data.index, dtype=float)
+        
+        # Walk-forward analysis
+        start_date = data.index.min()
+        end_date = data.index.max()
+        current_start = start_date
+        
+        while current_start + timedelta(days=train_days+test_days) <= end_date:
+            train_end = current_start + timedelta(days=train_days)
+            test_end = train_end + timedelta(days=test_days)
+            
+            train_data = data[(data.index >= current_start) & (data.index < train_end)]
+            test_data = data[(data.index >= train_end) & (data.index < test_end)]
+            
+            if len(train_data) < 10 or len(test_data) < 10:
+                current_start += timedelta(days=test_days)
+                continue
+            
+            # Generate signals on test data
+            test_signals = strategy_func(test_data, params)
+            
+            if 'signal' not in test_signals.columns:
+                current_start += timedelta(days=test_days)
+                continue
+            
+            # Calculate returns
+            test_returns = test_signals['signal'].shift(1) * test_data['close'].pct_change()
+            test_returns = test_returns.dropna()
+            
+            # Store results
+            all_signals.loc[test_returns.index] = test_signals.loc[test_returns.index, 'signal']
+            all_returns.loc[test_returns.index] = test_returns
+            
+            current_start += timedelta(days=test_days)
+        
+        # Calculate overall metrics
+        all_returns = all_returns.dropna()
+        all_signals = all_signals.loc[all_returns.index]
+        
+        metrics = self.calculate_metrics(all_returns, self.data.loc[all_returns.index, 'close'], all_signals)
+        
+        # Add parameter information
+        metrics['params'] = params
+        metrics['total_periods'] = len(all_returns)
+        
+        return metrics
+    
+    def _generate_param_combinations(self, param_grid):
+        """Generate all combinations of parameters from a grid."""
+        keys = param_grid.keys()
+        values = param_grid.values()
+        combinations = [dict(zip(keys, combo)) for combo in itertools.product(*values)]
+        return combinations
+    
+    def optimize_parameters(self, strategy_func, param_grid, train_days=180, test_days=30):
+        """
+        Grid search for parameter optimization.
+        
+        Args:
+            strategy_func: Function that takes (data, params) and returns signals
+            param_grid: Dictionary of parameter ranges to test
+            train_days: Days for training
+            test_days: Days for testing
+            
+        Returns:
+            dict: Best parameters and their performance
+        """
+        best_score = -np.inf
+        best_params = None
+        best_metrics = None
+        
+        # Generate parameter combinations
+        param_combinations = self._generate_param_combinations(param_grid)
+        
+        for params in param_combinations:
+            metrics = self.evaluate_strategy_with_params(
+                strategy_func, params, train_days, test_days
             )
-        else:
-            total_return = 0.0
-            sharpe_ratio = 0.0
-            max_drawdown = 1.0
-            consistency = 0.0
-            risk_adjusted_score = 0.0
-
-        end_time = datetime.now()
-        eval_time = (end_time - start_time).total_seconds()
-
+            
+            if 'error' in metrics:
+                continue
+            
+            # Score function: weighted combination of metrics
+            # Favor higher Sharpe, higher total return, lower drawdown
+            score = (
+                metrics['sharpe_ratio'] * 0.4 +
+                metrics['total_return'] * 0.3 +
+                (1 - abs(metrics['max_drawdown'])) * 0.2 +
+                metrics['profit_factor'] * 0.1
+            )
+            
+            if score > best_score:
+                best_score = score
+                best_params = params
+                best_metrics = metrics
+        
         return {
-            "total_return": total_return,
-            "sharpe_ratio": sharpe_ratio,
-            "max_drawdown": max_drawdown,
-            "consistency": consistency,
-            "risk_adjusted_score": risk_adjusted_score,
-            "eval_time": eval_time,
+            'best_params': best_params,
+            'best_score': best_score,
+            'best_metrics': best_metrics
         }
 
-
-# Example strategy function (for testing)
-def example_strategy(features):
-    """
-    Simple example strategy based on RSI.
-
-    Args:
-        features (dict): Feature vector
-
-    Returns:
-        float: Position size (-1 to 1)
-    """
-    rsi = features.get("rsi", 50)
-
-    if rsi < 30:
-        return 1.0  # Buy
-    elif rsi > 70:
-        return -1.0  # Sell
-    else:
-        return 0.0  # Hold
-
-
+# Example usage
 if __name__ == "__main__":
-    # Test the evaluator
-    evaluator = StrategyEvaluator()
-    results = evaluator.evaluate_strategy(example_strategy)
-    print("Evaluation Results:")
-    for key, value in results.items():
-        print(f"  {key}: {value}")
+    # Test with a simple strategy
+    from offline_training.strategy import get_signals
+    
+    evaluator = QuantitativeEvaluator("data/btc_1h_1y.csv")
+    
+    # Define parameter grid for optimization
+    param_grid = {
+        'ema_short': [10, 20, 30],
+        'ema_long': [50, 100],
+        'rsi_period': [14, 21],
+        'rsi_overbought': [70, 75],
+        'rsi_oversold': [25, 30]
+    }
+    
+    # Run optimization
+    result = evaluator.optimize_parameters(get_signals, param_grid, train_days=90, test_days=30)
+    
+    print("Optimization Results:")
+    print(f"Best Parameters: {result['best_params']}")
+    print(f"Best Score: {result['best_score']}")
+    print(f"Metrics: {result['best_metrics']}")

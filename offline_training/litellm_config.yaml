@@ -24,4 +24,4 @@ model_list:
       api_key: os.environ/OLLAMA_KEY_4
 
 router_settings:
-  routing_strategy: fallback
+  routing_strategy: least-busy

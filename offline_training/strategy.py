@@ -43,8 +43,8 @@ def get_signals(df):
 
     # 2. Generate raw signals
     df['raw_signal'] = 0
-    long_condition = (df['macd_hist'] > 0.001) & (df['rsi'] > 60) & (df['close'] > df['sma200'])
-    short_condition = (df['macd_hist'] < -0.001) & (df['rsi'] < 40) & (df['close'] < df['sma200'])
+    long_condition = (df['macd_hist'] > 0.001) & (df['rsi'] > 60) & (df['close'] > df['sma200']) & (df['close'] > df['sma50'])
+    short_condition = (df['macd_hist'] < -0.001) & (df['rsi'] < 40) & (df['close'] < df['sma200']) & (df['close'] < df['sma50'])
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
 

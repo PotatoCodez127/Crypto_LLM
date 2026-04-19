@@ -37,11 +37,14 @@ def get_signals(df):
     # Momentum filter
     df['sma50'] = df['close'].rolling(window=50).mean()
     df['sma50'] = df['sma50'].fillna(method='bfill').fillna(df['close'])
+    # Volume filter
+    df['volume_ma20'] = df['volume'].rolling(window=20).mean()
+    df['volume_ma20'] = df['volume_ma20'].fillna(method='bfill').fillna(df['volume'])
 
     # 2. Generate raw signals
     df['raw_signal'] = 0
-    long_condition = (df['macd_hist'] > 0.001) & (df['rsi'] > 60) & (df['close'] > df['sma200'])
-    short_condition = (df['macd_hist'] < -0.001) & (df['rsi'] < 40) & (df['close'] < df['sma200'])
+    long_condition = (df['macd_hist'] > 0.001) & (df['rsi'] > 60) & (df['close'] > df['sma200']) & (df['close'] > df['sma50'])
+    short_condition = (df['macd_hist'] < -0.001) & (df['rsi'] < 40) & (df['close'] < df['sma200']) & (df['close'] < df['sma50'])
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
 
@@ -49,7 +52,7 @@ def get_signals(df):
     df['signal'] = 0
     position = 0  # 0: flat, 1: long, -1: short
     stop_price = 0.0
-    atr_multiplier = 1.5
+    atr_multiplier = 2.0
 
     for i in range(len(df)):
         raw = df['raw_signal'].iloc[i]

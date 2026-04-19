@@ -35,10 +35,21 @@ def get_signals(df):
     df['sma200'] = df['close'].rolling(window=200).mean()
     df['sma200'] = df['sma200'].fillna(method='bfill').fillna(df['close'])
 
+    # Bollinger Bands for additional filter
+    bb_window = 20
+    bb_std = 2
+    df['bb_middle'] = df['close'].rolling(window=20).mean()
+    df['bb_std'] = df['close'].rolling(window=20).std()
+    df['bb_upper'] = df['bb_middle'] + bb_std * df['bb_std']
+    df['bb_lower'] = df['bb_middle'] - bb_std * df['bb_std']
+    df['bb_middle'] = df['bb_middle'].fillna(method='bfill').fillna(df['close'])
+    df['bb_upper'] = df['bb_upper'].fillna(method='bfill').fillna(df['close'])
+    df['bb_lower'] = df['bb_lower'].fillna(method='bfill').fillna(df['close'])
+
     # 2. Generate raw signals
     df['raw_signal'] = 0
-    long_condition = (df['macd_hist'] > 0.001) & (df['rsi'] > 55) & (df['close'] > df['sma200'])
-    short_condition = (df['macd_hist'] < -0.001) & (df['rsi'] < 45) & (df['close'] < df['sma200'])
+    long_condition = (df['macd_hist'] > 0.001) & (df['rsi'] > 55) & (df['close'] > df['sma200']) & (df['close'] > df['bb_middle']) & (df['close'] < df['bb_upper'])
+    short_condition = (df['macd_hist'] < -0.001) & (df['rsi'] < 45) & (df['close'] < df['sma200']) & (df['close'] < df['bb_middle']) & (df['close'] > df['bb_lower'])
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
 
@@ -46,7 +57,7 @@ def get_signals(df):
     df['signal'] = 0
     position = 0  # 0: flat, 1: long, -1: short
     stop_price = 0.0
-    atr_multiplier = 1.5
+    atr_multiplier = 2.5
 
     for i in range(len(df)):
         raw = df['raw_signal'].iloc[i]

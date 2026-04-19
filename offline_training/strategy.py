@@ -4,10 +4,10 @@ import numpy as np
 def get_signals(df):
     """
     MACD + RSI strategy with ATR stop-loss.
-    - Long when MACD histogram > 0 and RSI > 50
-    - Short when MACD histogram < 0 and RSI < 50
+    - Long when MACD histogram > 0.0005 and RSI > 55
+    - Short when MACD histogram < -0.0005 and RSI < 45
     - Stop-loss at 2*ATR
-    Baseline version.
+    Experiment1: adjusted thresholds.
     """
     # 1. Calculate MACD
     exp1 = df['close'].ewm(span=12, adjust=False).mean()

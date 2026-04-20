@@ -30,22 +30,22 @@ def get_signals(df):
     low_close = np.abs(df['low'] - df['close'].shift())
     tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
     df['atr'] = tr.rolling(window=14).mean()
-    df['atr'] = df['atr'].fillna(method='bfill').fillna(0)
+    df['atr'] = df['atr'].bfill().fillna(0)
 
     # SMA for trend filter
     df['sma200'] = df['close'].rolling(window=200).mean()
-    df['sma200'] = df['sma200'].fillna(method='bfill').fillna(df['close'])
+    df['sma200'] = df['sma200'].bfill().fillna(df['close'])
     # Momentum filter
     df['sma50'] = df['close'].rolling(window=50).mean()
-    df['sma50'] = df['sma50'].fillna(method='bfill').fillna(df['close'])
+    df['sma50'] = df['sma50'].bfill().fillna(df['close'])
     # Volume filter
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
-    df['volume_ma20'] = df['volume_ma20'].fillna(method='bfill').fillna(df['volume'])
+    df['volume_ma20'] = df['volume_ma20'].bfill().fillna(df['volume'])
 
     # Volatility for adaptive stop
     df['returns'] = df['close'].pct_change()
-    df['volatility'] = df['returns'].rolling(window=20).std().fillna(method='bfill').fillna(0)
-    df['vol_median'] = df['volatility'].rolling(window=200).median().fillna(method='bfill').fillna(df['volatility'])
+    df['volatility'] = df['returns'].rolling(window=20).std().bfill().fillna(0)
+    df['vol_median'] = df['volatility'].rolling(window=200).median().bfill().fillna(df['volatility'])
 
     # 2. Generate raw signals
     df['raw_signal'] = 0

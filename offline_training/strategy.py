@@ -4,10 +4,10 @@ import numpy as np
 def get_signals(df):
     """
     MACD + RSI strategy with ATR stop-loss.
-    - Long when MACD histogram > 0.0005 and RSI > 55
-    - Short when MACD histogram < -0.0005 and RSI < 45
+    - Long when MACD histogram > 0.0005, RSI > 55, close > SMA200, and SMA50 > SMA200
+    - Short when MACD histogram < -0.0005, RSI < 45, close < SMA200, and SMA50 < SMA200
     - Stop-loss at 2*ATR
-    Experiment1: adjusted thresholds.
+    Experiment2: added SMA50 vs SMA200 trend confirmation.
     """
     # 1. Calculate MACD
     exp1 = df['close'].ewm(span=12, adjust=False).mean()
@@ -44,8 +44,8 @@ def get_signals(df):
 
     # 2. Generate raw signals
     df['raw_signal'] = 0
-    long_condition = (df['macd_hist'] > 0.0005) & (df['rsi'] > 55) & (df['close'] > df['sma200'])
-    short_condition = (df['macd_hist'] < -0.0005) & (df['rsi'] < 45) & (df['close'] < df['sma200'])
+    long_condition = (df['macd_hist'] > 0.0005) & (df['rsi'] > 55) & (df['close'] > df['sma200']) & (df['sma50'] > df['sma200'])
+    short_condition = (df['macd_hist'] < -0.0005) & (df['rsi'] < 45) & (df['close'] < df['sma200']) & (df['sma50'] < df['sma200'])
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
 

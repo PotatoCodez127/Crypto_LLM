@@ -34,14 +34,14 @@ def get_signals(df):
     df['raw_signal'] = 0
     
     # Initial Hypothesis: Mean reversion. 
-    # Buy when selling volume is exhausted (negative CVD) but price is moderately undervalued (Z-score < -1.2)
-    long_condition = (df['cvd_20'] < 0) & (df['z_score_50'] < -1.2)
+    # Buy when selling volume is exhausted (negative CVD) but price is severely undervalued (Z-score < -2)
+    long_condition = (df['cvd_20'] < 0) & (df['z_score_50'] < -2.0)
     
-    # Sell when buying volume is exhausted (positive CVD) but price is moderately overvalued (Z-score > 1.2)
-    short_condition = (df['cvd_20'] > 0) & (df['z_score_50'] > 1.2)
+    # Sell when buying volume is exhausted (positive CVD) but price is severely overvalued (Z-score > 2)
+    short_condition = (df['cvd_20'] > 0) & (df['z_score_50'] > 2.0)
 
     # Cooldown to prevent overtrading
-    cooldown = 2
+    cooldown = 5
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -73,10 +73,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            atr_multiplier = 1.5 * (vol / vol_med)
-            atr_multiplier = max(1.0, min(2.0, atr_multiplier))
+            atr_multiplier = 1.8 * (vol / vol_med)
+            atr_multiplier = max(1.2, min(2.5, atr_multiplier))
         else:
-            atr_multiplier = 1.5
+            atr_multiplier = 1.8
 
         if position == 0:
             if raw == 1:

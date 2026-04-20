@@ -49,8 +49,11 @@ def get_signals(df):
 
     # 2. Generate raw signals
     df['raw_signal'] = 0
-    long_condition = (df['macd_hist'] > 0.0005) & (df['rsi'] > 55) & (df['close'] > df['sma200']) & (df['sma50'] > df['sma200'])
-    short_condition = (df['macd_hist'] < -0.0005) & (df['rsi'] < 45) & (df['close'] < df['sma200']) & (df['sma50'] < df['sma200'])
+    # Volume filter: require above-average volume for long, below-average for short
+    volume_long = df['volume'] > df['volume_ma20']
+    volume_short = df['volume'] < df['volume_ma20']
+    long_condition = (df['macd_hist'] > 0.001) & (df['rsi'] > 60) & (df['close'] > df['sma200']) & (df['sma50'] > df['sma200']) & volume_long
+    short_condition = (df['macd_hist'] < -0.001) & (df['rsi'] < 40) & (df['close'] < df['sma200']) & (df['sma50'] < df['sma200']) & volume_short
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
 
@@ -68,10 +71,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         # Dynamic ATR multiplier based on volatility
         if vol_med > 0:
-            atr_multiplier = 2.0 * (vol / vol_med)
+            atr_multiplier = 1.5 * (vol / vol_med)
             atr_multiplier = max(1.0, min(3.0, atr_multiplier))
         else:
-            atr_multiplier = 2.0
+            atr_multiplier = 1.5
 
         if position == 0:
             if raw == 1:

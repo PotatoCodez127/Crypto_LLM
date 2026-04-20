@@ -1,3 +1,5 @@
 commit	final_result	status	description
 e3a5b2c	-1.0	crash	baseline run with fillna method error
 d4ecf25	-0.2731	discard	baseline after fix: negative Sharpe, high drawdown
+147ba8a	-0.09861950191844594	discard	Auto-experiment reverted
+59d5035	-0.1319884435658517	keep	Auto-experiment success

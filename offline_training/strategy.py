@@ -59,6 +59,7 @@ def get_signals(df):
     df['signal'] = 0
     position = 0
     stop_price = 0.0
+    entry_price = 0.0
 
     for i in range(len(df)):
         raw = df['raw_signal'].iloc[i]
@@ -79,17 +80,25 @@ def get_signals(df):
         if position == 0:
             if raw == 1:
                 position = 1
+                entry_price = close
                 stop_price = close - atr_multiplier * atr
                 df.iloc[i, df.columns.get_loc('signal')] = 1
             elif raw == -1:
                 position = -1
+                entry_price = close
                 stop_price = close + atr_multiplier * atr
                 df.iloc[i, df.columns.get_loc('signal')] = -1
             else:
                 df.iloc[i, df.columns.get_loc('signal')] = 0
         elif position == 1:
+            # Trailing stop logic with a floor based on entry
             new_stop = close - atr_multiplier * atr
-            if new_stop > stop_price: stop_price = new_stop
+            # Ensure stop never moves below entry - 1.5*ATR (max loss protection)
+            max_loss_stop = entry_price - 1.5 * atr
+            if new_stop > stop_price and new_stop > max_loss_stop:
+                stop_price = new_stop
+            elif max_loss_stop > stop_price:
+                stop_price = max_loss_stop
             if close <= stop_price:
                 position = 0
                 df.iloc[i, df.columns.get_loc('signal')] = 0
@@ -97,7 +106,11 @@ def get_signals(df):
                 df.iloc[i, df.columns.get_loc('signal')] = 1
         elif position == -1:
             new_stop = close + atr_multiplier * atr
-            if new_stop < stop_price: stop_price = new_stop
+            max_loss_stop = entry_price + 1.5 * atr
+            if new_stop < stop_price and new_stop < max_loss_stop:
+                stop_price = new_stop
+            elif max_loss_stop < stop_price:
+                stop_price = max_loss_stop
             if close >= stop_price:
                 position = 0
                 df.iloc[i, df.columns.get_loc('signal')] = 0

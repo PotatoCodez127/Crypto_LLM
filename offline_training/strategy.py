@@ -33,11 +33,11 @@ def get_signals(df):
     df['atr'] = df['atr'].bfill().fillna(0)
 
     # SMA for trend filter (faster windows)
-    df['sma100'] = df['close'].rolling(window=100).mean()
-    df['sma100'] = df['sma100'].bfill().fillna(df['close'])
-    # Momentum filter
     df['sma50'] = df['close'].rolling(window=50).mean()
     df['sma50'] = df['sma50'].bfill().fillna(df['close'])
+    # Faster momentum filter
+    df['sma20'] = df['close'].rolling(window=20).mean()
+    df['sma20'] = df['sma20'].bfill().fillna(df['close'])
     # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
     df['volume_ma20'] = df['volume_ma20'].bfill().fillna(df['volume'])
@@ -52,11 +52,11 @@ def get_signals(df):
     # No volume filter
     volume_long = True
     volume_short = True
-    # Tighter MACD threshold
-    macd_threshold = 0.0002
-    # Moderate RSI thresholds
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 60) & (df['close'] > df['sma100']) & (df['sma50'] > df['sma100']) & (df['close'] > df['sma50']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 40) & (df['close'] < df['sma100']) & (df['sma50'] < df['sma100']) & (df['close'] < df['sma50']) & volume_short
+    # More sensitive MACD threshold
+    macd_threshold = 0.0005
+    # Adjusted RSI thresholds for more signals
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma50']) & (df['sma20'] > df['sma50']) & (df['close'] > df['sma20']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma50']) & (df['sma20'] < df['sma50']) & (df['close'] < df['sma20']) & volume_short
     # Apply cooldown: after a signal, wait 3 periods before another signal
     df['raw_signal'] = 0
     df.loc[long_condition, 'raw_signal'] = 1
@@ -86,10 +86,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         # Dynamic ATR multiplier based on volatility - more aggressive range
         if vol_med > 0:
-            atr_multiplier = 0.8 * (vol / vol_med)
-            atr_multiplier = max(0.8, min(2.5, atr_multiplier))
+            atr_multiplier = 1.0 * (vol / vol_med)
+            atr_multiplier = max(1.0, min(3.0, atr_multiplier))
         else:
-            atr_multiplier = 1.0
+            atr_multiplier = 1.5
 
         if position == 0:
             if raw == 1:

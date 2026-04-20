@@ -142,117 +142,85 @@ def fetch_data(target_period):
     return df
 
 # ---------------- STRATEGY JUDGE ----------------
-def evaluate_strategy(target_period):
-    try:
-        import importlib
-        import strategy
-        importlib.reload(strategy)
-        from strategy import get_signals
+def evaluate_strategy(timeframe='1y'):
+    """
+    V2 Judge: Walk-Forward Optimization (Train/Test Split)
+    """
+    from strategy import get_signals
+    import pandas as pd
+    import numpy as np
 
-        # 1. Get Data
-        df = fetch_data(target_period)
-        if df.empty: return -1.0
+    # 1. Load your data (assuming this part of your code stays the same)
+    csv_path = f"../data/btc_1h_{timeframe}.csv"
+    df = pd.read_csv(csv_path)
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df.sort_values('timestamp').reset_index(drop=True)
 
-        # 2. Run Strategy
-        df = get_signals(df)
-        if 'signal' not in df.columns: return -1.0
-        df['signal'] = np.sign(df['signal'].fillna(0))
+    # 2. THE SPLIT (60% Train / 40% Test)
+    split_idx = int(len(df) * 0.6)
+    df_train = df.iloc[:split_idx].copy().reset_index(drop=True)
+    df_test = df.iloc[split_idx:].copy().reset_index(drop=True)
+
+    # Helper function to score a specific dataset
+    def score_dataset(data):
+        # Pass the data to the AI's strategy
+        evaluated_df = get_signals(data)
         
-        # 3. Returns & Fees
-        df['market_log_ret'] = np.log(df['close'] / df['close'].shift(1))
-        df['strat_ret'] = df['signal'].shift(1) * df['market_log_ret']
-        trades_series = df['signal'].diff().abs().fillna(0)
-        df['strat_ret'] -= (trades_series * FEE)
-        df = df.dropna()
-
-        # 4. Metrics Calculation
-        df['equity'] = np.exp(df['strat_ret'].cumsum())
-        df['peak'] = df['equity'].cummax()
-        df['drawdown'] = (df['equity'] - df['peak']) / df['peak']
+        # Calculate PnL (assuming 1 = long, -1 = short, 0 = flat)
+        # Shift signals by 1 so we enter on the NEXT candle's open
+        evaluated_df['position'] = evaluated_df['signal'].shift(1).fillna(0)
+        evaluated_df['trade_return'] = evaluated_df['position'] * evaluated_df['log_ret'] # using log returns from strategy.py
         
-        max_dd = df['drawdown'].min()
-        total_return = df['equity'].iloc[-1] - 1
-        returns = df['strat_ret']
+        # Cumulative returns
+        evaluated_df['cum_return'] = evaluated_df['trade_return'].cumsum()
         
-        # Sharpe Calculation
-        ann_factor = np.sqrt(TIMEFRAME_MULTIPLIERS.get(TIMEFRAME, 8760))
-        std = returns.std()
-        sharpe = (returns.mean() / std) * ann_factor if std > 1e-8 else -1.0
+        # Calculate Metrics
+        total_return = np.exp(evaluated_df['cum_return'].iloc[-1]) - 1 if len(evaluated_df) > 0 else 0
         
-        # Trade Analysis
-        trade_count = int(trades_series.sum() / 2)
-        win_rate = (returns > 0).mean() if trade_count > 0 else 0
+        # Sharpe Ratio (Annualized for 1h candles: 24 * 365 = 8760)
+        mean_ret = evaluated_df['trade_return'].mean()
+        std_ret = evaluated_df['trade_return'].std()
+        sharpe = (mean_ret / std_ret) * np.sqrt(8760) if std_ret > 0 else 0
         
-        # RR Calculation (Avg Win / Avg Loss)
-        avg_win = returns[returns > 0].mean() if (returns > 0).any() else 0
-        avg_loss = abs(returns[returns < 0].mean()) if (returns < 0).any() else 1e-8
-        rr_ratio = avg_win / avg_loss
+        # Drawdown
+        roll_max = evaluated_df['cum_return'].cummax()
+        drawdown = evaluated_df['cum_return'] - roll_max
+        max_dd = np.exp(drawdown.min()) - 1 if len(drawdown) > 0 else 0
 
-        # --- SENIOR LOGIC: EXPECTANCY & CONSISTENCY ---
-        # Expectancy: (Win Rate * Avg Win) - (Loss Rate * Avg Loss)
-        # Tells us if the strategy is mathematically sound after fees
-        expectancy = (win_rate * avg_win) - ((1 - win_rate) * avg_loss)
-
-        # Yearly Consistency: Check for any years where the strategy lost money
-        yearly_rets = df.groupby(df.index.year)['strat_ret'].sum()
-        losing_years = int((yearly_rets < 0).sum())
-
-        # 5. FIXED MATH: Raw Score (Including Expectancy)
-        # We increase the weight of Sharpe and Expectancy to prioritize quality over raw luck
-        raw_score = (sharpe * 0.3) + (total_return * 0.2) + (expectancy * 100 * 0.3) + ((1 + max_dd) * 0.2)
-
-        # 6. REWARDS vs PENALTIES Logic (Additive)
-        adjustment = 0.0
+        # Simple Scoring Formula
+        raw_score = (sharpe * 0.40) + (total_return * 0.40) + ((1 + max_dd) * 0.20)
         
-        # PENALTIES
-        if trade_count < MIN_TRADES:
-            adjustment -= 2.0  
-        if max_dd < -0.25:
-            adjustment -= 1.5  
-        if total_return < 0:
-            adjustment -= 1.0  
-        if win_rate < 0.40:
-            adjustment -= 0.5  
-        if expectancy < FEE:
-            adjustment -= 1.0 # Strategy is being eaten alive by fees
-        if losing_years > 0:
-            adjustment -= (losing_years * 0.5) # Penalty for every losing year
-
-        # REWARDS
-        if max_dd > -0.15 and trade_count >= MIN_TRADES:
-            adjustment += 0.5  
-        if win_rate > 0.60:
-            adjustment += 0.5  
-        if total_return > 0.50:
-            adjustment += 1.0  
-        if expectancy > (FEE * 3):
-            adjustment += 1.0 # High quality "Alpha"
-
-        final_score = raw_score + adjustment
-
-        print(f"""
-            --- PERFORMANCE REPORT [{target_period}] ---
-            Sharpe Ratio  : {sharpe:.2f}
-            Total Return  : {total_return:.2%}
-            Max Drawdown  : {max_dd:.2%}
-            Win Rate      : {win_rate:.2%}
-            Risk:Reward   : {rr_ratio:.2f}
-            Expectancy    : {expectancy:.4f}
-            Losing Years  : {losing_years}
-            Total Trades  : {trade_count}
-            ---------------------------------
-            RAW SCORE     : {raw_score:.4f}
-            ADJUSTMENT    : {adjustment:+.2f}
-            FINAL SCORE   : {final_score:.4f}
-            """)
+        # Trade Count Penalty (Must take at least 30 trades per period)
+        trade_count = (evaluated_df['signal'].diff() != 0).sum()
+        if trade_count < 30:
+            raw_score *= (trade_count / 30)
             
-        return final_score
+        return raw_score, total_return, sharpe, max_dd, trade_count
 
-    except Exception as e:
-        print(f"[!] Critical Judge Error: {e}")
-        import traceback
-        traceback.print_exc()
-        return -10.0
+    # 3. Score Both Halves Independently
+    train_score, train_ret, train_sh, train_dd, train_tc = score_dataset(df_train)
+    test_score, test_ret, test_sh, test_dd, test_tc = score_dataset(df_test)
+
+    # 4. THE UNCHEATABLE METRIC
+    # The final score is heavily penalized if the model overfits the training data
+    # We take the minimum of the two scores, minus a penalty for high variance between them.
+    variance_penalty = abs(train_score - test_score) * 0.2
+    final_score = min(train_score, test_score) - variance_penalty
+
+    # 5. Output the Detailed Report (Captured by auto_loop.py)
+    print("\n--- WALK-FORWARD EVALUATION REPORT ---")
+    print(f"TRAIN SET (First 60%):")
+    print(f"  Return: {train_ret*100:.2f}% | Sharpe: {train_sh:.2f} | Max DD: {train_dd*100:.2f}% | Trades: {train_tc}")
+    print(f"  Train Score: {train_score:.4f}")
+    
+    print(f"\nTEST SET (Last 40%):")
+    print(f"  Return: {test_ret*100:.2f}% | Sharpe: {test_sh:.2f} | Max DD: {test_dd*100:.2f}% | Trades: {test_tc}")
+    print(f"  Test Score: {test_score:.4f}")
+    
+    print(f"\nVariance Penalty: -{variance_penalty:.4f}")
+    print(f"FINAL_RESULT:{final_score}")
+
+    return final_score
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

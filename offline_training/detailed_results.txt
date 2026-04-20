@@ -25,3 +25,19 @@ FINAL_RESULT:-6.625899725447027
 
 Progress (1y):   0%|          | 0/1 [00:00<?, ?it/s]
 Progress (1y):   0%|          | 0/1 [00:18<?, ?it/s]
+
+============================================================
+COMMIT: 36c24a6 | SCORE: -0.9307086767941319 | STATUS: KEEP
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -22.77% | Sharpe: -1.74 | Max DD: -28.39% | Trades: 564
+  Train Score: -0.6447
+
+TEST SET (Last 40%):
+  Return: 19.74% | Sharpe: 1.34 | Max DD: -15.54% | Trades: 360
+  Test Score: 0.7852
+
+Variance Penalty: -0.2860
+FINAL_RESULT:-0.9307086767941319
+FINAL_RESULT:-0.9307086767941319

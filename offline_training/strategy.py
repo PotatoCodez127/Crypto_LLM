@@ -7,7 +7,7 @@ def get_signals(df):
     - Long when MACD histogram > 0.0005, RSI > 60, close > SMA50, and SMA50 > SMA100
     - Short when MACD histogram < -0.0005, RSI < 40, close < SMA50, and SMA50 < SMA100
     - Stop-loss with dynamic ATR multiplier (1.2-3.0) based on recent volatility.
-    Added cooldown period of 5 candles after exit to reduce overtrading.
+    No cooldown period, wider stops to improve performance.
     """
     # 1. Calculate MACD
     exp1 = df['close'].ewm(span=12, adjust=False).mean()
@@ -32,11 +32,11 @@ def get_signals(df):
     df['atr'] = tr.rolling(window=14).mean()
     df['atr'] = df['atr'].bfill().fillna(0)
 
-    # SMA for trend filter (use 50 and 100 for stronger trend confirmation)
-    df['sma50'] = df['close'].rolling(window=50).mean()
+    # SMA for trend filter (use 20 and 50 for faster trend confirmation)
+    df['sma50'] = df['close'].rolling(window=20).mean()
     df['sma50'] = df['sma50'].bfill().fillna(df['close'])
-    # 100-day SMA for longer trend
-    df['sma100'] = df['close'].rolling(window=100).mean()
+    # 50-day SMA for intermediate trend
+    df['sma100'] = df['close'].rolling(window=50).mean()
     df['sma100'] = df['sma100'].bfill().fillna(df['close'])
     # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
@@ -47,25 +47,24 @@ def get_signals(df):
     df['volatility'] = df['returns'].rolling(window=20).std().bfill().fillna(0)
     df['vol_median'] = df['volatility'].rolling(window=100).median().bfill().fillna(df['volatility'])
 
-    # 2. Generate raw signals with more selective conditions
+    # 2. Generate raw signals with adjusted conditions
     df['raw_signal'] = 0
     # No volume filter
     volume_long = True
     volume_short = True
-    # Higher MACD threshold to reduce false signals
-    macd_threshold = 0.0005
-    # Stricter RSI thresholds to require stronger momentum
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 58) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 42) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
+    # Lower MACD threshold to generate more signals
+    macd_threshold = 0.0001
+    # Adjusted RSI thresholds to be less strict
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 52) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 48) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
     # No cooldown period to allow consecutive signals
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
 
-    # 3. Apply trailing stop-loss with adaptive ATR multiplier and cooldown period
+    # 3. Apply trailing stop-loss with adaptive ATR multiplier
     df['signal'] = 0
     position = 0  # 0: flat, 1: long, -1: short
     stop_price = 0.0
-    cooldown = 0  # candles remaining in cooldown
     # atr_multiplier will be set dynamically per candle
 
     for i in range(len(df)):
@@ -76,15 +75,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         # Dynamic ATR multiplier based on volatility - tighter stops to improve risk management
         if vol_med > 0:
-            atr_multiplier = 1.5 * (vol / vol_med)
-            atr_multiplier = max(1.2, min(2.5, atr_multiplier))
+            atr_multiplier = 1.2 * (vol / vol_med)
+            atr_multiplier = max(1.2, min(2.0, atr_multiplier))
         else:
-            atr_multiplier = 1.8
-
-        if cooldown > 0:
-            cooldown -= 1
-            df.iloc[i, df.columns.get_loc('signal')] = 0
-            continue
+            atr_multiplier = 1.5
 
         if position == 0:
             if raw == 1:
@@ -105,7 +99,6 @@ def get_signals(df):
             # Check stop loss
             if close <= stop_price:
                 position = 0
-                cooldown = 5  # enter cooldown after stop loss
                 df.iloc[i, df.columns.get_loc('signal')] = 0
             else:
                 df.iloc[i, df.columns.get_loc('signal')] = 1
@@ -115,7 +108,6 @@ def get_signals(df):
                 stop_price = new_stop
             if close >= stop_price:
                 position = 0
-                cooldown = 5
                 df.iloc[i, df.columns.get_loc('signal')] = 0
             else:
                 df.iloc[i, df.columns.get_loc('signal')] = -1

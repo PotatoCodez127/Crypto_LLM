@@ -32,12 +32,12 @@ def get_signals(df):
     df['atr'] = tr.rolling(window=14).mean()
     df['atr'] = df['atr'].bfill().fillna(0)
 
-    # SMA for trend filter (faster windows)
+    # SMA for trend filter (use longer windows for stronger trend confirmation)
     df['sma50'] = df['close'].rolling(window=50).mean()
     df['sma50'] = df['sma50'].bfill().fillna(df['close'])
-    # Faster momentum filter
-    df['sma20'] = df['close'].rolling(window=20).mean()
-    df['sma20'] = df['sma20'].bfill().fillna(df['close'])
+    # Slower momentum filter (200-day SMA for major trend)
+    df['sma200'] = df['close'].rolling(window=200).mean()
+    df['sma200'] = df['sma200'].bfill().fillna(df['close'])
     # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
     df['volume_ma20'] = df['volume_ma20'].bfill().fillna(df['volume'])
@@ -52,11 +52,11 @@ def get_signals(df):
     # No volume filter
     volume_long = True
     volume_short = True
-    # More sensitive MACD threshold
-    macd_threshold = 0.0005
-    # Adjusted RSI thresholds for more signals
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma50']) & (df['sma20'] > df['sma50']) & (df['close'] > df['sma20']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma50']) & (df['sma20'] < df['sma50']) & (df['close'] < df['sma20']) & volume_short
+    # More sensitive MACD threshold (lower to capture earlier crossovers)
+    macd_threshold = 0.0002
+    # Adjusted RSI thresholds for more signals (wider range)
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 50) & (df['close'] > df['sma50']) & (df['sma20'] > df['sma50']) & (df['close'] > df['sma20']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 50) & (df['close'] < df['sma50']) & (df['sma20'] < df['sma50']) & (df['close'] < df['sma20']) & volume_short
     # Apply cooldown: after a signal, wait 3 periods before another signal
     df['raw_signal'] = 0
     df.loc[long_condition, 'raw_signal'] = 1
@@ -84,12 +84,12 @@ def get_signals(df):
         atr = df['atr'].iloc[i]
         vol = df['volatility'].iloc[i]
         vol_med = df['vol_median'].iloc[i]
-        # Dynamic ATR multiplier based on volatility - more aggressive range
+        # Dynamic ATR multiplier based on volatility - less aggressive to avoid premature stops
         if vol_med > 0:
-            atr_multiplier = 1.0 * (vol / vol_med)
-            atr_multiplier = max(1.0, min(3.0, atr_multiplier))
+            atr_multiplier = 0.8 * (vol / vol_med)
+            atr_multiplier = max(0.8, min(2.0, atr_multiplier))
         else:
-            atr_multiplier = 1.5
+            atr_multiplier = 1.2
 
         if position == 0:
             if raw == 1:

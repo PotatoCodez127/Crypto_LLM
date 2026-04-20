@@ -12,35 +12,32 @@ def get_signals(df):
     df['volatility_20'] = df['log_ret'].rolling(window=20).std()
     df['vol_median'] = df['volatility_20'].rolling(window=100).median()
     
-    # C. Cumulative Volume Delta (CVD) Proxy with shorter window for faster response
+    # C. Cumulative Volume Delta (CVD) Proxy
     df['candle_dir'] = np.where(df['close'] >= df['open'], 1, -1)
     df['vol_delta'] = df['volume'] * df['candle_dir']
-    df['cvd_15'] = df['vol_delta'].rolling(window=15).sum()
-    df['cvd_20'] = df['cvd_15']  # Keep for compatibility but use more responsive window
+    df['cvd_20'] = df['vol_delta'].rolling(window=20).sum()
     
-    # D. Normalized Momentum (Z-score) with faster window for responsiveness
-    sma_30 = df['close'].rolling(window=30).mean()
-    std_30 = df['close'].rolling(window=30).std()
-    df['z_score_50'] = (df['close'] - sma_30) / (std_30 + 1e-8)
+    # D. Normalized Momentum (Z-score)
+    sma_50 = df['close'].rolling(window=50).mean()
+    std_50 = df['close'].rolling(window=50).std()
+    df['z_score_50'] = (df['close'] - sma_50) / (std_50 + 1e-8)
     
     df = df.bfill().fillna(0)
 
     # --- EXECUTION LOGIC ---
-    # Normalized CVD using robust rolling percentiles (IQR) with shorter lookback
-    df['cvd_20_q25'] = df['cvd_20'].rolling(window=60).quantile(0.25)
-    df['cvd_20_q75'] = df['cvd_20'].rolling(window=60).quantile(0.75)
+    # Normalized CVD using robust rolling percentiles (IQR)
+    df['cvd_20_q25'] = df['cvd_20'].rolling(window=100).quantile(0.25)
+    df['cvd_20_q75'] = df['cvd_20'].rolling(window=100).quantile(0.75)
     df['cvd_iqr'] = df['cvd_20_q75'] - df['cvd_20_q25']
-    df['cvd_robust'] = (df['cvd_20'] - df['cvd_20'].rolling(window=60).median()) / (df['cvd_iqr'] + 1e-8)
+    df['cvd_robust'] = (df['cvd_20'] - df['cvd_20'].rolling(window=100).median()) / (df['cvd_iqr'] + 1e-8)
     
     df['raw_signal'] = 0
-    # Relax thresholds to capture more opportunities while maintaining edge
+    # Require stronger extremes and volatility above median
     vol_above_median = df['volatility_20'] > df['vol_median']
-    # Use less extreme thresholds: CVD robust ±1.2 (was ±1.5), Z-score ±1.0 (was ±1.2)
-    long_condition = (df['cvd_robust'] < -1.2) & (df['z_score_50'] < -1.0) & vol_above_median
-    short_condition = (df['cvd_robust'] > 1.2) & (df['z_score_50'] > 1.0) & vol_above_median
+    long_condition = (df['cvd_robust'] < -1.5) & (df['z_score_50'] < -1.2) & vol_above_median
+    short_condition = (df['cvd_robust'] > 1.5) & (df['z_score_50'] > 1.2) & vol_above_median
 
-    # Reduce cooldown to allow more frequent signals when conditions align
-    cooldown = 8
+    cooldown = 12
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -72,14 +69,13 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            # Adjust scaling to be more responsive to volatility changes
+            # Wider range, more adaptive to volatility regimes
             vol_ratio = vol / vol_med
-            # Use linear scaling between 1.2 and 3.5 for tighter stops in normal vol
-            # and wider in high vol, but not too extreme
-            atr_multiplier = 1.2 + (2.3 * np.tanh(vol_ratio - 1.0))
-            atr_multiplier = max(1.2, min(3.5, atr_multiplier))
+            # Use sigmoid-like scaling to keep multiplier between 1.5 and 4.0
+            atr_multiplier = 1.5 + (2.5 / (1.0 + np.exp(-vol_ratio + 1.0)))
+            atr_multiplier = max(1.5, min(4.0, atr_multiplier))
         else:
-            atr_multiplier = 2.0
+            atr_multiplier = 2.5
 
         if position == 0:
             if raw == 1:

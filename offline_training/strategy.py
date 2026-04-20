@@ -3,12 +3,11 @@ import numpy as np
 
 def get_signals(df):
     """
-    MACD + RSI strategy with adaptive ATR stop-loss and take-profit.
-    - Long when MACD histogram > 0.0005, RSI > 55, close > SMA20, and SMA20 > SMA100
-    - Short when MACD histogram < -0.0005, RSI < 45, close < SMA20, and SMA20 < SMA100
-    - Stop-loss with dynamic ATR multiplier (1.0-1.8) based on recent volatility.
-    - Take-profit trailing: after price moves 2*ATR in favor, lock in profit by moving stop to entry+1*ATR.
-    No cooldown period.
+    MACD + RSI strategy with adaptive ATR stop-loss.
+    - Long when MACD histogram > 0.0005, RSI > 60, close > SMA50, and SMA50 > SMA100
+    - Short when MACD histogram < -0.0005, RSI < 40, close < SMA50, and SMA50 < SMA100
+    - Stop-loss with dynamic ATR multiplier (1.2-3.0) based on recent volatility.
+    No cooldown period, wider stops to improve performance.
     """
     # 1. Calculate MACD
     exp1 = df['close'].ewm(span=12, adjust=False).mean()
@@ -33,11 +32,11 @@ def get_signals(df):
     df['atr'] = tr.rolling(window=14).mean()
     df['atr'] = df['atr'].bfill().fillna(0)
 
-    # SMA for trend filter (20 and 100)
-    df['sma20'] = df['close'].rolling(window=20).mean()
-    df['sma20'] = df['sma20'].bfill().fillna(df['close'])
-    # 100-day SMA for stronger trend confirmation
-    df['sma100'] = df['close'].rolling(window=100).mean()
+    # SMA for trend filter (use 20 and 50 for faster trend confirmation)
+    df['sma50'] = df['close'].rolling(window=20).mean()
+    df['sma50'] = df['sma50'].bfill().fillna(df['close'])
+    # 50-day SMA for intermediate trend
+    df['sma100'] = df['close'].rolling(window=50).mean()
     df['sma100'] = df['sma100'].bfill().fillna(df['close'])
     # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
@@ -53,20 +52,19 @@ def get_signals(df):
     # No volume filter
     volume_long = True
     volume_short = True
-    # Higher MACD threshold for stronger momentum
-    macd_threshold = 0.0005
-    # More selective RSI thresholds
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma100']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma100']) & volume_short
+    # Lower MACD threshold to generate more signals
+    macd_threshold = 0.0001
+    # Adjusted RSI thresholds to be less strict
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 52) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 48) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
     # No cooldown period to allow consecutive signals
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
 
-    # 3. Apply trailing stop-loss with adaptive ATR multiplier and take-profit
+    # 3. Apply trailing stop-loss with adaptive ATR multiplier
     df['signal'] = 0
     position = 0  # 0: flat, 1: long, -1: short
     stop_price = 0.0
-    entry_price = 0.0
     # atr_multiplier will be set dynamically per candle
 
     for i in range(len(df)):
@@ -75,22 +73,20 @@ def get_signals(df):
         atr = df['atr'].iloc[i]
         vol = df['volatility'].iloc[i]
         vol_med = df['vol_median'].iloc[i]
-        # Dynamic ATR multiplier based on volatility - tighter range
+        # Dynamic ATR multiplier based on volatility - tighter stops to improve risk management
         if vol_med > 0:
-            atr_multiplier = 1.0 * (vol / vol_med)
-            atr_multiplier = max(1.0, min(1.8, atr_multiplier))
+            atr_multiplier = 1.2 * (vol / vol_med)
+            atr_multiplier = max(1.2, min(2.0, atr_multiplier))
         else:
-            atr_multiplier = 1.4
+            atr_multiplier = 1.5
 
         if position == 0:
             if raw == 1:
                 position = 1
-                entry_price = close
                 stop_price = close - atr_multiplier * atr
                 df.iloc[i, df.columns.get_loc('signal')] = 1
             elif raw == -1:
                 position = -1
-                entry_price = close
                 stop_price = close + atr_multiplier * atr
                 df.iloc[i, df.columns.get_loc('signal')] = -1
             else:
@@ -100,10 +96,6 @@ def get_signals(df):
             new_stop = close - atr_multiplier * atr
             if new_stop > stop_price:
                 stop_price = new_stop
-            # Take-profit trailing: if price moved 2*ATR in favor, lock in profit
-            if close >= entry_price + 2.0 * atr:
-                # Move stop to at least entry_price + 1*ATR
-                stop_price = max(stop_price, entry_price + 1.0 * atr)
             # Check stop loss
             if close <= stop_price:
                 position = 0
@@ -114,9 +106,6 @@ def get_signals(df):
             new_stop = close + atr_multiplier * atr
             if new_stop < stop_price:
                 stop_price = new_stop
-            # Take-profit trailing for short
-            if close <= entry_price - 2.0 * atr:
-                stop_price = min(stop_price, entry_price - 1.0 * atr)
             if close >= stop_price:
                 position = 0
                 df.iloc[i, df.columns.get_loc('signal')] = 0

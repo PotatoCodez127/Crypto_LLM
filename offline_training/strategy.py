@@ -25,11 +25,7 @@ def get_signals(df):
     df = df.bfill().fillna(0)
 
     # --- EXECUTION LOGIC ---
-    # Normalized CVD
-    df['cvd_20_std'] = df['cvd_20'].rolling(window=100).std()
-    df['cvd_z'] = df['cvd_20'] / (df['cvd_20_std'] + 1e-8)
-    
-    # Normalize CVD using rolling median absolute deviation for robustness
+    # Normalized CVD using rolling median absolute deviation for robustness
     df['cvd_20_median'] = df['cvd_20'].rolling(window=100).median()
     df['cvd_20_mad'] = (df['cvd_20'] - df['cvd_20_median']).abs().rolling(window=100).median()
     df['cvd_z'] = (df['cvd_20'] - df['cvd_20_median']) / (df['cvd_20_mad'] + 1e-8)

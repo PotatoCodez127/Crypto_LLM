@@ -38,6 +38,9 @@ def get_signals(df):
     # 50-day SMA for intermediate trend
     df['sma50'] = df['close'].rolling(window=50).mean()
     df['sma50'] = df['sma50'].bfill().fillna(df['close'])
+    # 100-day SMA for longer trend
+    df['sma100'] = df['close'].rolling(window=100).mean()
+    df['sma100'] = df['sma100'].bfill().fillna(df['close'])
     # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
     df['volume_ma20'] = df['volume_ma20'].bfill().fillna(df['volume'])
@@ -53,12 +56,12 @@ def get_signals(df):
     volume_long = True
     volume_short = True
     # Higher MACD threshold to reduce false signals
-    macd_threshold = 0.001
+    macd_threshold = 0.0005
     # Stricter RSI thresholds to capture stronger momentum
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 60) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma50']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 40) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma50']) & volume_short
-    # Apply cooldown period of 5 bars after a signal to avoid overtrading
-    cooldown = 5
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
+    # Apply cooldown period of 3 bars after a signal to avoid overtrading
+    cooldown = 3
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -85,9 +88,9 @@ def get_signals(df):
         # Dynamic ATR multiplier based on volatility - wider stops to allow trades to breathe
         if vol_med > 0:
             atr_multiplier = 2.0 * (vol / vol_med)
-            atr_multiplier = max(2.0, min(4.0, atr_multiplier))
+            atr_multiplier = max(1.5, min(3.0, atr_multiplier))
         else:
-            atr_multiplier = 3.0
+            atr_multiplier = 2.0
 
         if position == 0:
             if raw == 1:

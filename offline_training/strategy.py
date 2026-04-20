@@ -15,7 +15,7 @@ def get_signals(df):
     # C. Cumulative Volume Delta (CVD) Proxy
     df['candle_dir'] = np.where(df['close'] >= df['open'], 1, -1)
     df['vol_delta'] = df['volume'] * df['candle_dir']
-    df['cvd_20'] = df['vol_delta'].rolling(window=30).sum()
+    df['cvd_20'] = df['vol_delta'].rolling(window=20).sum()
     
     # D. Normalized Momentum (Z-score)
     sma_50 = df['close'].rolling(window=50).mean()
@@ -30,10 +30,10 @@ def get_signals(df):
     df['cvd_z'] = df['cvd_20'] / (df['cvd_20_std'] + 1e-8)
     
     df['raw_signal'] = 0
-    long_condition = (df['cvd_z'] < -0.6) & (df['z_score_50'] < -1.0)
-    short_condition = (df['cvd_z'] > 0.6) & (df['z_score_50'] > 1.0)
+    long_condition = (df['cvd_z'] < -0.8) & (df['z_score_50'] < -1.2)
+    short_condition = (df['cvd_z'] > 0.8) & (df['z_score_50'] > 1.2)
 
-    cooldown = 8
+    cooldown = 5
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -64,10 +64,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            atr_multiplier = 2.0 * (vol / vol_med)
-            atr_multiplier = max(1.8, min(3.0, atr_multiplier))
+            atr_multiplier = 1.8 * (vol / vol_med)
+            atr_multiplier = max(1.6, min(2.5, atr_multiplier))
         else:
-            atr_multiplier = 2.0
+            atr_multiplier = 1.8
 
         if position == 0:
             if raw == 1:

@@ -47,15 +47,30 @@ def get_signals(df):
     df['volatility'] = df['returns'].rolling(window=20).std().bfill().fillna(0)
     df['vol_median'] = df['volatility'].rolling(window=200).median().bfill().fillna(df['volatility'])
 
-    # 2. Generate raw signals
+    # 2. Generate raw signals with stricter conditions
     df['raw_signal'] = 0
     # Volume filter: require above-average volume for long, below-average for short
-    volume_long = df['volume'] > df['volume_ma20']
-    volume_short = df['volume'] < df['volume_ma20']
-    long_condition = (df['macd_hist'] > 0.001) & (df['rsi'] > 60) & (df['close'] > df['sma200']) & (df['sma50'] > df['sma200']) & volume_long
-    short_condition = (df['macd_hist'] < -0.001) & (df['rsi'] < 40) & (df['close'] < df['sma200']) & (df['sma50'] < df['sma200']) & volume_short
+    volume_long = df['volume'] > df['volume_ma20'] * -1.2  # more flexible
+    volume_short = df['volume'] < df['volume_ma20'] * 0.8
+    # Stronger MACD threshold
+    macd_threshold = 0.002
+    # RSI thresholds adjusted
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 65) & (df['close'] > df['sma200']) & (df['sma50'] > df['sma200']) & (df['close'] > df['sma50']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 35) & (df['close'] < df['sma200']) & (df['sma50'] < df['sma200']) & (df['close'] < df['sma50']) & volume_short
+    # Apply cooldown: after a signal, wait 5 periods before another signal
+    df['raw_signal'] = 0
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
+    
+    # Cooldown implementation
+    cooldown_periods = 5
+    last_signal_idx = -cooldown_periods
+    for i in range(len(df)):
+        if df['raw_signal'].iloc[i] != 0:
+            if i - last_signal_idx < cooldown_periods:
+                df.iloc[i, df.columns.get_loc('raw_signal')] = 0
+            else:
+                last_signal_idx = i
 
     # 3. Apply trailing stop-loss with adaptive ATR multiplier
     df['signal'] = 0
@@ -69,12 +84,12 @@ def get_signals(df):
         atr = df['atr'].iloc[i]
         vol = df['volatility'].iloc[i]
         vol_med = df['vol_median'].iloc[i]
-        # Dynamic ATR multiplier based on volatility
+        # Dynamic ATR multiplier based on volatility - more conservative
         if vol_med > 0:
-            atr_multiplier = 1.5 * (vol / vol_med)
-            atr_multiplier = max(1.0, min(3.0, atr_multiplier))
+            atr_multiplier = 1.2 * (vol / vol_med)
+            atr_multiplier = max(1.0, min(2.0, atr_multiplier))
         else:
-            atr_multiplier = 1.5
+            atr_multiplier = 1.2
 
         if position == 0:
             if raw == 1:

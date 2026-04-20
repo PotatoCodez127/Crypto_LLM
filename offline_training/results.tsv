@@ -1,2 +1,3 @@
 commit	final_result	status	description
 e3a5b2c	-1.0	crash	baseline run with fillna method error
+d4ecf25	-0.2731	discard	baseline after fix: negative Sharpe, high drawdown

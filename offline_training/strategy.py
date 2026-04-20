@@ -15,7 +15,7 @@ def get_signals(df):
     # C. Cumulative Volume Delta (CVD) Proxy
     df['candle_dir'] = np.where(df['close'] >= df['open'], 1, -1)
     df['vol_delta'] = df['volume'] * df['candle_dir']
-    df['cvd_20'] = df['vol_delta'].rolling(window=20).sum()
+    df['cvd_15'] = df['vol_delta'].rolling(window=15).sum()
     
     # D. Normalized Momentum (Z-score)
     sma_50 = df['close'].rolling(window=50).mean()

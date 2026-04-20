@@ -34,10 +34,10 @@ def get_signals(df):
     df['raw_signal'] = 0
     # Require stronger extremes and volatility above median
     vol_above_median = df['volatility_20'] > df['vol_median']
-    long_condition = (df['cvd_robust'] < -1.5) & (df['z_score_50'] < -1.2) & vol_above_median
-    short_condition = (df['cvd_robust'] > 1.5) & (df['z_score_50'] > 1.2) & vol_above_median
+    long_condition = (df['cvd_robust'] < -1.2) & (df['z_score_50'] < -1.0) & vol_above_median
+    short_condition = (df['cvd_robust'] > 1.2) & (df['z_score_50'] > 1.0) & vol_above_median
 
-    cooldown = 12
+    cooldown = 8
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -71,9 +71,9 @@ def get_signals(df):
         if vol_med > 0:
             # Wider range, more adaptive to volatility regimes
             vol_ratio = vol / vol_med
-            # Use sigmoid-like scaling to keep multiplier between 1.5 and 4.0
-            atr_multiplier = 1.5 + (2.5 / (1.0 + np.exp(-vol_ratio + 1.0)))
-            atr_multiplier = max(1.5, min(4.0, atr_multiplier))
+            # Use sigmoid-like scaling to keep multiplier between 1.8 and 3.5
+            atr_multiplier = 1.8 + (2.0 / (1.0 + np.exp(-vol_ratio + 0.5)))
+            atr_multiplier = max(1.8, min(3.5, atr_multiplier))
         else:
             atr_multiplier = 2.5
 

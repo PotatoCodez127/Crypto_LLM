@@ -34,14 +34,14 @@ def get_signals(df):
     df['raw_signal'] = 0
     
     # Initial Hypothesis: Mean reversion. 
-    # Buy when selling volume is exhausted (negative CVD) but price is moderately undervalued (Z-score < -1.5)
-    long_condition = (df['cvd_20'] < 0) & (df['z_score_50'] < -1.5)
+    # Buy when selling volume is exhausted (negative CVD) but price is moderately undervalued (Z-score < -1.2)
+    long_condition = (df['cvd_20'] < 0) & (df['z_score_50'] < -1.2)
     
-    # Sell when buying volume is exhausted (positive CVD) but price is moderately overvalued (Z-score > 1.5)
-    short_condition = (df['cvd_20'] > 0) & (df['z_score_50'] > 1.5)
+    # Sell when buying volume is exhausted (positive CVD) but price is moderately overvalued (Z-score > 1.2)
+    short_condition = (df['cvd_20'] > 0) & (df['z_score_50'] > 1.2)
 
     # Cooldown to prevent overtrading
-    cooldown = III
+    cooldown = 2
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:

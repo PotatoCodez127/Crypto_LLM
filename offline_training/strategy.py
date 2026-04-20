@@ -4,10 +4,10 @@ import numpy as np
 def get_signals(df):
     """
     MACD + RSI strategy with adaptive ATR stop-loss.
-    - Long when MACD histogram > 0.001, RSI > 60, close > SMA50, and SMA50 > SMA200
-    - Short when MACD histogram < -0.001, RSI < 40, close < SMA50, and SMA50 < SMA200
-    - Stop-loss with dynamic ATR multiplier (2.0-4.0) based on recent volatility.
-    Cooldown period 5 bars to reduce overtrading.
+    - Long when MACD histogram > 0.0005, RSI > 60, close > SMA50, and SMA50 > SMA100
+    - Short when MACD histogram < -0.0005, RSI < 40, close < SMA50, and SMA50 < SMA100
+    - Stop-loss with dynamic ATR multiplier (1.2-3.0) based on recent volatility.
+    No cooldown period, wider stops to improve performance.
     """
     # 1. Calculate MACD
     exp1 = df['close'].ewm(span=12, adjust=False).mean()
@@ -38,9 +38,9 @@ def get_signals(df):
     # 50-day SMA for intermediate trend
     df['sma50'] = df['close'].rolling(window=50).mean()
     df['sma50'] = df['sma50'].bfill().fillna(df['close'])
-    # 200-day SMA for longer trend
-    df['sma200'] = df['close'].rolling(window=200).mean()
-    df['sma200'] = df['sma200'].bfill().fillna(df['close'])
+    # 100-day SMA for longer trend
+    df['sma100'] = df['close'].rolling(window=100).mean()
+    df['sma100'] = df['sma100'].bfill().fillna(df['close'])
     # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
     df['volume_ma20'] = df['volume_ma20'].bfill().fillna(df['volume'])
@@ -56,15 +56,12 @@ def get_signals(df):
     volume_long = True
     volume_short = True
     # Higher MACD threshold to reduce false signals
-    macd_threshold = 0.001
+    macd_threshold = 0.0005
     # Stricter RSI thresholds to capture stronger momentum
-    # Use SMA50 > SMA200 for long trend, SMA50 < SMA200 for short trend
-    df['sma200'] = df['close'].rolling(window=200).mean()
-    df['sma200'] = df['sma200'].bfill().fillna(df['close'])
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 60) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma200']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 40) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma200']) & volume_short
-    # Apply cooldown period of 5 bars after a signal to avoid overtrading
-    cooldown = 5
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
+    # Apply cooldown period of 3 bars after a signal to avoid overtrading
+    cooldown = 3
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -90,10 +87,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         # Dynamic ATR multiplier based on volatility - wider stops to allow trades to breathe
         if vol_med > 0:
-            atr_multiplier = 2.5 * (vol / vol_med)
-            atr_multiplier = max(2.0, min(4.0, atr_multiplier))
+            atr_multiplier = 2.0 * (vol / vol_med)
+            atr_multiplier = max(1.5, min(3.0, atr_multiplier))
         else:
-            atr_multiplier = 2.5
+            atr_multiplier = 2.0
 
         if position == 0:
             if raw == 1:

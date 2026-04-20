@@ -32,12 +32,11 @@ def get_signals(df):
     df['atr'] = tr.rolling(window=14).mean()
     df['atr'] = df['atr'].bfill().fillna(0)
 
-    # SMA for trend filter (use 20 and 50 for faster trend confirmation)
-    df['sma50'] = df['close'].rolling(window=20).mean()
+    # SMA for trend filter: fast 20, slow 50
+    df['sma20'] = df['close'].rolling(window=20).mean()
+    df['sma20'] = df['sma20'].bfill().fillna(df['close'])
+    df['sma50'] = df['close'].rolling(window=50).mean()
     df['sma50'] = df['sma50'].bfill().fillna(df['close'])
-    # 50-day SMA for intermediate trend
-    df['sma100'] = df['close'].rolling(window=50).mean()
-    df['sma100'] = df['sma100'].bfill().fillna(df['close'])
     # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
     df['volume_ma20'] = df['volume_ma20'].bfill().fillna(df['volume'])
@@ -49,19 +48,20 @@ def get_signals(df):
 
     # 2. Generate raw signals with adjusted conditions
     df['raw_signal'] = 0
-    # Lower MACD threshold to generate more signals
-    macd_threshold = 0.00005
-    # Adjusted RSI thresholds to be more permissive
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100'])
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100'])
+    # Increase MACD threshold to reduce false signals
+    macd_threshold = 0.0005
+    # More selective RSI thresholds
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 60) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma50'])
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 40) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma50'])
     # No cooldown period to allow consecutive signals
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
 
-    # 3. Apply trailing stop-loss with adaptive ATR multiplier
+    # 3. Apply trailing stop-loss with adaptive ATR multiplier and take-profit
     df['signal'] = 0
     position = 0  # 0: flat, 1: long, -1: short
     stop_price = 0.0
+    entry_price = 0.0
     # atr_multiplier will be set dynamically per candle
 
     for i in range(len(df)):
@@ -70,20 +70,22 @@ def get_signals(df):
         atr = df['atr'].iloc[i]
         vol = df['volatility'].iloc[i]
         vol_med = df['vol_median'].iloc[i]
-        # Dynamic ATR multiplier based on volatility - tighter stops to improve risk management
+        # Dynamic ATR multiplier based on volatility - wider stops to reduce whipsaw
         if vol_med > 0:
-            atr_multiplier = 1.0 * (vol / vol_med)
-            atr_multiplier = max(1.0, min(1.8, atr_multiplier))
+            atr_multiplier = 1.5 * (vol / vol_med)
+            atr_multiplier = max(1.2, min(3.0, atr_multiplier))
         else:
-            atr_multiplier = 1.3
+            atr_multiplier = 2.0
 
         if position == 0:
             if raw == 1:
                 position = 1
+                entry_price = close
                 stop_price = close - atr_multiplier * atr
                 df.iloc[i, df.columns.get_loc('signal')] = 1
             elif raw == -1:
                 position = -1
+                entry_price = close
                 stop_price = close + atr_multiplier * atr
                 df.iloc[i, df.columns.get_loc('signal')] = -1
             else:
@@ -93,8 +95,10 @@ def get_signals(df):
             new_stop = close - atr_multiplier * atr
             if new_stop > stop_price:
                 stop_price = new_stop
-            # Check stop loss
-            if close <= stop_price:
+            # Take-profit at 2*ATR from entry
+            take_profit = entry_price + 2.0 * atr
+            # Check stop loss or take profit
+            if close <= stop_price or close >= take_profit:
                 position = 0
                 df.iloc[i, df.columns.get_loc('signal')] = 0
             else:
@@ -103,7 +107,8 @@ def get_signals(df):
             new_stop = close + atr_multiplier * atr
             if new_stop < stop_price:
                 stop_price = new_stop
-            if close >= stop_price:
+            take_profit = entry_price - 2.0 * atr
+            if close >= stop_price or close <= take_profit:
                 position = 0
                 df.iloc[i, df.columns.get_loc('signal')] = 0
             else:

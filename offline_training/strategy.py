@@ -52,16 +52,16 @@ def get_signals(df):
 
     # 2. Generate raw signals with stricter conditions
     df['raw_signal'] = 0
-    # Volume filter: require volume > 90% of its 20-period average
-    volume_long = df['volume'] > df['volume_ma20'] * 0.9
-    volume_short = df['volume'] > df['volume_ma20'] * 0.9
+    # No volume filter
+    volume_long = True
+    volume_short = True
     # Higher MACD threshold to reduce false signals
-    macd_threshold = 0.0010
+    macd_threshold = 0.0005
     # Stricter RSI thresholds to capture stronger momentum
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 60) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 40) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
     # Apply cooldown period of 3 bars after a signal to avoid overtrading
-    cooldown = 5
+    cooldown = 3
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -87,10 +87,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         # Dynamic ATR multiplier based on volatility - wider stops to allow trades to breathe
         if vol_med > 0:
-            atr_multiplier = 2.5 * (vol / vol_med)
-            atr_multiplier = max(2.0, min(4.0, atr_multiplier))
+            atr_multiplier = 2.0 * (vol / vol_med)
+            atr_multiplier = max(1.5, min(3.0, atr_multiplier))
         else:
-            atr_multiplier = 2.5
+            atr_multiplier = 2.0
 
         if position == 0:
             if raw == 1:

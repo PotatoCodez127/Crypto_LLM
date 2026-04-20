@@ -17,10 +17,10 @@ def get_signals(df):
     histogram = macd - signal
     df['macd_hist'] = histogram
     
-    # RSI calculation
+    # RSI calculation with faster period
     delta = df['close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    gain = (delta.where(delta > 0, 0)).rolling(window=10).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=10).mean()
     rs = gain / loss
     df['rsi'] = 100 - (100 / (1 + rs))
 
@@ -49,14 +49,11 @@ def get_signals(df):
 
     # 2. Generate raw signals with adjusted conditions
     df['raw_signal'] = 0
-    # No volume filter
-    volume_long = True
-    volume_short = True
     # Lower MACD threshold to generate more signals
-    macd_threshold = 0.0001
-    # Adjusted RSI thresholds to be less strict
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 52) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 48) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
+    macd_threshold = 0.00005
+    # Adjusted RSI thresholds to be more permissive
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100'])
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100'])
     # No cooldown period to allow consecutive signals
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
@@ -75,10 +72,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         # Dynamic ATR multiplier based on volatility - tighter stops to improve risk management
         if vol_med > 0:
-            atr_multiplier = 1.2 * (vol / vol_med)
-            atr_multiplier = max(1.2, min(2.0, atr_multiplier))
+            atr_multiplier = 1.0 * (vol / vol_med)
+            atr_multiplier = max(1.0, min(1.8, atr_multiplier))
         else:
-            atr_multiplier = 1.5
+            atr_multiplier = 1.3
 
         if position == 0:
             if raw == 1:

@@ -62,7 +62,9 @@ def run_experiment():
         f"You MUST modify the code in {STRATEGY_FILE} right now to try and beat {best_score}. "
         "Do not repeat failed ideas. Analyze what worked and what didn't. "
         "Output the actual code edits using the correct SEARCH/REPLACE format. "
-        "Concrete ideas to change: alter MACD thresholds, RSI levels, SMA windows, or ATR math. "
+        "Concrete ideas: Change the thresholds for the Volume Delta (cvd_20), adjust the Z-score (z_score_50) extremes, "
+        "modify the cooldown period, or tweak the ATR adaptive math. DO NOT introduce RSI or MACD. "
+        "Focus on the microstructure (volume vs price deviations). "
         "Do not apologize, do not explain. Just write the code edits."
     )
     

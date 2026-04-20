@@ -33,15 +33,20 @@ def get_signals(df):
     # --- 2. THE EXECUTION LOGIC (For the AI to hack) ---
     df['raw_signal'] = 0
     
-    # Initial Hypothesis: Mean reversion. 
-    # Buy when selling volume is exhausted (negative CVD) but price is severely undervalued (Z-score < -2)
-    long_condition = (df['cvd_20'] < 0) & (df['z_score_50'] < -2.0)
+    # Compute rolling std of vol_delta for CVD threshold scaling
+    df['vol_delta_std_20'] = df['vol_delta'].rolling(window=20).std()
     
-    # Sell when buying volume is exhausted (positive CVD) but price is severely overvalued (Z-score > 2)
-    short_condition = (df['cvd_20'] > 0) & (df['z_score_50'] > 2.0)
+    # Initial Hypothesis: Mean reversion with volatility filter.
+    # Buy when selling volume is exhausted (negative CVD) but price is moderately undervalued (Z-score < -1.5)
+    # and volatility is not too low (above 70% of median volatility)
+    long_condition = (df['cvd_20'] < -0.3 * df['vol_delta_std_20']) & (df['z_score_50'] < -1.5) & (df['volatility_20'] > df['vol_median'] * 0.7)
+    
+    # Sell when buying volume is exhausted (positive CVD) but price is moderately overvalued (Z-score > 1.5)
+    # and volatility is not too low
+    short_condition = (df['cvd_20'] > 0.3 * df['vol_delta_std_20']) & (df['z_score_50'] > 1.5) & (df['volatility_20'] > df['vol_median'] * 0.7)
 
-    # Cooldown to prevent overtrading
-    cooldown = 5
+    # Cooldown to prevent overtrading but allow more opportunities
+    cooldown = 4
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -73,10 +78,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            atr_multiplier = 1.8 * (vol / vol_med)
-            atr_multiplier = max(1.2, min(2.5, atr_multiplier))
+            atr_multiplier = 2.0 * (vol / vol_med)
+            atr_multiplier = max(1.5, min(3.0, atr_multiplier))
         else:
-            atr_multiplier = 1.8
+            atr_multiplier = 2.0
 
         if position == 0:
             if raw == 1:

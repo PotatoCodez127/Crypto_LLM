@@ -21,7 +21,6 @@ logs/
 dev/
 
 # Results file
-results.tsv
 
 #Private files
 .env

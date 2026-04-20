@@ -5,9 +5,7 @@ def get_signals(df):
     """
     V2 Baseline: Stationary Features, CVD Proxy, and Volatility-Scaled Logic.
     """
-    # --- 1. INSTITUTIONAL FEATURE ENGINEERING ---
-    
-    # A. Log Returns (Stationary price movement)
+    # A. Log Returns
     df['log_ret'] = np.log(df['close'] / df['close'].shift(1))
     
     # B. Volatility Profile
@@ -15,38 +13,23 @@ def get_signals(df):
     df['vol_median'] = df['volatility_20'].rolling(window=100).median()
     
     # C. Cumulative Volume Delta (CVD) Proxy
-    # Positive volume if close >= open (buyers aggressive), negative if close < open (sellers aggressive)
     df['candle_dir'] = np.where(df['close'] >= df['open'], 1, -1)
     df['vol_delta'] = df['volume'] * df['candle_dir']
-    
-    # 20-period rolling CVD (Kept as a rolling window to maintain stationarity)
     df['cvd_20'] = df['vol_delta'].rolling(window=20).sum()
     
-    # D. Normalized Momentum (Z-score of price vs 50-SMA)
+    # D. Normalized Momentum (Z-score)
     sma_50 = df['close'].rolling(window=50).mean()
     std_50 = df['close'].rolling(window=50).std()
     df['z_score_50'] = (df['close'] - sma_50) / (std_50 + 1e-8)
     
-    # Fill missing values caused by rolling windows
     df = df.bfill().fillna(0)
 
-    # --- 2. THE EXECUTION LOGIC (For the AI to hack) ---
+    # --- EXECUTION LOGIC ---
     df['raw_signal'] = 0
-    
-    # Compute rolling std of vol_delta for CVD threshold scaling
-    df['vol_delta_std_20'] = df['vol_delta'].rolling(window=20).std()
-    
-    # Initial Hypothesis: Mean reversion with volatility filter.
-    # Buy when selling volume is exhausted (negative CVD) but price is moderately undervalued (Z-score < -1.0)
-    # and volatility is not too low (above 20% of median volatility)
-    long_condition = (df['cvd_20'] < -0.15 * df['vol_delta_std_20']) & (df['z_score_50'] < -0.8) & (df['volatility_20'] > df['vol_median'] * 0.3)
-    
-    # Sell when buying volume is exhausted (positive CVD) but price is moderately overvalued (Z-score > 0.8)
-    # and volatility is not too low
-    short_condition = (df['cvd_20'] > 0.15 * df['vol_delta_std_20']) & (df['z_score_50'] > 0.8) & (df['volatility_20'] > df['vol_median'] * 0.3)
+    long_condition = (df['cvd_20'] < 0) & (df['z_score_50'] < -2.0)
+    short_condition = (df['cvd_20'] > 0) & (df['z_score_50'] > 2.0)
 
-    # Cooldown to prevent overtrading but allow more opportunities
-    cooldown = 12
+    cooldown = 5
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -58,8 +41,7 @@ def get_signals(df):
             df.iloc[i, df.columns.get_loc('raw_signal')] = -1
             last_signal_idx = i
 
-    # --- 3. ADVANCED RISK MANAGEMENT (Adaptive ATR) ---
-    # (Keeping your original adaptive stop-loss, as the logic is solid)
+    # --- ADVANCED RISK MANAGEMENT (Adaptive ATR) ---
     high_low = df['high'] - df['low']
     high_close = np.abs(df['high'] - df['close'].shift())
     low_close = np.abs(df['low'] - df['close'].shift())
@@ -78,10 +60,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            atr_multiplier = 1.0 * (vol / vol_med)
-            atr_multiplier = max(0.8, min(1.2, atr_multiplier))
+            atr_multiplier = 1.8 * (vol / vol_med)
+            atr_multiplier = max(1.2, min(2.5, atr_multiplier))
         else:
-            atr_multiplier = 1.0
+            atr_multiplier = 1.8
 
         if position == 0:
             if raw == 1:

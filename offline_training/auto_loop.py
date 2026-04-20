@@ -9,7 +9,7 @@ AIDER_CMD = "aider"
 STRATEGY_FILE = "strategy.py"
 TRAIN_CMD = [sys.executable, "train.py"]
 RESULTS_FILE = "results.tsv"
-DETAILED_LOG_FILE = "detailed_results.txt" # NEW: The detailed log file
+DETAILED_LOG_FILE = "detailed_results.txt" 
 
 def get_history_and_best():
     """Reads the TSV to find the ALL-TIME best score and the last 5 runs for AI context."""
@@ -21,13 +21,11 @@ def get_history_and_best():
     best_score = -999.0
     history = []
     with open(RESULTS_FILE, "r") as f:
-        # FIX: Removed [1:] so it never skips the first line
         lines = f.readlines() 
         for line in lines:
             parts = line.strip().split() 
             if len(parts) >= 3:
                 try:
-                    # If it's a header, float("final_result") will trigger a ValueError and pass cleanly
                     score = float(parts[1])
                     status = parts[2]
                     if status == "keep" and score > best_score:
@@ -49,7 +47,7 @@ def log_result(commit, score, status, desc):
         os.fsync(f.fileno())
 
 def log_detailed(commit, score, status, full_output):
-    """NEW: Appends the full terminal output (including the Performance Report) to a text file."""
+    """Appends the full terminal output to a text file."""
     with open(DETAILED_LOG_FILE, "a", encoding="utf-8") as f:
         f.write(f"\n\n{'='*60}\n")
         f.write(f"COMMIT: {commit} | SCORE: {score} | STATUS: {status.upper()}\n")
@@ -116,7 +114,6 @@ def run_experiment():
         status = "crash"
         print(f"\n⚠️ Script crashed or returned invalid output.")
 
-    # Forward-Moving Git History Logic
     if status == "keep":
         print(f"✅ SUCCESS! New high score. Keeping changes.")
         log_result(commit_after, score, status, "Auto-experiment success")
@@ -126,7 +123,6 @@ def run_experiment():
         subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
         subprocess.run(["git", "commit", "-m", f"Auto-revert to best state {commit_before} (Failed Score: {score})"], capture_output=True)
         
-    # NEW: Write the detailed breakdown to the text file regardless of success or failure
     log_detailed(commit_after, score, status, full_output)
 
     print("Waiting 3 seconds before the next loop...")

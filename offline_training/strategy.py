@@ -31,13 +31,23 @@ def get_signals(df):
     df['cvd_iqr'] = df['cvd_20_q75'] - df['cvd_20_q25']
     df['cvd_robust'] = (df['cvd_20'] - df['cvd_20'].rolling(window=100).median()) / (df['cvd_iqr'] + 1e-8)
     
+    # Momentum confirmation: recent log returns aligned with signal direction
+    df['log_ret_3'] = df['log_ret'].rolling(window=3).sum()
+    
     df['raw_signal'] = 0
-    # Require stronger extremes and volatility above median
-    vol_above_median = df['volatility_20'] > df['vol_median']
-    long_condition = (df['cvd_robust'] < -1.5) & (df['z_score_50'] < -1.2) & vol_above_median
-    short_condition = (df['cvd_robust'] > 1.5) & (df['z_score_50'] > 1.2) & vol_above_median
+    # Require volatility above 80% of median (less restrictive)
+    vol_above_threshold = df['volatility_20'] > (0.8 * df['vol_median'])
+    long_condition = (df['cvd_robust'] < -1.2) & (df['z_score_50'] < -1.0) & vol_above_threshold
+    short_condition = (df['cvd_robust'] > 1.2) & (df['z_score_50'] > 1.0) & vol_above_threshold
 
-    cooldown = 12
+    # Momentum alignment: for long, recent returns should be negative (oversold) or at least not strongly positive
+    long_momentum_ok = df['log_ret_3'] < 0.01  # allow small positive
+    short_momentum_ok = df['log_ret_3'] > -0.01
+    
+    long_condition = long_condition & long_momentum_ok
+    short_condition = short_condition & short_momentum_ok
+
+    cooldown = 8
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -69,13 +79,14 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            # Wider range, more adaptive to volatility regimes
+            # More aggressive scaling in moderate volatility
             vol_ratio = vol / vol_med
-            # Use sigmoid-like scaling to keep multiplier between 1.5 and 4.0
-            atr_multiplier = 1.5 + (2.5 / (1.0 + np.exp(-vol_ratio + 1.0)))
-            atr_multiplier = max(1.5, min(4.0, atr_multiplier))
+            # Shift sigmoid to give lower baseline and steeper increase
+            # Range 1.2 to 3.5
+            atr_multiplier = 1.2 + (2.3 / (1.0 + np.exp(-vol_ratio + 0.8)))
+            atr_multiplier = max(1.2, min(3.5, atr_multiplier))
         else:
-            atr_multiplier = 2.5
+            atr_multiplier = 2.0
 
         if position == 0:
             if raw == 1:
@@ -93,8 +104,8 @@ def get_signals(df):
         elif position == 1:
             # Trailing stop logic with a floor based on entry
             new_stop = close - atr_multiplier * atr
-            # Ensure stop never moves below entry - 1.5*ATR (max loss protection)
-            max_loss_stop = entry_price - 1.5 * atr
+            # Ensure stop never moves below entry - 1.2*ATR (tighter max loss)
+            max_loss_stop = entry_price - 1.2 * atr
             if new_stop > stop_price and new_stop > max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop > stop_price:
@@ -106,7 +117,7 @@ def get_signals(df):
                 df.iloc[i, df.columns.get_loc('signal')] = 1
         elif position == -1:
             new_stop = close + atr_multiplier * atr
-            max_loss_stop = entry_price + 1.5 * atr
+            max_loss_stop = entry_price + 1.2 * atr
             if new_stop < stop_price and new_stop < max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop < stop_price:

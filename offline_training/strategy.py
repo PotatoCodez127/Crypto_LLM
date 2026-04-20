@@ -3,11 +3,11 @@ import numpy as np
 
 def get_signals(df):
     """
-    MACD + RSI strategy with ATR stop-loss.
+    MACD + RSI strategy with adaptive ATR stop-loss.
     - Long when MACD histogram > 0.0005, RSI > 55, close > SMA200, and SMA50 > SMA200
     - Short when MACD histogram < -0.0005, RSI < 45, close < SMA200, and SMA50 < SMA200
-    - Stop-loss at 2*ATR
-    Experiment2: added SMA50 vs SMA200 trend confirmation.
+    - Stop-loss with dynamic ATR multiplier (1.0-3.0) based on recent volatility.
+    Experiment3: adaptive ATR multiplier.
     """
     # 1. Calculate MACD
     exp1 = df['close'].ewm(span=12, adjust=False).mean()
@@ -42,6 +42,11 @@ def get_signals(df):
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
     df['volume_ma20'] = df['volume_ma20'].fillna(method='bfill').fillna(df['volume'])
 
+    # Volatility for adaptive stop
+    df['returns'] = df['close'].pct_change()
+    df['volatility'] = df['returns'].rolling(window=20).std().fillna(method='bfill').fillna(0)
+    df['vol_median'] = df['volatility'].rolling(window=200).median().fillna(method='bfill').fillna(df['volatility'])
+
     # 2. Generate raw signals
     df['raw_signal'] = 0
     long_condition = (df['macd_hist'] > 0.0005) & (df['rsi'] > 55) & (df['close'] > df['sma200']) & (df['sma50'] > df['sma200'])
@@ -49,16 +54,24 @@ def get_signals(df):
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
 
-    # 3. Apply trailing stop-loss
+    # 3. Apply trailing stop-loss with adaptive ATR multiplier
     df['signal'] = 0
     position = 0  # 0: flat, 1: long, -1: short
     stop_price = 0.0
-    atr_multiplier = 2.0
+    # atr_multiplier will be set dynamically per candle
 
     for i in range(len(df)):
         raw = df['raw_signal'].iloc[i]
         close = df['close'].iloc[i]
         atr = df['atr'].iloc[i]
+        vol = df['volatility'].iloc[i]
+        vol_med = df['vol_median'].iloc[i]
+        # Dynamic ATR multiplier based on volatility
+        if vol_med > 0:
+            atr_multiplier = 2.0 * (vol / vol_med)
+            atr_multiplier = max(1.0, min(3.0, atr_multiplier))
+        else:
+            atr_multiplier = 2.0
 
         if position == 0:
             if raw == 1:

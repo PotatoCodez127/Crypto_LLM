@@ -21,12 +21,13 @@ def get_history_and_best():
     best_score = -999.0
     history = []
     with open(RESULTS_FILE, "r") as f:
-        lines = f.readlines()[1:]
+        # FIX: Removed [1:] so it never skips the first line
+        lines = f.readlines() 
         for line in lines:
-            # FIX: Use .split() with no arguments to split on ANY whitespace (tabs or spaces)
             parts = line.strip().split() 
             if len(parts) >= 3:
                 try:
+                    # If it's a header, float("final_result") will trigger a ValueError and pass cleanly
                     score = float(parts[1])
                     status = parts[2]
                     if status == "keep" and score > best_score:

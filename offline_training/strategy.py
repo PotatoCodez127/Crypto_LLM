@@ -32,11 +32,11 @@ def get_signals(df):
     df['atr'] = tr.rolling(window=14).mean()
     df['atr'] = df['atr'].bfill().fillna(0)
 
-    # SMA for trend filter (use 30 and 100 for faster trend confirmation)
-    df['sma50'] = df['close'].rolling(window=30).mean()
+    # SMA for trend filter (use 20 and 50 for faster trend confirmation)
+    df['sma50'] = df['close'].rolling(window=20).mean()
     df['sma50'] = df['sma50'].bfill().fillna(df['close'])
-    # 100-day SMA for intermediate trend
-    df['sma100'] = df['close'].rolling(window=100).mean()
+    # 50-day SMA for intermediate trend
+    df['sma100'] = df['close'].rolling(window=50).mean()
     df['sma100'] = df['sma100'].bfill().fillna(df['close'])
     # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
@@ -53,10 +53,10 @@ def get_signals(df):
     volume_long = True
     volume_short = True
     # Lower MACD threshold to generate more signals
-    macd_threshold = 0.0003
+    macd_threshold = 0.0001
     # Adjusted RSI thresholds to be less strict
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 52) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 48) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
     # No cooldown period to allow consecutive signals
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
@@ -75,10 +75,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         # Dynamic ATR multiplier based on volatility - tighter stops to improve risk management
         if vol_med > 0:
-            atr_multiplier = 1.3 * (vol / vol_med)
-            atr_multiplier = max(1.5, min(2.5, atr_multiplier))
+            atr_multiplier = 1.2 * (vol / vol_med)
+            atr_multiplier = max(1.2, min(2.0, atr_multiplier))
         else:
-            atr_multiplier = 1.8
+            atr_multiplier = 1.5
 
         if position == 0:
             if raw == 1:

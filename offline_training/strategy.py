@@ -55,8 +55,8 @@ def get_signals(df):
     # More sensitive MACD threshold (lower to capture earlier crossovers)
     macd_threshold = 0.0002
     # Adjusted RSI thresholds for more signals (wider range)
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 50) & (df['close'] > df['sma50']) & (df['sma20'] > df['sma50']) & (df['close'] > df['sma20']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 50) & (df['close'] < df['sma50']) & (df['sma20'] < df['sma50']) & (df['close'] < df['sma20']) & volume_short
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 50) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma200']) & (df['close'] > df['sma200']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 50) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma200']) & (df['close'] < df['sma200']) & volume_short
     # Apply cooldown: after a signal, wait 3 periods before another signal
     df['raw_signal'] = 0
     df.loc[long_condition, 'raw_signal'] = 1

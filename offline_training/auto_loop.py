@@ -9,6 +9,7 @@ AIDER_CMD = "aider"
 STRATEGY_FILE = "strategy.py"
 TRAIN_CMD = [sys.executable, "train.py"]
 RESULTS_FILE = "results.tsv"
+DETAILED_LOG_FILE = "detailed_results.txt" # NEW: The detailed log file
 
 def get_history_and_best():
     """Reads the TSV to find the ALL-TIME best score and the last 5 runs for AI context."""
@@ -22,27 +23,37 @@ def get_history_and_best():
     with open(RESULTS_FILE, "r") as f:
         lines = f.readlines()[1:]
         for line in lines:
-            parts = line.strip().split("\t")
+            # FIX: Use .split() with no arguments to split on ANY whitespace (tabs or spaces)
+            parts = line.strip().split() 
             if len(parts) >= 3:
                 try:
                     score = float(parts[1])
                     status = parts[2]
-                    # Find the highest "keep" score ever achieved
                     if status == "keep" and score > best_score:
                         best_score = score
-                    # Format history to feed to the AI
                     history.append(f"Score: {score} | Status: {status}")
                 except ValueError:
                     pass
     
-    return best_score, history[-5:] # Return only the last 5 runs to save tokens
+    return best_score, history[-5:]
 
 def get_current_commit():
     return subprocess.getoutput("git rev-parse --short HEAD").strip()
 
 def log_result(commit, score, status, desc):
+    """Safely writes the one-liner to the TSV file."""
     with open(RESULTS_FILE, "a") as f:
         f.write(f"{commit}\t{score}\t{status}\t{desc}\n")
+        f.flush()
+        os.fsync(f.fileno())
+
+def log_detailed(commit, score, status, full_output):
+    """NEW: Appends the full terminal output (including the Performance Report) to a text file."""
+    with open(DETAILED_LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(f"\n\n{'='*60}\n")
+        f.write(f"COMMIT: {commit} | SCORE: {score} | STATUS: {status.upper()}\n")
+        f.write(f"{'='*60}\n")
+        f.write(full_output.strip())
         f.flush()
         os.fsync(f.fileno())
 
@@ -55,7 +66,6 @@ def run_experiment():
     commit_before = get_current_commit()
     history_text = "\n".join(recent_history)
 
-    # The AI now gets to see its past mistakes!
     prompt = (
         f"The ALL-TIME BEST FINAL_RESULT is {best_score}.\n"
         f"Here are the results of your last few attempts (learn from them):\n{history_text}\n\n"
@@ -103,8 +113,7 @@ def run_experiment():
     else:
         score = 0.0
         status = "crash"
-        print(f"\n⚠️ Script crashed or returned invalid output. Log:")
-        print(full_output[-1000:]) 
+        print(f"\n⚠️ Script crashed or returned invalid output.")
 
     # Forward-Moving Git History Logic
     if status == "keep":
@@ -112,18 +121,12 @@ def run_experiment():
         log_result(commit_after, score, status, "Auto-experiment success")
     else:
         print(f"❌ FAILED (Score {score} <= {best_score}). Preserving history and restoring base...")
-        
-        # 1. Log the failed attempt so we have a record of what the AI tried
         log_result(commit_after, score, status, "Failed attempt logged")
-        
-        # 2. Safely restore strategy.py to the winning state WITHOUT deleting the failed commit
         subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
-        
-        # 3. Create a new commit to lock in the restoration
         subprocess.run(["git", "commit", "-m", f"Auto-revert to best state {commit_before} (Failed Score: {score})"], capture_output=True)
         
-        reverted_commit = get_current_commit()
-        log_result(reverted_commit, 0.0, "revert", f"Restored {commit_before}")
+    # NEW: Write the detailed breakdown to the text file regardless of success or failure
+    log_detailed(commit_after, score, status, full_output)
 
     print("Waiting 3 seconds before the next loop...")
     time.sleep(3)

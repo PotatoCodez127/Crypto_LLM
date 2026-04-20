@@ -151,87 +151,98 @@ def evaluate_strategy(target_period):
 
         # 1. Get Data
         df = fetch_data(target_period)
-        if df.empty: 
-            print("[!] Error: No data found.")
-            return -1.0
+        if df.empty: return -1.0
 
         # 2. Run Strategy
         df = get_signals(df)
-        
-        # Ensure signal column exists and handle NaNs
-        if 'signal' not in df.columns:
-            print("[!] Error: strategy.py must return a dataframe with a 'signal' column.")
-            return -1.0
-            
+        if 'signal' not in df.columns: return -1.0
         df['signal'] = np.sign(df['signal'].fillna(0))
         
-        # 3. Calculate Returns
-        # We use log returns for mathematical accuracy across 3y periods
+        # 3. Returns & Fees
         df['market_log_ret'] = np.log(df['close'] / df['close'].shift(1))
         df['strat_ret'] = df['signal'].shift(1) * df['market_log_ret']
-
-        # 4. Apply Fees (FEE is defined in your CONFIG)
-        # Every time signal changes, we pay a fee
-        trades = df['signal'].diff().abs().fillna(0)
-        df['strat_ret'] -= (trades * FEE)
-        
+        trades_series = df['signal'].diff().abs().fillna(0)
+        df['strat_ret'] -= (trades_series * FEE)
         df = df.dropna()
 
-        # 5. Calculate Metrics
+        # 4. Metrics Calculation
         df['equity'] = np.exp(df['strat_ret'].cumsum())
         df['peak'] = df['equity'].cummax()
         df['drawdown'] = (df['equity'] - df['peak']) / df['peak']
         
         max_dd = df['drawdown'].min()
         total_return = df['equity'].iloc[-1] - 1
-        
         returns = df['strat_ret']
+        
+        # Sharpe Calculation
         ann_factor = np.sqrt(TIMEFRAME_MULTIPLIERS.get(TIMEFRAME, 8760))
         std = returns.std()
-        sharpe = (returns.mean() / std) * ann_factor if std > 1e-8 else 0
+        sharpe = (returns.mean() / std) * ann_factor if std > 1e-8 else -1.0
         
-        win_rate = (returns > 0).mean() if len(returns) > 0 else 0
-        gross_profit = returns[returns > 0].sum()
-        gross_loss = abs(returns[returns < 0].sum())
-        profit_factor = gross_profit / gross_loss if gross_loss != 0 else 0
+        # Trade Analysis
+        trade_count = int(trades_series.sum() / 2)
+        win_rate = (returns > 0).mean() if trade_count > 0 else 0
         
-        # Count trades (Buy and Sell)
-        trade_count = int(trades.sum() / 2)
+        # RR Calculation (Avg Win / Avg Loss)
+        avg_win = returns[returns > 0].mean() if (returns > 0).any() else 0
+        avg_loss = abs(returns[returns < 0].mean()) if (returns < 0).any() else 1e-8
+        rr_ratio = avg_win / avg_loss
 
-        # 6. High-Resolution Scoring Logic
-        # Raw score based on performance metrics
-        # Weights: Sharpe (35%), Return (25%), Profit Factor (20%), Drawdown Safety (20%)
-        raw_score = (sharpe * 0.35 + total_return * 0.25 + profit_factor * 0.20 + (1 + max_dd) * 0.20)
+        # --- SENIOR LOGIC: EXPECTANCY & CONSISTENCY ---
+        # Expectancy: (Win Rate * Avg Win) - (Loss Rate * Avg Loss)
+        # Tells us if the strategy is mathematically sound after fees
+        expectancy = (win_rate * avg_win) - ((1 - win_rate) * avg_loss)
 
-        # 7. Apply Penalties (The "Researcher Feedback" System)
-        penalty = 1.0
+        # Yearly Consistency: Check for any years where the strategy lost money
+        yearly_rets = df.groupby(df.index.year)['strat_ret'].sum()
+        losing_years = int((yearly_rets < 0).sum())
+
+        # 5. FIXED MATH: Raw Score (Including Expectancy)
+        # We increase the weight of Sharpe and Expectancy to prioritize quality over raw luck
+        raw_score = (sharpe * 0.3) + (total_return * 0.2) + (expectancy * 100 * 0.3) + ((1 + max_dd) * 0.2)
+
+        # 6. REWARDS vs PENALTIES Logic (Additive)
+        adjustment = 0.0
         
-        # Penalty for low activity (Statistical Significance)
+        # PENALTIES
         if trade_count < MIN_TRADES:
-            trade_ratio = trade_count / MIN_TRADES
-            penalty *= trade_ratio 
-            print(f"[!] Penalty applied: Low trade count ({trade_count}/{MIN_TRADES})")
-
-        # Penalty for dangerous risk (Account Safety)
+            adjustment -= 2.0  
         if max_dd < -0.25:
-            # Drop the score significantly if we breach the 25% DD limit
-            dd_penalty = 0.5 if max_dd >= -0.50 else 0.1
-            penalty *= dd_penalty
-            print(f"[!] Penalty applied: Excessive Drawdown ({max_dd:.2%})")
+            adjustment -= 1.5  
+        if total_return < 0:
+            adjustment -= 1.0  
+        if win_rate < 0.40:
+            adjustment -= 0.5  
+        if expectancy < FEE:
+            adjustment -= 1.0 # Strategy is being eaten alive by fees
+        if losing_years > 0:
+            adjustment -= (losing_years * 0.5) # Penalty for every losing year
 
-        final_score = raw_score * penalty
+        # REWARDS
+        if max_dd > -0.15 and trade_count >= MIN_TRADES:
+            adjustment += 0.5  
+        if win_rate > 0.60:
+            adjustment += 0.5  
+        if total_return > 0.50:
+            adjustment += 1.0  
+        if expectancy > (FEE * 3):
+            adjustment += 1.0 # High quality "Alpha"
+
+        final_score = raw_score + adjustment
 
         print(f"""
             --- PERFORMANCE REPORT [{target_period}] ---
             Sharpe Ratio  : {sharpe:.2f}
             Total Return  : {total_return:.2%}
             Max Drawdown  : {max_dd:.2%}
-            Profit Factor : {profit_factor:.2f}
             Win Rate      : {win_rate:.2%}
+            Risk:Reward   : {rr_ratio:.2f}
+            Expectancy    : {expectancy:.4f}
+            Losing Years  : {losing_years}
             Total Trades  : {trade_count}
             ---------------------------------
             RAW SCORE     : {raw_score:.4f}
-            PENALTY MULTI : {penalty:.2f}
+            ADJUSTMENT    : {adjustment:+.2f}
             FINAL SCORE   : {final_score:.4f}
             """)
             
@@ -241,8 +252,8 @@ def evaluate_strategy(target_period):
         print(f"[!] Critical Judge Error: {e}")
         import traceback
         traceback.print_exc()
-        return -1.0
-
+        return -10.0
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--period', type=str, default='1y', choices=['3m', '1y', '3y'])

@@ -1,0 +1,76 @@
+
+
+============================================================
+COMMIT: 0b0d6e6 | SCORE: -0.4039832877097062 | STATUS: DISCARD
+============================================================
+[*] Found local data: 8780 candles in C:/Users/jeand/Desktop/Crypto_LLM/data/btc_1h_1y.csv
+[*] Resuming download for 1y...
+[!] Penalty applied: Excessive Drawdown (-29.34%)
+
+            --- PERFORMANCE REPORT [1y] ---
+            Sharpe Ratio  : -2.93
+            Total Return  : -28.45%
+            Max Drawdown  : -29.34%
+            Profit Factor : 0.73
+            Win Rate      : 4.04%
+            Total Trades  : 52
+            ---------------------------------
+            RAW SCORE     : -0.8080
+            PENALTY MULTI : 0.50
+            FINAL SCORE   : -0.4040
+            
+FINAL_RESULT:-0.4039832877097062
+
+
+Progress (1y):   0%|          | 0/1 [00:00<?, ?it/s]
+Progress (1y):   0%|          | 0/1 [00:19<?, ?it/s]
+
+============================================================
+COMMIT: b7e2515 | SCORE: -0.13845853578049455 | STATUS: DISCARD
+============================================================
+[*] Found local data: 8780 candles in C:/Users/jeand/Desktop/Crypto_LLM/data/btc_1h_1y.csv
+[*] Resuming download for 1y...
+[!] Penalty applied: Excessive Drawdown (-80.72%)
+
+            --- PERFORMANCE REPORT [1y] ---
+            Sharpe Ratio  : -4.01
+            Total Return  : -77.37%
+            Max Drawdown  : -80.72%
+            Profit Factor : 0.86
+            Win Rate      : 35.49%
+            Total Trades  : 436
+            ---------------------------------
+            RAW SCORE     : -1.3846
+            PENALTY MULTI : 0.10
+            FINAL SCORE   : -0.1385
+            
+FINAL_RESULT:-0.13845853578049455
+
+
+Progress (1y):   0%|          | 0/1 [00:00<?, ?it/s]
+Progress (1y):   0%|          | 0/1 [00:17<?, ?it/s]
+
+============================================================
+COMMIT: 14c49f1 | SCORE: -0.10948138766643081 | STATUS: KEEP
+============================================================
+[*] Found local data: 8780 candles in C:/Users/jeand/Desktop/Crypto_LLM/data/btc_1h_1y.csv
+[*] Resuming download for 1y...
+[!] Penalty applied: Excessive Drawdown (-71.34%)
+
+            --- PERFORMANCE REPORT [1y] ---
+            Sharpe Ratio  : -3.31
+            Total Return  : -66.91%
+            Max Drawdown  : -71.34%
+            Profit Factor : 0.88
+            Win Rate      : 29.80%
+            Total Trades  : 364
+            ---------------------------------
+            RAW SCORE     : -1.0948
+            PENALTY MULTI : 0.10
+            FINAL SCORE   : -0.1095
+            
+FINAL_RESULT:-0.10948138766643081
+
+
+Progress (1y):   0%|          | 0/1 [00:00<?, ?it/s]
+Progress (1y):   0%|          | 0/1 [00:19<?, ?it/s]

@@ -4,10 +4,10 @@ import numpy as np
 def get_signals(df):
     """
     MACD + RSI strategy with adaptive ATR stop-loss.
-    - Long when MACD histogram > 0.0005, RSI > 55, close > SMA200, and SMA50 > SMA200
-    - Short when MACD histogram < -0.0005, RSI < 45, close < SMA200, and SMA50 < SMA200
-    - Stop-loss with dynamic ATR multiplier (1.0-3.0) based on recent volatility.
-    Experiment3: adaptive ATR multiplier.
+    - Long when MACD histogram > 0.0002, RSI > 60, close > SMA100, and SMA50 > SMA100
+    - Short when MACD histogram < -0.0002, RSI < 40, close < SMA100, and SMA50 < SMA100
+    - Stop-loss with dynamic ATR multiplier (0.8-2.5) based on recent volatility.
+    Experiment4: tighter thresholds, faster trend, no volume filter.
     """
     # 1. Calculate MACD
     exp1 = df['close'].ewm(span=12, adjust=False).mean()
@@ -32,38 +32,38 @@ def get_signals(df):
     df['atr'] = tr.rolling(window=14).mean()
     df['atr'] = df['atr'].bfill().fillna(0)
 
-    # SMA for trend filter
-    df['sma200'] = df['close'].rolling(window=200).mean()
-    df['sma200'] = df['sma200'].bfill().fillna(df['close'])
+    # SMA for trend filter (faster windows)
+    df['sma100'] = df['close'].rolling(window=100).mean()
+    df['sma100'] = df['sma100'].bfill().fillna(df['close'])
     # Momentum filter
     df['sma50'] = df['close'].rolling(window=50).mean()
     df['sma50'] = df['sma50'].bfill().fillna(df['close'])
-    # Volume filter
+    # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
     df['volume_ma20'] = df['volume_ma20'].bfill().fillna(df['volume'])
 
     # Volatility for adaptive stop
     df['returns'] = df['close'].pct_change()
     df['volatility'] = df['returns'].rolling(window=20).std().bfill().fillna(0)
-    df['vol_median'] = df['volatility'].rolling(window=200).median().bfill().fillna(df['volatility'])
+    df['vol_median'] = df['volatility'].rolling(window=100).median().bfill().fillna(df['volatility'])
 
-    # 2. Generate raw signals with stricter conditions
+    # 2. Generate raw signals with adjusted conditions
     df['raw_signal'] = 0
-    # Volume filter: require above-average volume for long, below-average for short
-    volume_long = df['volume'] > df['volume_ma20'] * -1.2  # more flexible
-    volume_short = df['volume'] < df['volume_ma20'] * 0.8
-    # Stronger MACD threshold
-    macd_threshold = 0.002
-    # RSI thresholds adjusted
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 65) & (df['close'] > df['sma200']) & (df['sma50'] > df['sma200']) & (df['close'] > df['sma50']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 35) & (df['close'] < df['sma200']) & (df['sma50'] < df['sma200']) & (df['close'] < df['sma50']) & volume_short
-    # Apply cooldown: after a signal, wait 5 periods before another signal
+    # No volume filter
+    volume_long = True
+    volume_short = True
+    # Tighter MACD threshold
+    macd_threshold = 0.0002
+    # Moderate RSI thresholds
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 60) & (df['close'] > df['sma100']) & (df['sma50'] > df['sma100']) & (df['close'] > df['sma50']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 40) & (df['close'] < df['sma100']) & (df['sma50'] < df['sma100']) & (df['close'] < df['sma50']) & volume_short
+    # Apply cooldown: after a signal, wait 3 periods before another signal
     df['raw_signal'] = 0
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
     
     # Cooldown implementation
-    cooldown_periods = 5
+    cooldown_periods = 3
     last_signal_idx = -cooldown_periods
     for i in range(len(df)):
         if df['raw_signal'].iloc[i] != 0:
@@ -84,12 +84,12 @@ def get_signals(df):
         atr = df['atr'].iloc[i]
         vol = df['volatility'].iloc[i]
         vol_med = df['vol_median'].iloc[i]
-        # Dynamic ATR multiplier based on volatility - more conservative
+        # Dynamic ATR multiplier based on volatility - more aggressive range
         if vol_med > 0:
-            atr_multiplier = 1.2 * (vol / vol_med)
-            atr_multiplier = max(1.0, min(2.0, atr_multiplier))
+            atr_multiplier = 0.8 * (vol / vol_med)
+            atr_multiplier = max(0.8, min(2.5, atr_multiplier))
         else:
-            atr_multiplier = 1.2
+            atr_multiplier = 1.0
 
         if position == 0:
             if raw == 1:

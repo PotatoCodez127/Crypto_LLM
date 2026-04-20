@@ -50,34 +50,28 @@ def get_signals(df):
     df['volatility'] = df['returns'].rolling(window=20).std().bfill().fillna(0)
     df['vol_median'] = df['volatility'].rolling(window=100).median().bfill().fillna(df['volatility'])
 
-    # 2. Generate raw signals with stricter conditions
+    # 2. Generate raw signals with relaxed conditions
     df['raw_signal'] = 0
     # No volume filter
     volume_long = True
     volume_short = True
-    # Higher MACD threshold to reduce false signals
-    macd_threshold = 0.0005
-    # Stricter RSI thresholds to capture stronger momentum
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
-    # Apply cooldown period of 3 bars after a signal to avoid overtrading
-    cooldown = 3
-    last_signal_idx = -cooldown
+    # Increased MACD threshold for stronger momentum
+    macd_threshold = 0.001
+    # Relaxed RSI thresholds to increase signal frequency
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 52) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma50']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 48) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma50']) & volume_short
+    # No cooldown period to allow consecutive signals
     for i in range(len(df)):
-        if i < last_signal_idx + cooldown:
-            continue
         if long_condition.iloc[i]:
             df.iloc[i, df.columns.get_loc('raw_signal')] = 1
-            last_signal_idx = i
         elif short_condition.iloc[i]:
             df.iloc[i, df.columns.get_loc('raw_signal')] = -1
-            last_signal_idx = i
 
-    # 3. Apply trailing stop-loss with adaptive ATR multiplier
+    # 3. Apply trailing stop-loss with take-profit
     df['signal'] = 0
     position = 0  # 0: flat, 1: long, -1: short
     stop_price = 0.0
-    # atr_multiplier will be set dynamically per candle
+    take_profit_price = 0.0
 
     for i in range(len(df)):
         raw = df['raw_signal'].iloc[i]
@@ -85,21 +79,23 @@ def get_signals(df):
         atr = df['atr'].iloc[i]
         vol = df['volatility'].iloc[i]
         vol_med = df['vol_median'].iloc[i]
-        # Dynamic ATR multiplier based on volatility - wider stops to allow trades to breathe
+        # Dynamic ATR multiplier narrower to cut losses quicker
         if vol_med > 0:
-            atr_multiplier = 2.0 * (vol / vol_med)
-            atr_multiplier = max(1.5, min(3.0, atr_multiplier))
+            atr_multiplier = 1.5 * (vol / vol_med)
+            atr_multiplier = max(1.2, min(2.0, atr_multiplier))
         else:
-            atr_multiplier = 2.0
+            atr_multiplier = 1.5
 
         if position == 0:
             if raw == 1:
                 position = 1
                 stop_price = close - atr_multiplier * atr
+                take_profit_price = close + 2.0 * atr_multiplier * atr
                 df.iloc[i, df.columns.get_loc('signal')] = 1
             elif raw == -1:
                 position = -1
                 stop_price = close + atr_multiplier * atr
+                take_profit_price = close - 2.0 * atr_multiplier * atr
                 df.iloc[i, df.columns.get_loc('signal')] = -1
             else:
                 df.iloc[i, df.columns.get_loc('signal')] = 0
@@ -108,8 +104,8 @@ def get_signals(df):
             new_stop = close - atr_multiplier * atr
             if new_stop > stop_price:
                 stop_price = new_stop
-            # Check stop loss
-            if close <= stop_price:
+            # Check stop loss or take profit
+            if close <= stop_price or close >= take_profit_price:
                 position = 0
                 df.iloc[i, df.columns.get_loc('signal')] = 0
             else:
@@ -118,7 +114,7 @@ def get_signals(df):
             new_stop = close + atr_multiplier * atr
             if new_stop < stop_price:
                 stop_price = new_stop
-            if close >= stop_price:
+            if close >= stop_price or close <= take_profit_price:
                 position = 0
                 df.iloc[i, df.columns.get_loc('signal')] = 0
             else:

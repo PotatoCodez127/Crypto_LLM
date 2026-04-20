@@ -41,11 +41,11 @@ def get_signals(df):
     df['raw_signal'] = 0
     # Require stronger extremes and volatility significantly above median
     vol_ratio = df['volatility_20'] / (df['vol_median'] + 1e-8)
-    vol_strong = vol_ratio > 1.3  # volatility at least 30% above median
-    long_condition = (df['cvd_robust'] < -2.0) & (df['zscore_norm'] < -1.5) & vol_strong
-    short_condition = (df['cvd_robust'] > 2.0) & (df['zscore_norm'] > 1.5) & vol_strong
+    vol_strong = vol_ratio > 1.1  # volatility at least 10% above median
+    long_condition = (df['cvd_robust'] < -1.5) & (df['zscore_norm'] < -1.2) & vol_strong
+    short_condition = (df['cvd_robust'] > 1.5) & (df['zscore_norm'] > 1.2) & vol_strong
 
-    cooldown = 20
+    cooldown = 10
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -79,9 +79,9 @@ def get_signals(df):
         if vol_med > 0:
             # Wider range, more adaptive to volatility regimes
             vol_ratio_local = vol / vol_med
-            # Use sigmoid-like scaling to keep multiplier between 1.8 and 3.5
-            atr_multiplier = 1.8 + (1.7 / (1.0 + np.exp(-vol_ratio_local + 1.0)))
-            atr_multiplier = max(1.8, min(3.5, atr_multiplier))
+            # Use sigmoid-like scaling to keep multiplier between 1.5 and 4.0
+            atr_multiplier = 1.5 + (2.5 / (1.0 + np.exp(-vol_ratio_local + 1.0)))
+            atr_multiplier = max(1.5, min(4.0, atr_multiplier))
         else:
             atr_multiplier = 2.5
 
@@ -102,7 +102,7 @@ def get_signals(df):
             # Trailing stop logic with a floor based on entry
             new_stop = close - atr_multiplier * atr
             # Ensure stop never moves below entry - 2.0*ATR (max loss protection)
-            max_loss_stop = entry_price - 2.0 * atr
+            max_loss_stop = entry_price - 2.5 * atr
             if new_stop > stop_price and new_stop > max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop > stop_price:
@@ -114,7 +114,7 @@ def get_signals(df):
                 df.iloc[i, df.columns.get_loc('signal')] = 1
         elif position == -1:
             new_stop = close + atr_multiplier * atr
-            max_loss_stop = entry_price + 2.0 * atr
+            max_loss_stop = entry_price + 2.5 * atr
             if new_stop < stop_price and new_stop < max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop < stop_price:

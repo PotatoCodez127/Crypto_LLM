@@ -33,3 +33,7 @@ a79f195	-0.09813016828854891	discard	Failed attempt logged
 40b3147	0.0	revert	Restored d2f8f04
 d23da1e	-0.11311615660799655	discard	Failed attempt logged
 35b2475	0.0	revert	Restored 40b3147
+350b0c8	-0.09157772577253186	discard	Failed attempt logged
+00dc7c6	0.0	revert	Restored 35b2475
+969afa3	-0.08748276065290696	discard	Failed attempt logged
+6c0a732	0.0	revert	Restored 00dc7c6

@@ -32,12 +32,12 @@ def get_signals(df):
     df['cvd_robust'] = (df['cvd_20'] - df['cvd_20'].rolling(window=100).median()) / (df['cvd_iqr'] + 1e-8)
     
     df['raw_signal'] = 0
-    # Adjusted thresholds: slightly relaxed for more signals, volatility filter less strict
-    vol_above_threshold = df['volatility_20'] > (0.8 * df['vol_median'])
-    long_condition = (df['cvd_robust'] < -1.2) & (df['z_score_50'] < -1.0) & vol_above_threshold
-    short_condition = (df['cvd_robust'] > 1.2) & (df['z_score_50'] > 1.0) & vol_above_threshold
+    # Require stronger extremes and volatility above median
+    vol_above_median = df['volatility_20'] > df['vol_median']
+    long_condition = (df['cvd_robust'] < -1.5) & (df['z_score_50'] < -1.2) & vol_above_median
+    short_condition = (df['cvd_robust'] > 1.5) & (df['z_score_50'] > 1.2) & vol_above_median
 
-    cooldown = 18
+    cooldown = 12
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -69,16 +69,11 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            # Narrower range, less aggressive adaptation
+            # Wider range, more adaptive to volatility regimes
             vol_ratio = vol / vol_med
-            # Linear scaling between 1.8 and 3.5, centered around vol_ratio = 1.0
-            if vol_ratio <= 0.5:
-                atr_multiplier = 1.8
-            elif vol_ratio >= 2.0:
-                atr_multiplier = 3.5
-            else:
-                # linear interpolation
-                atr_multiplier = 1.8 + (vol_ratio - 0.5) * (3.5 - 1.8) / (2.0 - 0.5)
+            # Use sigmoid-like scaling to keep multiplier between 1.5 and 4.0
+            atr_multiplier = 1.5 + (2.5 / (1.0 + np.exp(-vol_ratio + 1.0)))
+            atr_multiplier = max(1.5, min(4.0, atr_multiplier))
         else:
             atr_multiplier = 2.5
 
@@ -98,8 +93,8 @@ def get_signals(df):
         elif position == 1:
             # Trailing stop logic with a floor based on entry
             new_stop = close - atr_multiplier * atr
-            # Ensure stop never moves below entry - 2.0*ATR (max loss protection)
-            max_loss_stop = entry_price - 2.0 * atr
+            # Ensure stop never moves below entry - 1.5*ATR (max loss protection)
+            max_loss_stop = entry_price - 1.5 * atr
             if new_stop > stop_price and new_stop > max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop > stop_price:
@@ -111,7 +106,7 @@ def get_signals(df):
                 df.iloc[i, df.columns.get_loc('signal')] = 1
         elif position == -1:
             new_stop = close + atr_multiplier * atr
-            max_loss_stop = entry_price + 2.0 * atr
+            max_loss_stop = entry_price + 1.5 * atr
             if new_stop < stop_price and new_stop < max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop < stop_price:

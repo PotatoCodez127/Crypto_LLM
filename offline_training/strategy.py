@@ -48,21 +48,21 @@ def get_signals(df):
     # Volatility for adaptive stop
     df['returns'] = df['close'].pct_change()
     df['volatility'] = df['returns'].rolling(window=20).std().bfill().fillna(0)
-    df['vol_median'] = df['volatility'].rolling(window=100).median().bfill().fillna(df['volatility'])
+    df['vol_median'] = df['volatility'].rolling(window=50).median().bfill().fillna(df['volatility'])
 
-    # 2. Generate raw signals with stricter conditions
+    # 2. Generate raw signals with revised conditions
     df['raw_signal'] = 0
     # No volume filter
     volume_long = True
     volume_short = True
-    # Higher MACD threshold to reduce false signals
-    macd_threshold = 0.0005
-    # Stricter RSI thresholds to capture stronger momentum
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 55) & (df['close'] > df['sma20']) & (df['sma20'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 45) & (df['close'] < df['sma20']) & (df['sma20'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
-    # Apply cooldown period of 3 bars after a signal to avoid overtrading
-    cooldown = 3
-    last_signal_idx = -cooldown
+    # Increased MACD threshold to filter out weak signals
+    macd_threshold = 0.001
+    # More extreme RSI thresholds to capture stronger momentum
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 60) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 40) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
+    # No cooldown period to allow immediate re-entry
+    cooldown = 0
+    last_signal_idx = -1
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
             continue
@@ -85,12 +85,12 @@ def get_signals(df):
         atr = df['atr'].iloc[i]
         vol = df['volatility'].iloc[i]
         vol_med = df['vol_median'].iloc[i]
-        # Dynamic ATR multiplier based on volatility - wider stops to allow trades to breathe
+        # Dynamic ATR multiplier based on volatility - tighter stops to reduce losses
         if vol_med > 0:
-            atr_multiplier = 2.0 * (vol / vol_med)
-            atr_multiplier = max(1.5, min(3.0, atr_multiplier))
+            atr_multiplier = 1.5 * (vol / vol_med)
+            atr_multiplier = max(1.2, min(2.0, atr_multiplier))
         else:
-            atr_multiplier = 2.0
+            atr_multiplier = 1.5
 
         if position == 0:
             if raw == 1:

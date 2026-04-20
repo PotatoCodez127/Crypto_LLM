@@ -26,14 +26,16 @@ def get_signals(df):
 
     # --- EXECUTION LOGIC ---
     # Normalized CVD
-    df['cvd_20_std'] = df['cvd_20'].rolling(window=50).std()
+    df['cvd_20_std'] = df['cvd_20'].rolling(window=30).std()
     df['cvd_z'] = df['cvd_20'] / (df['cvd_20_std'] + 1e-8)
     
     df['raw_signal'] = 0
-    long_condition = (df['cvd_z'] < -0.8) & (df['z_score_50'] < -1.2)
-    short_condition = (df['cvd_z'] > 0.8) & (df['z_score_50'] > 1.2)
+    # Add volatility filter to avoid low-volatility chop
+    vol_filter = df['volatility_20'] > df['vol_median'] * 0.7
+    long_condition = (df['cvd_z'] < -1.0) & (df['z_score_50'] < -0.8) & vol_filter
+    short_condition = (df['cvd_z'] > 1.0) & (df['z_score_50'] > 0.8) & vol_filter
 
-    cooldown = 5
+    cooldown = 8
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -64,10 +66,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            atr_multiplier = 1.8 * (vol / vol_med)
-            atr_multiplier = max(1.6, min(2.5, atr_multiplier))
+            atr_multiplier = 1.5 * (vol / vol_med)
+            atr_multiplier = max(1.3, min(2.0, atr_multiplier))
         else:
-            atr_multiplier = 1.8
+            atr_multiplier = 1.5
 
         if position == 0:
             if raw == 1:

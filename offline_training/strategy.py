@@ -4,10 +4,10 @@ import numpy as np
 def get_signals(df):
     """
     MACD + RSI strategy with adaptive ATR stop-loss.
-    - Long when MACD histogram > 0.0002, RSI > 60, close > SMA100, and SMA50 > SMA100
-    - Short when MACD histogram < -0.0002, RSI < 40, close < SMA100, and SMA50 < SMA100
-    - Stop-loss with dynamic ATR multiplier (0.8-2.5) based on recent volatility.
-    Experiment4: tighter thresholds, faster trend, no volume filter.
+    - Long when MACD histogram > 0.0005, RSI > 60, close > SMA50, and SMA50 > SMA100
+    - Short when MACD histogram < -0.0005, RSI < 40, close < SMA50, and SMA50 < SMA100
+    - Stop-loss with dynamic ATR multiplier (1.2-3.0) based on recent volatility.
+    No cooldown period, wider stops to improve performance.
     """
     # 1. Calculate MACD
     exp1 = df['close'].ewm(span=12, adjust=False).mean()
@@ -32,12 +32,12 @@ def get_signals(df):
     df['atr'] = tr.rolling(window=14).mean()
     df['atr'] = df['atr'].bfill().fillna(0)
 
-    # SMA for trend filter (use longer windows for stronger trend confirmation)
+    # SMA for trend filter (use 50 and 100 for faster trend confirmation)
     df['sma50'] = df['close'].rolling(window=50).mean()
     df['sma50'] = df['sma50'].bfill().fillna(df['close'])
-    # Slower momentum filter (200-day SMA for major trend)
-    df['sma200'] = df['close'].rolling(window=200).mean()
-    df['sma200'] = df['sma200'].bfill().fillna(df['close'])
+    # 100-day SMA for intermediate trend
+    df['sma100'] = df['close'].rolling(window=100).mean()
+    df['sma100'] = df['sma100'].bfill().fillna(df['close'])
     # Volume filter removed
     df['volume_ma20'] = df['volume'].rolling(window=20).mean()
     df['volume_ma20'] = df['volume_ma20'].bfill().fillna(df['volume'])
@@ -52,25 +52,14 @@ def get_signals(df):
     # No volume filter
     volume_long = True
     volume_short = True
-    # More sensitive MACD threshold (lower to capture earlier crossovers)
-    macd_threshold = 0.0002
-    # Adjusted RSI thresholds for more signals (wider range)
-    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 50) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma200']) & (df['close'] > df['sma200']) & volume_long
-    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 50) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma200']) & (df['close'] < df['sma200']) & volume_short
-    # Apply cooldown: after a signal, wait 3 periods before another signal
-    df['raw_signal'] = 0
+    # Increased MACD threshold to filter noise
+    macd_threshold = 0.0005
+    # Traditional RSI thresholds for overbought/oversold
+    long_condition = (df['macd_hist'] > macd_threshold) & (df['rsi'] > 60) & (df['close'] > df['sma50']) & (df['sma50'] > df['sma100']) & volume_long
+    short_condition = (df['macd_hist'] < -macd_threshold) & (df['rsi'] < 40) & (df['close'] < df['sma50']) & (df['sma50'] < df['sma100']) & volume_short
+    # No cooldown period to allow consecutive signals
     df.loc[long_condition, 'raw_signal'] = 1
     df.loc[short_condition, 'raw_signal'] = -1
-    
-    # Cooldown implementation
-    cooldown_periods = 3
-    last_signal_idx = -cooldown_periods
-    for i in range(len(df)):
-        if df['raw_signal'].iloc[i] != 0:
-            if i - last_signal_idx < cooldown_periods:
-                df.iloc[i, df.columns.get_loc('raw_signal')] = 0
-            else:
-                last_signal_idx = i
 
     # 3. Apply trailing stop-loss with adaptive ATR multiplier
     df['signal'] = 0
@@ -84,12 +73,12 @@ def get_signals(df):
         atr = df['atr'].iloc[i]
         vol = df['volatility'].iloc[i]
         vol_med = df['vol_median'].iloc[i]
-        # Dynamic ATR multiplier based on volatility - less aggressive to avoid premature stops
+        # Dynamic ATR multiplier based on volatility - wider stops to avoid premature exits
         if vol_med > 0:
-            atr_multiplier = 0.8 * (vol / vol_med)
-            atr_multiplier = max(0.8, min(2.0, atr_multiplier))
+            atr_multiplier = 1.5 * (vol / vol_med)
+            atr_multiplier = max(1.2, min(3.0, atr_multiplier))
         else:
-            atr_multiplier = 1.2
+            atr_multiplier = 1.8
 
         if position == 0:
             if raw == 1:

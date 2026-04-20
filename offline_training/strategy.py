@@ -78,10 +78,10 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            atr_multiplier = 1.8 * (vol / vol_med)
-            atr_multiplier = max(1.2, min(2.5, atr_multiplier))
+            atr_multiplier = 1.5 * (vol / vol_med)
+            atr_multiplier = max(1.0, min(2.0, atr_multiplier))
         else:
-            atr_multiplier = 1.8
+            atr_multiplier = 1.5
 
         if position == 0:
             if raw == 1:

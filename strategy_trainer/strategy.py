@@ -41,7 +41,7 @@ def get_signals(df):
     df['raw_signal'] = 0
     # Require stronger extremes and volatility significantly above median
     vol_ratio = df['volatility_20'] / (df['vol_median'] + 1e-8)
-    vol_strong = vol_ratio > 1.05  # volatility at least 5% above median (more opportunities)
+    vol_strong = vol_ratio > 1.1  # volatility at least 10% above median (more selective)
     
     # Price confirmation: close below recent low for long, above recent high for short
     df['low_20'] = df['low'].rolling(window=20, min_periods=1).min()
@@ -49,21 +49,21 @@ def get_signals(df):
     price_confirm_long = df['close'] < df['low_20'].shift(1)
     price_confirm_short = df['close'] > df['high_20'].shift(1)
     
-    # Adjusted thresholds for better signal frequency
-    long_condition = (df['cvd_robust'] < -1.2) & (df['zscore_norm'] < -1.5) & vol_strong & price_confirm_long
-    short_condition = (df['cvd_robust'] > 1.2) & (df['zscore_norm'] > 1.5) & vol_strong & price_confirm_short
+    # Tighter thresholds to improve signal quality
+    long_condition = (df['cvd_robust'] < -1.3) & (df['zscore_norm'] < -1.7) & vol_strong & price_confirm_long
+    short_condition = (df['cvd_robust'] > 1.3) & (df['zscore_norm'] > 1.7) & vol_strong & price_confirm_short
 
     # Adaptive cooldown based on volatility regime
     # Higher volatility -> shorter cooldown (more responsive)
-    base_cooldown = 15
+    base_cooldown = 20
     adaptive_cooldown = base_cooldown
     last_signal_idx = -adaptive_cooldown
     for i in range(len(df)):
         if i < last_signal_idx + adaptive_cooldown:
             continue
         vol_ratio_i = vol_ratio.iloc[i] if i < len(vol_ratio) else 1.0
-        # Cooldown between 8 and 25 periods
-        adaptive_cooldown = max(8, min(25, int(base_cooldown / (vol_ratio_i + 0.5))))
+        # Cooldown between 10 and 30 periods
+        adaptive_cooldown = max(10, min(30, int(base_cooldown / (vol_ratio_i + 0.5))))
         if long_condition.iloc[i]:
             df.iloc[i, df.columns.get_loc('raw_signal')] = 1
             last_signal_idx = i
@@ -91,13 +91,13 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            # Less aggressive scaling to reduce over-tight stops
+            # More aggressive scaling in high volatility regimes
             vol_ratio_local = vol / vol_med
-            # Linear response: multiplier from 1.0 to 3.0
-            atr_multiplier = 1.0 + 2.0 * min(1.0, max(0.0, (vol_ratio_local - 1.0) / 2.0))
-            atr_multiplier = max(1.0, min(3.0, atr_multiplier))
+            # Exponential response: multiplier from 1.2 to 4.0
+            atr_multiplier = 1.2 + (2.8 * (1.0 - np.exp(-vol_ratio_local)))
+            atr_multiplier = max(1.2, min(4.0, atr_multiplier))
         else:
-            atr_multiplier = 2.0
+            atr_multiplier = 2.5
 
         if position == 0:
             if raw == 1:

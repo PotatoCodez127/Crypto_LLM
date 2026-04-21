@@ -569,3 +569,16 @@ TEST SET (Last 40%):
 Variance Penalty: -0.0086
 FINAL_RESULT:0.010443153677675149
 FINAL_RESULT:0.010443153677675149
+
+============================================================
+COMMIT: f9f6760 | SCORE: 0.0 | STATUS: CRASH
+============================================================
+Traceback (most recent call last):
+  File "C:\Users\jeand\Desktop\Crypto_LLM\strategy_trainer\train.py", line 9, in <module>
+    run_walk_forward_optimization()
+  File "C:\Users\jeand\Desktop\Crypto_LLM\strategy_trainer\prepare.py", line 66, in run_walk_forward_optimization
+    print("\u2696\ufe0f THE JUDGE: Initiating Walk-Forward Optimization...")
+  File "C:\Users\jeand\AppData\Local\Programs\Python\Python311\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 0-1: character maps to <undefined>

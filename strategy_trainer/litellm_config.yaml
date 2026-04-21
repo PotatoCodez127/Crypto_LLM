@@ -19,4 +19,7 @@ model_list:
       api_key: os.environ/KEY_3
 
 router_settings:
-  routing_strategy: least-busy
+  routing_strategy: simple-shuffle # Shuffles requests across all healthy keys
+  num_retries: 3                   # If a key hits a quota or 500 error, try the next one
+  allowed_fails: 1                 # How many times a key can fail before being temporarily removed from the pool
+  cooldown_time: 300

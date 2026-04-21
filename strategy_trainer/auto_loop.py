@@ -83,8 +83,9 @@ def run_experiment():
         AIDER_CMD,
         "--message", prompt,
         "--yes",
-        "--no-show-release-notes", # <-- ADD THIS: Blocks the browser popup for release notes
-        "--no-check-update",       # <-- ADD THIS: Stops Aider from pinging its servers for updatesSTRATEGY_FILE
+        "--no-show-release-notes",
+        "--no-check-update",
+        "--no-show-model-warnings",
     # ], capture_output=True, text=True)
     ])
 

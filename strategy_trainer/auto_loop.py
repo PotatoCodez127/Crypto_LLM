@@ -89,9 +89,9 @@ def run_experiment():
     # ], capture_output=True, text=True)
     ])
 
-    print("\n=======================STROUT=======================")
-    print(aider_process.stdout)
-    print("=======================ENDOUT=======================\n")
+    # print("\n=======================STROUT=======================")
+    # print(aider_process.stdout)
+    # print("=======================ENDOUT=======================\n")
 
     if aider_process.returncode != 0:
         print(f"⚠️ Aider encountered an API error. Waiting 30 seconds before retrying...")
@@ -107,8 +107,18 @@ def run_experiment():
         return
 
     print("\n📈 Running the backtest...")
-    result = subprocess.run(TRAIN_CMD, capture_output=True, text=True)
-    full_output = result.stdout + "\n" + result.stderr
+    result = subprocess.run(
+        TRAIN_CMD, 
+        capture_output=True, 
+        text=True, 
+        encoding="utf-8", 
+        errors="replace"
+    )
+    
+    # Safely handle potential None values
+    stdout_text = result.stdout if result.stdout is not None else ""
+    stderr_text = result.stderr if result.stderr is not None else ""
+    full_output = stdout_text + "\n" + stderr_text
     
     match = re.search(r"FINAL_RESULT:([-\d.]+)", full_output)
     

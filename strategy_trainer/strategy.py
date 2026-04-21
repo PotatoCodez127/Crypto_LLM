@@ -60,7 +60,13 @@ def get_signals(df):
     tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
     df['atr'] = tr.rolling(window=14).mean().bfill().fillna(0)
     
-    # 6. Entry conditions
+    # 6. Volatility scaling factor (0.5 to 1.5)
+    vol_window = 50
+    df['volatility'] = df['close'].pct_change().rolling(vol_window).std()
+    vol_median = df['volatility'].median()
+    df['size_factor'] = np.clip(vol_median / (df['volatility'] + 1e-8), 0.5, 1.5)
+    
+    # 7. Entry conditions
     long_entry = (df['macd_bull']) & (df['price_below_lower']) & (df['stoch_oversold']) & (df['volume_high'])
     short_entry = (df['macd_bear']) & (df['price_above_upper']) & (df['stoch_overbought']) & (df['volume_high'])
     
@@ -80,7 +86,7 @@ def get_signals(df):
         raw = df['raw_signal'].iloc[i]
         close = df['close'].iloc[i]
         atr = df['atr'].iloc[i]
-        size_factor = 1.0
+        size_factor = df['size_factor'].iloc[i]
         
         # Decrease cooldown
         if cooldown > 0:
@@ -92,13 +98,13 @@ def get_signals(df):
                 entry_price = close
                 stop_price = close - 1.5 * atr
                 target_price = close + 3.0 * atr
-                df.iloc[i, df.columns.get_loc('signal')] = 1.0
+                df.iloc[i, df.columns.get_loc('signal')] = 1.0 * size_factor
             elif raw == -1:
                 position = -1
                 entry_price = close
                 stop_price = close + 1.5 * atr
                 target_price = close - 3.0 * atr
-                df.iloc[i, df.columns.get_loc('signal')] = -1.0
+                df.iloc[i, df.columns.get_loc('signal')] = -1.0 * size_factor
             else:
                 df.iloc[i, df.columns.get_loc('signal')] = 0.0
         elif position == 1:
@@ -109,14 +115,14 @@ def get_signals(df):
                 cooldown = 5  # bars cooldown
                 # No immediate re-entry
             else:
-                df.iloc[i, df.columns.get_loc('signal')] = 1.0
+                df.iloc[i, df.columns.get_loc('signal')] = 1.0 * size_factor
         elif position == -1:
             if close >= stop_price or close <= target_price:
                 position = 0
                 df.iloc[i, df.columns.get_loc('signal')] = 0.0
                 cooldown = 5
             else:
-                df.iloc[i, df.columns.get_loc('signal')] = -1.0
+                df.iloc[i, df.columns.get_loc('signal')] = -1.0 * size_factor
         else:
             df.iloc[i, df.columns.get_loc('signal')] = 0.0
     

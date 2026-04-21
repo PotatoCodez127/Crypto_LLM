@@ -41,29 +41,15 @@ def get_signals(df):
     df['raw_signal'] = 0
     # Require stronger extremes and volatility significantly above median
     vol_ratio = df['volatility_20'] / (df['vol_median'] + 1e-8)
-    vol_strong = vol_ratio > 1.1  # volatility at least 10% above median (more selective)
-    
-    # Price confirmation: close below recent low for long, above recent high for short
-    df['low_20'] = df['low'].rolling(window=20, min_periods=1).min()
-    df['high_20'] = df['high'].rolling(window=20, min_periods=1).max()
-    price_confirm_long = df['close'] < df['low_20'].shift(1)
-    price_confirm_short = df['close'] > df['high_20'].shift(1)
-    
-    # Tighter thresholds to improve signal quality
-    long_condition = (df['cvd_robust'] < -1.3) & (df['zscore_norm'] < -1.7) & vol_strong & price_confirm_long
-    short_condition = (df['cvd_robust'] > 1.3) & (df['zscore_norm'] > 1.7) & vol_strong & price_confirm_short
+    vol_strong = vol_ratio > 1.1  # volatility at least 10% above median
+    long_condition = (df['cvd_robust'] < -1.2) & (df['zscore_norm'] < -1.5) & vol_strong
+    short_condition = (df['cvd_robust'] > 1.2) & (df['zscore_norm'] > 1.5) & vol_strong
 
-    # Adaptive cooldown based on volatility regime
-    # Higher volatility -> shorter cooldown (more responsive)
-    base_cooldown = 20
-    adaptive_cooldown = base_cooldown
-    last_signal_idx = -adaptive_cooldown
+    cooldown = 20
+    last_signal_idx = -cooldown
     for i in range(len(df)):
-        if i < last_signal_idx + adaptive_cooldown:
+        if i < last_signal_idx + cooldown:
             continue
-        vol_ratio_i = vol_ratio.iloc[i] if i < len(vol_ratio) else 1.0
-        # Cooldown between 10 and 30 periods
-        adaptive_cooldown = max(10, min(30, int(base_cooldown / (vol_ratio_i + 0.5))))
         if long_condition.iloc[i]:
             df.iloc[i, df.columns.get_loc('raw_signal')] = 1
             last_signal_idx = i
@@ -91,11 +77,11 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            # More aggressive scaling in high volatility regimes
+            # Wider range, more adaptive to volatility regimes
             vol_ratio_local = vol / vol_med
-            # Exponential response: multiplier from 1.2 to 4.0
-            atr_multiplier = 1.2 + (2.8 * (1.0 - np.exp(-vol_ratio_local)))
-            atr_multiplier = max(1.2, min(4.0, atr_multiplier))
+            # Use sigmoid-like scaling to keep multiplier between 1.5 and 3.5
+            atr_multiplier = 1.5 + (2.0 / (1.0 + np.exp(-vol_ratio_local + 0.0)))
+            atr_multiplier = max(1.5, min(3.5, atr_multiplier))
         else:
             atr_multiplier = 2.5
 
@@ -115,8 +101,8 @@ def get_signals(df):
         elif position == 1:
             # Trailing stop logic with a floor based on entry
             new_stop = close - atr_multiplier * atr
-            # Ensure stop never moves below entry - 1.2*ATR (tighter max loss)
-            max_loss_stop = entry_price - 1.2 * atr
+            # Ensure stop never moves below entry - 2.0*ATR (max loss protection)
+            max_loss_stop = entry_price - 1.5 * atr
             if new_stop > stop_price and new_stop > max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop > stop_price:
@@ -128,7 +114,7 @@ def get_signals(df):
                 df.iloc[i, df.columns.get_loc('signal')] = 1
         elif position == -1:
             new_stop = close + atr_multiplier * atr
-            max_loss_stop = entry_price + 1.2 * atr
+            max_loss_stop = entry_price + 1.5 * atr
             if new_stop < stop_price and new_stop < max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop < stop_price:

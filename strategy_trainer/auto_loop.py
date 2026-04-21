@@ -54,7 +54,7 @@ def generate_hypothesis(best_score):
             model="openai/deepseek-v3.2",
             api_base="http://localhost:4000", 
             api_key="sk-dummy-key-1234", 
-            temperature=0.7, # Added to prevent model freeze
+            temperature=0.7, 
             messages=[
                 {
                     "role": "system", 
@@ -73,45 +73,30 @@ def generate_hypothesis(best_score):
             max_tokens=400
         )
         
-        # Safely grab the content
         content = response.choices[0].message.content
         
-        # --- NEW DIAGNOSTIC CATCH ---
         if content is None or content.strip() == "":
-            print("\n❌ API ERROR: The model returned an absolutely empty string.")
-            print("--- FULL API RESPONSE OBJECT ---")
-            print(response) # This will print finish_reasons and token usage!
-            print("--------------------------------\n")
-            return "API generated empty response.", ""
+            print("\n❌ API ERROR: The model returned an empty string.")
+            return "API error.", ""
 
         content = content.strip()
         
-        # 1. Strip out any internal <think> reasoning tokens
         import re
         content_clean = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
         
-        # 2. Aggressive Regex hunting
         thinking_match = re.search(r'THINKING\s*[:\-]?\s*(.*?)(?=HYPOTHESIS\s*[:\-]?|$)', content_clean, re.IGNORECASE | re.DOTALL)
         hypothesis_match = re.search(r'HYPOTHESIS\s*[:\-]?\s*(.*)', content_clean, re.IGNORECASE | re.DOTALL)
         
         thinking = thinking_match.group(1).strip() if thinking_match else "Failed to parse thinking."
         hypothesis = hypothesis_match.group(1).strip() if hypothesis_match else ""
         
-        # 3. Clean up stray markdown artifacts
         thinking = thinking.replace("**", "").replace("*", "").replace("`", "")
         hypothesis = hypothesis.replace("**", "").replace("*", "").replace("`", "")
         
-        # --- THE RAW ERROR LOGGER ---
         if not hypothesis or len(hypothesis) < 5:
-            print("\n❌ PARSING ERROR: The AI completely ignored the formatting instructions.")
-            print("--- RAW AI OUTPUT ---")
-            print(content)
-            print("---------------------\n")
-            
+            print("\n❌ PARSING ERROR: The AI completely ignored formatting.")
             with open("llm_error_log.txt", "a", encoding="utf-8") as f:
-                import time
-                f.write(f"--- FAILED PARSE AT {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
-                f.write(content + "\n\n")
+                f.write(f"--- FAILED PARSE AT {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n{content}\n\n")
                 
         return thinking, hypothesis
         
@@ -127,33 +112,69 @@ def run_experiment(memory_bank):
 
     commit_before = get_current_commit()
 
-    # --- 1. Generate the Idea ---
-    thinking, hypothesis = generate_hypothesis(best_score)
-    
-    # GUARDRAIL 1: Reject empty or garbage hypotheses
-    if not hypothesis or len(hypothesis) < 5:
-        print("\n⚠️ Lead Quant produced an empty or invalid hypothesis. Skipping to next iteration...")
-        time.sleep(3)
-        return
-    
-    print(f"\n🧠 AI Reasoning:\n   > {thinking}")
-    print(f"\n💡 AI Hypothesis:\n   > {hypothesis}")
-
-    # --- 2. Query the Memory Bank ---
-    memories = memory_bank.query_similar_trials(hypothesis, n_results=3)
+    # --- 1 & 2. The Self-Correcting Idea Generator (Rejection Loop) ---
+    max_retries = 3
+    hypothesis = ""
     memory_text = ""
     
-    if memories:
-        print("\n📚 RAG Memory Triggered! Recalling past trials:")
-        memory_text = "--- HISTORICAL MEMORY BANK (SIMILAR PAST TRIALS) ---\n"
-        for i, m in enumerate(memories):
-            summary_preview = m['summary'][:75] + "..." if len(m['summary']) > 75 else m['summary']
-            print(f"   [{i+1}] {m['status'].upper()} (Score: {m['score']}) -> {summary_preview}")
-            memory_text += f"PAST IDEA: '{m['summary']}' | RESULT SCORE: {m['score']} | STATUS: {m['status']}\n"
+    for attempt in range(max_retries):
+        thinking, temp_hypothesis = generate_hypothesis(best_score)
+        
+        if not temp_hypothesis or len(temp_hypothesis) < 5:
+            print("\n⚠️ Invalid hypothesis generated. Retrying...")
+            time.sleep(2)
+            continue
             
-        memory_text += "\nCRITICAL: Analyze why the 'discard' ideas above failed. DO NOT repeat the exact same parameters or logic. Pivot your approach.\n"
-    else:
-        print("\n📚 RAG Memory: No highly similar past attempts found. Entering uncharted territory.")
+        print(f"\n🧠 AI Reasoning (Attempt {attempt + 1}):\n   > {thinking}")
+        print(f"💡 AI Hypothesis:\n   > {temp_hypothesis}")
+        
+        # Query 10 memories for deep context
+        raw_memories = memory_bank.query_similar_trials(temp_hypothesis, n_results=10)
+        
+        # Count failures among the top 5 most similar to act as the Bouncer
+        top_5 = raw_memories[:5]
+        discard_count = sum(1 for m in top_5 if m['status'] in ['discard', 'crash'])
+        
+        if discard_count >= 2:
+            print(f"🛑 REJECTION LOOP: ChromaDB found {discard_count} past failures for this exact concept!")
+            print("Sending the Lead Quant back to the drawing board to save Aider tokens...")
+            time.sleep(2)
+            continue # Force Lead Quant to try again
+        else:
+            # Idea is safe to proceed!
+            hypothesis = temp_hypothesis
+            
+            # --- THE SMART FILTER ---
+            if raw_memories:
+                print("\n📚 RAG Memory Triggered! Filtering optimal context...")
+                successes = [m for m in raw_memories if m['status'] == 'keep']
+                failures = [m for m in raw_memories if m['status'] in ['discard', 'crash']]
+                
+                # Grab Top 1 Success and Top 2 Worst Failures
+                best_success = sorted(successes, key=lambda x: x['score'], reverse=True)[:1]
+                worst_failures = failures[:2]
+                final_memories = best_success + worst_failures
+                
+                if final_memories:
+                    memory_text = "--- HISTORICAL MEMORY BANK (CRITICAL CONTEXT) ---\n"
+                    for i, m in enumerate(final_memories):
+                        tag = "🏆 WINNER" if m['status'] == 'keep' else "☠️ LANDMINE"
+                        summary_preview = m['summary'][:75] + "..." if len(m['summary']) > 75 else m['summary']
+                        print(f"   [{i+1}] {tag} (Score: {m['score']}) -> {summary_preview}")
+                        memory_text += f"PAST IDEA: '{m['summary']}' | RESULT SCORE: {m['score']} | STATUS: {m['status']}\n"
+                    
+                    memory_text += "\nCRITICAL: Analyze the ☠️ LANDMINE ideas above and DO NOT repeat them. Analyze the 🏆 WINNER ideas for inspiration to pivot your approach.\n"
+                else:
+                    print("   > No highly relevant extremes found after filtering.")
+            else:
+                print("\n📚 RAG Memory: No past attempts found. Entering uncharted territory.")
+            
+            break # Break out of the retry loop
+
+    if not hypothesis:
+        print("\n⚠️ Lead Quant couldn't find a novel idea after 3 tries. Skipping iteration to avoid loop trap.")
+        time.sleep(3)
+        return
 
     # --- 3. Build the Prompt & Code ---
     prompt = (
@@ -211,7 +232,7 @@ def run_experiment(memory_bank):
         status = "crash"
         print(f"\n⚠️ Judge crashed or returned invalid output.")
 
-    # GUARDRAIL 2: Reject 0.0 Scores
+    # GUARDRAIL: Reject 0.0 Scores
     if score == 0.0:
         print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is exactly 0.0. Restoring code and abandoning memory log...")
         subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
@@ -237,8 +258,8 @@ def run_experiment(memory_bank):
 
 if __name__ == "__main__":
     from fetch_data import fetch_historical_data
-    fetch_historical_data() # Will silently skip if the file already exists
-
+    fetch_historical_data() 
+    
     print("🔥 STARTING RAG-AUGMENTED AUTORESEARCH LOOP 🔥")
     print("Press CTRL+C to stop at any time.")
     

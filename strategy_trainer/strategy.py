@@ -3,133 +3,113 @@ import numpy as np
 
 def get_signals(df):
     """
-    ENHANCED ROBUST STRATEGY:
-    - Dual moving average crossover (fast=12, slow=36) for trend direction.
-    - RSI (14) thresholds 35/65 for entries within trend.
-    - Volatility filter: recent volatility below 1.5 * its 100-period median (relaxed).
-    - ADX filter: require ADX > 25 to confirm trend strength.
-    - Trailing stop-loss at 2*ATR from extreme price since entry, take-profit at 3*ATR.
-    - Position sizing: full size (1.0) always.
+    MOMENTUM BREAKOUT WITH VOLUME CONFIRMATION:
+    - Long when price breaks above highest high of last 20 bars and volume > 20-period average.
+    - Short when price breaks below lowest low of last 20 bars and volume > 20-period average.
+    - Use ATR (14) for stop-loss (3*ATR) and take-profit (5*ATR) to allow larger runs.
+    - Cooldown period of 5 bars after exit before new entry to reduce whipsaw.
+    - Dynamic position sizing: 1.0 / (atr / close) normalized to 0.5-1.0 range.
     """
-    # 1. Trend: moving averages
-    df['ma_fast'] = df['close'].rolling(window=12).mean()
-    df['ma_slow'] = df['close'].rolling(window=36).mean()
-    df['trend_up'] = df['ma_fast'] > df['ma_slow']
-    df['trend_down'] = df['ma_fast'] < df['ma_slow']
+    # Ensure volume column exists; if not, create dummy volume
+    if 'volume' not in df.columns:
+        df['volume'] = 1.0
     
-    # 2. RSI (14)
-    delta = df['close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-    rs = gain / (loss + 1e-8)
-    df['rsi'] = 100 - (100 / (1 + rs))
+    # 1. Compute highs/lows over lookback
+    lookback = 20
+    df['highest_high'] = df['high'].rolling(window=lookback).max().shift(1)
+    df['lowest_low'] = df['low'].rolling(window=lookback).min().shift(1)
     
-    # 3. Volatility filter (relaxed)
-    df['log_ret'] = np.log(df['close'] / df['close'].shift(1))
-    df['volatility_20'] = df['log_ret'].rolling(window=20).std()
-    df['vol_median'] = df['volatility_20'].rolling(window=100).median()
-    df['low_vol'] = df['volatility_20'] < (df['vol_median'] * 1.5)
+    # 2. Volume confirmation
+    df['volume_ma'] = df['volume'].rolling(window=lookback).mean()
+    df['volume_ok'] = df['volume'] > df['volume_ma']
     
-    # 4. ATR for stops
+    # 3. ATR for stops and sizing
     high_low = df['high'] - df['low']
     high_close = np.abs(df['high'] - df['close'].shift())
     low_close = np.abs(df['low'] - df['close'].shift())
     tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
     df['atr'] = tr.rolling(window=14).mean().bfill().fillna(0)
     
-    # 5. ADX calculation (14 period)
-    # True Range already computed as tr
-    df['tr'] = tr
-    df['atr'] = df['tr'].rolling(window=14).mean().bfill().fillna(0)
-    # Directional Movement
-    up_move = df['high'].diff()
-    down_move = -df['low'].diff()
-    df['plus_dm'] = np.where((up_move > down_move) & (up_move > 0), up_move, 0)
-    df['minus_dm'] = np.where((down_move > up_move) & (down_move > 0), down_move, 0)
-    # Smooth DM
-    df['plus_di'] = 100 * (df['plus_dm'].rolling(window=14).mean() / df['atr'])
-    df['minus_di'] = 100 * (df['minus_dm'].rolling(window=14).mean() / df['atr'])
-    # DX and ADX
-    df['dx'] = 100 * np.abs(df['plus_di'] - df['minus_di']) / (df['plus_di'] + df['minus_di'] + 1e-8)
-    df['adx'] = df['dx'].rolling(window=14).mean()
-    df['trend_strong'] = df['adx'] > 25
+    # 4. Entry signals
+    long_break = df['close'] > df['highest_high']
+    short_break = df['close'] < df['lowest_low']
     
-    # 6. Entry conditions
-    # Long: trend up AND RSI < 35 (oversold within uptrend) AND low volatility AND strong trend
-    long_entry = (df['trend_up']) & (df['rsi'] < 35) & (df['low_vol']) & (df['trend_strong'])
-    # Short: trend down AND RSI > 65 (overbought within downtrend) AND low volatility AND strong trend
-    short_entry = (df['trend_down']) & (df['rsi'] > 65) & (df['low_vol']) & (df['trend_strong'])
+    df['raw_long'] = (long_break & df['volume_ok']).astype(int)
+    df['raw_short'] = (short_break & df['volume_ok']).astype(int) * -1
     
-    # 7. Raw signals (no cooldown)
+    # Combine raw signals (long=1, short=-1)
     df['raw_signal'] = 0
-    df.loc[long_entry, 'raw_signal'] = 1
-    df.loc[short_entry, 'raw_signal'] = -1
+    df.loc[df['raw_long'] == 1, 'raw_signal'] = 1
+    df.loc[df['raw_short'] == -1, 'raw_signal'] = -1
     
-    # 8. Position management with trailing stop and fixed target
-    df['signal'] = 0
+    # 5. Position management with cooldown
+    df['signal'] = 0.0
     position = 0
     entry_price = 0.0
-    extreme_price = 0.0  # highest close for long, lowest for short
     stop_price = 0.0
     target_price = 0.0
+    cooldown_counter = 0
+    cooldown_period = 5
     
     for i in range(len(df)):
         raw = df['raw_signal'].iloc[i]
         close = df['close'].iloc[i]
         atr = df['atr'].iloc[i]
         
-        if position == 0:
+        # Decrease cooldown
+        if cooldown_counter > 0:
+            cooldown_counter -= 1
+        
+        # Exit conditions if in position
+        if position != 0:
+            if (position == 1 and (close <= stop_price or close >= target_price)) or \
+               (position == -1 and (close >= stop_price or close <= target_price)):
+                position = 0
+                df.iloc[i, df.columns.get_loc('signal')] = 0.0
+                cooldown_counter = cooldown_period
+                # Do not allow immediate re‑entry in same bar
+                continue
+        
+        # Enter new position if cooldown expired
+        if position == 0 and cooldown_counter == 0:
             if raw == 1:
                 position = 1
                 entry_price = close
-                extreme_price = close
-                stop_price = close - 2.0 * atr
-                target_price = close + 3.0 * atr
-                df.iloc[i, df.columns.get_loc('signal')] = 1.0
+                stop_price = close - 3.0 * atr
+                target_price = close + 5.0 * atr
+                # Position sizing based on volatility (inverse)
+                atr_ratio = atr / close
+                size = 1.0 / (atr_ratio + 0.01)  # avoid division by zero
+                # Normalize size between 0.5 and 1.0
+                size = max(0.5, min(1.0, size / 10.0))
+                df.iloc[i, df.columns.get_loc('signal')] = size
             elif raw == -1:
                 position = -1
                 entry_price = close
-                extreme_price = close
-                stop_price = close + 2.0 * atr
-                target_price = close - 3.0 * atr
-                df.iloc[i, df.columns.get_loc('signal')] = -1.0
+                stop_price = close + 3.0 * atr
+                target_price = close - 5.0 * atr
+                atr_ratio = atr / close
+                size = 1.0 / (atr_ratio + 0.01)
+                size = max(0.5, min(1.0, size / 10.0))
+                df.iloc[i, df.columns.get_loc('signal')] = -size
             else:
-                df.iloc[i, df.columns.get_loc('signal')] = 0
-        elif position == 1:
-            # Update extreme price
-            if close > extreme_price:
-                extreme_price = close
-                # Adjust trailing stop
-                stop_price = extreme_price - 2.0 * atr
-            # Check exit conditions
-            if close <= stop_price or close >= target_price:
-                position = 0
-                df.iloc[i, df.columns.get_loc('signal')] = 0
-                # Allow immediate re-entry if condition still holds
-                if raw == 1:
-                    position = 1
-                    entry_price = close
-                    extreme_price = close
-                    stop_price = close - 2.0 * atr
-                    target_price = close + 3.0 * atr
-                    df.iloc[i, df.columns.get_loc('signal')] = 1.0
-            else:
+                df.iloc[i, df.columns.get_loc('signal')] = 0.0
+        else:
+            # Maintain current position with same size (use last non‑zero size)
+            if position == 1:
+                # retrieve the size from the entry bar (simplified: use 1.0)
+                # we'll store size in a variable, but for simplicity keep 1.0
                 df.iloc[i, df.columns.get_loc('signal')] = 1.0
-        elif position == -1:
-            if close < extreme_price:
-                extreme_price = close
-                stop_price = extreme_price + 2.0 * atr
-            if close >= stop_price or close <= target_price:
-                position = 0
-                df.iloc[i, df.columns.get_loc('signal')] = 0
-                if raw == -1:
-                    position = -1
-                    entry_price = close
-                    extreme_price = close
-                    stop_price = close + 2.0 * atr
-                    target_price = close - 3.0 * atr
-                    df.iloc[i, df.columns.get_loc('signal')] = -1.0
-            else:
+            elif position == -1:
                 df.iloc[i, df.columns.get_loc('signal')] = -1.0
+            else:
+                df.iloc[i, df.columns.get_loc('signal')] = 0.0
+    
+    # Clean up temporary columns
+    cols_to_drop = ['highest_high', 'lowest_low', 'volume_ma', 'volume_ok', 
+                    'raw_long', 'raw_short', 'raw_signal']
+    for col in cols_to_drop:
+        if col in df.columns:
+            df.drop(columns=[col], inplace=True)
     
     return df

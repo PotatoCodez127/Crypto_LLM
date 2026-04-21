@@ -1,7 +1,9 @@
 """
-train.py - The Strategy Sandbox
+train.py - The Strategy Sandbox Evaluator
+Executes the Walk-Forward Judge to evaluate AI strategy performance.
 """
-from prepare import evaluate_strategy
+from prepare import run_walk_forward_optimization
+
 if __name__ == "__main__":
-    final_score = evaluate_strategy('1y')
-    print(f"FINAL_RESULT:{final_score}")
+    # run_walk_forward_optimization() already prints FINAL_RESULT internally
+    run_walk_forward_optimization()

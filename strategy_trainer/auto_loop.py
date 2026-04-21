@@ -6,17 +6,14 @@ import sys
 import traceback
 from litellm import completion
 
-# 1. Import our new RAG Memory Bank
 from rag_memory import StrategyMemoryBank
 
-# Configuration
 AIDER_CMD = os.path.join(os.path.dirname(sys.executable), "aider.exe")
 STRATEGY_FILE = "strategy.py"
 TRAIN_CMD = [sys.executable, "train.py"]
 RESULTS_FILE = "results.tsv"
 
 def get_history_and_best():
-    """Reads the TSV to find the ALL-TIME best score and the last 5 runs."""
     if not os.path.exists(RESULTS_FILE):
         with open(RESULTS_FILE, "w") as f:
             f.write("commit\tfinal_result\tstatus\tdescription\n")
@@ -62,8 +59,8 @@ def generate_hypothesis(best_score):
                     "role": "system", 
                     "content": (
                         "You are an elite quantitative researcher. You must output exactly two sections.\n"
-                        "Start section one with 'Thinking: ' followed by 2 sentences explaining your logical reasoning based on quantitative principles.\n"
-                        "Start section two with 'Hypothesis: ' followed by a 1-sentence strict coding instruction."
+                        "Start section one with 'Thinking:' followed by 2 sentences explaining your logical reasoning.\n"
+                        "Start section two with 'Hypothesis:' followed by a 1-sentence strict coding instruction."
                     )
                 },
                 {"role": "user", "content": f"Our current best Out-Of-Sample score is {best_score}. Formulate your next move."}
@@ -72,11 +69,13 @@ def generate_hypothesis(best_score):
         )
         content = response.choices[0].message.content.strip()
         
-        # Parse the thinking and the hypothesis for the terminal
-        thinking = "Analyzing macro market structure..."
-        hypothesis = content # fallback
+        clean_content = content.replace("**", "").replace("*", "")
         
-        for line in content.split('\n'):
+        thinking = "Analysis failed to parse."
+        hypothesis = "" 
+        
+        for line in clean_content.split('\n'):
+            line = line.strip()
             if line.startswith("Thinking:"):
                 thinking = line.replace("Thinking:", "").strip()
             elif line.startswith("Hypothesis:"):
@@ -85,7 +84,7 @@ def generate_hypothesis(best_score):
         return thinking, hypothesis
     except Exception as e:
         print(f"⚠️ Hypothesis generation failed: {e}")
-        return "System error fallback.", "Adjust moving average periods and tighten risk management."
+        return "System error.", ""
 
 def run_experiment(memory_bank):
     best_score, recent_history = get_history_and_best()
@@ -95,20 +94,19 @@ def run_experiment(memory_bank):
 
     commit_before = get_current_commit()
 
-    # --- THE RAG PIPELINE ---
-    # 1. Generate the Idea
-    hypothesis = generate_hypothesis(best_score)
-    print(f"\n💡 AI Hypothesis: {hypothesis}")
-
-    # --- THE RAG PIPELINE ---
-    # 1. Generate the Idea
+    # --- 1. Generate the Idea ---
     thinking, hypothesis = generate_hypothesis(best_score)
     
-    # Print the AI's internal monologue cleanly
+    # GUARDRAIL 1: Reject empty or garbage hypotheses
+    if not hypothesis or len(hypothesis) < 5:
+        print("\n⚠️ Lead Quant produced an empty or invalid hypothesis. Skipping to next iteration...")
+        time.sleep(3)
+        return
+    
     print(f"\n🧠 AI Reasoning:\n   > {thinking}")
     print(f"\n💡 AI Hypothesis:\n   > {hypothesis}")
 
-    # 2. Query the Memory Bank
+    # --- 2. Query the Memory Bank ---
     memories = memory_bank.query_similar_trials(hypothesis, n_results=3)
     memory_text = ""
     
@@ -116,17 +114,15 @@ def run_experiment(memory_bank):
         print("\n📚 RAG Memory Triggered! Recalling past trials:")
         memory_text = "--- HISTORICAL MEMORY BANK (SIMILAR PAST TRIALS) ---\n"
         for i, m in enumerate(memories):
-            # Print exactly what the database found to the terminal
-            print(f"   [{i+1}] {m['status'].upper()} (Score: {m['score']}) -> {m['summary']}")
-            
-            # Format the hidden string for Aider to read
+            summary_preview = m['summary'][:75] + "..." if len(m['summary']) > 75 else m['summary']
+            print(f"   [{i+1}] {m['status'].upper()} (Score: {m['score']}) -> {summary_preview}")
             memory_text += f"PAST IDEA: '{m['summary']}' | RESULT SCORE: {m['score']} | STATUS: {m['status']}\n"
             
         memory_text += "\nCRITICAL: Analyze why the 'discard' ideas above failed. DO NOT repeat the exact same parameters or logic. Pivot your approach.\n"
     else:
         print("\n📚 RAG Memory: No highly similar past attempts found. Entering uncharted territory.")
 
-    # 3. Build the Context-Aware Prompt (Aider reads this, but it doesn't flood your screen)
+    # --- 3. Build the Prompt & Code ---
     prompt = (
         f"The ALL-TIME BEST FINAL_RESULT is {best_score}.\n"
         f"Your specific mission for this iteration is: {hypothesis}\n\n"
@@ -147,14 +143,13 @@ def run_experiment(memory_bank):
         "--no-show-model-warnings",
         "--yes", 
         STRATEGY_FILE
-    ], capture_output=True, text=True, encoding="utf-8") # <-- ADD ENCODING HERE
+    ], capture_output=True, text=True, encoding="utf-8")
 
     if aider_process.returncode != 0:
-        print(f"⚠️ Aider encountered an error (Exit code {aider_process.returncode}). Waiting 30 seconds...")
-        time.sleep(30)
+        print(f"⚠️ Aider encountered an error. Waiting 10 seconds...")
+        time.sleep(10)
         return
 
-    # Check if Aider actually modified the file
     git_status = subprocess.getoutput(f"git status --porcelain {STRATEGY_FILE}").strip()
 
     if not git_status:
@@ -162,14 +157,14 @@ def run_experiment(memory_bank):
         time.sleep(3)
         return
 
-    # Manually commit the changes instantly
     subprocess.run(["git", "add", STRATEGY_FILE], capture_output=True)
     subprocess.run(["git", "commit", "-m", f"Auto-experiment: {hypothesis[:50]}..."], capture_output=True)
     
     commit_after = get_current_commit()
 
+    # --- 4. The WFO Judge ---
     print(f"\n📈 Running the Walk-Forward Judge...") 
-    result = subprocess.run(TRAIN_CMD, capture_output=True, text=True, encoding="utf-8") # <-- ADD ENCODING HERE
+    result = subprocess.run(TRAIN_CMD, capture_output=True, text=True, encoding="utf-8")
     full_output = result.stdout + "\n" + result.stderr
     
     match = re.search(r"FINAL_RESULT:([-\d.]+)", full_output)
@@ -183,17 +178,24 @@ def run_experiment(memory_bank):
         status = "crash"
         print(f"\n⚠️ Judge crashed or returned invalid output.")
 
-    # --- SAVE TO RAG MEMORY ---
+    # GUARDRAIL 2: Reject 0.0 Scores
+    if score == 0.0:
+        print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is exactly 0.0. Restoring code and abandoning memory log...")
+        subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
+        subprocess.run(["git", "commit", "-m", f"Auto-revert (0.0 score) to {commit_before}"], capture_output=True)
+        time.sleep(3)
+        return
+
+    # --- 5. Save Valid Results ---
     if status == "keep":
         print(f"✅ SUCCESS! New high score.")
         log_result(commit_after, score, status, "Auto-experiment success")
-        memory_bank.log_trial(commit_after, hypothesis, score, status) # <-- Log to ChromaDB
+        memory_bank.log_trial(commit_after, hypothesis, score, status) 
     else:
         print(f"❌ FAILED (Score {score} <= {best_score}). Preserving history and restoring base...")
         log_result(commit_after, score, status, "Failed attempt logged")
-        memory_bank.log_trial(commit_after, hypothesis, score, status) # <-- Log failure to ChromaDB so it learns!
+        memory_bank.log_trial(commit_after, hypothesis, score, status) 
         
-        # Revert logic
         subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
         subprocess.run(["git", "commit", "-m", f"Auto-revert to {commit_before}"], capture_output=True)
 
@@ -204,7 +206,6 @@ if __name__ == "__main__":
     print("🔥 STARTING RAG-AUGMENTED AUTORESEARCH LOOP 🔥")
     print("Press CTRL+C to stop at any time.")
     
-    # Initialize DB once when the script starts
     db = StrategyMemoryBank() 
     
     while True:

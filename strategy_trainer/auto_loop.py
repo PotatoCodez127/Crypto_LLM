@@ -66,17 +66,17 @@ def generate_hypothesis(best_score):
                 },
                 {"role": "user", "content": f"Our current best Out-Of-Sample score is {best_score}. Formulate your next move."}
             ],
-            max_tokens=300 # Increased slightly to accommodate DeepSeek's verbosity
+            max_tokens=300
         )
         content = response.choices[0].message.content.strip()
         
-        # 1. Strip out any internal <think> reasoning tokens DeepSeek might use
+        # 1. Strip out any internal <think> reasoning tokens
         import re
-        content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
+        content_clean = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
         
-        # 2. Aggressive Regex hunting (ignores case, allows multi-line)
-        thinking_match = re.search(r'THINKING\s*[:\-]?\s*(.*?)(?=HYPOTHESIS\s*[:\-]?|$)', content, re.IGNORECASE | re.DOTALL)
-        hypothesis_match = re.search(r'HYPOTHESIS\s*[:\-]?\s*(.*)', content, re.IGNORECASE | re.DOTALL)
+        # 2. Aggressive Regex hunting
+        thinking_match = re.search(r'THINKING\s*[:\-]?\s*(.*?)(?=HYPOTHESIS\s*[:\-]?|$)', content_clean, re.IGNORECASE | re.DOTALL)
+        hypothesis_match = re.search(r'HYPOTHESIS\s*[:\-]?\s*(.*)', content_clean, re.IGNORECASE | re.DOTALL)
         
         thinking = thinking_match.group(1).strip() if thinking_match else "Failed to parse thinking."
         hypothesis = hypothesis_match.group(1).strip() if hypothesis_match else ""
@@ -84,8 +84,22 @@ def generate_hypothesis(best_score):
         # 3. Clean up stray markdown artifacts
         thinking = thinking.replace("**", "").replace("*", "").replace("`", "")
         hypothesis = hypothesis.replace("**", "").replace("*", "").replace("`", "")
+        
+        # --- THE NEW RAW ERROR LOGGER ---
+        if not hypothesis or len(hypothesis) < 5:
+            print("\n❌ PARSING ERROR: The AI completely ignored the formatting instructions.")
+            print("--- RAW AI OUTPUT ---")
+            print(content)
+            print("---------------------\n")
+            
+            # Save to a log file so we can inspect it
+            with open("llm_error_log.txt", "a", encoding="utf-8") as f:
+                import time
+                f.write(f"--- FAILED PARSE AT {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
+                f.write(content + "\n\n")
                 
         return thinking, hypothesis
+        
     except Exception as e:
         print(f"⚠️ Hypothesis generation failed: {e}")
         return "System error.", ""

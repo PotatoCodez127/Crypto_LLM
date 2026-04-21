@@ -26,26 +26,26 @@ def get_signals(df):
 
     # --- EXECUTION LOGIC ---
     # Normalized CVD using robust rolling percentiles (IQR)
-    df['cvd_20_q25'] = df['cvd_20'].rolling(window=100).quantile(0.25)
-    df['cvd_20_q75'] = df['cvd_20'].rolling(window=100).quantile(0.75)
+    df['cvd_20_q25'] = df['cvd_20'].rolling(window=50).quantile(0.25)
+    df['cvd_20_q75'] = df['cvd_20'].rolling(window=50).quantile(0.75)
     df['cvd_iqr'] = df['cvd_20_q75'] - df['cvd_20_q25']
-    df['cvd_robust'] = (df['cvd_20'] - df['cvd_20'].rolling(window=100).median()) / (df['cvd_iqr'] + 1e-8)
+    df['cvd_robust'] = (df['cvd_20'] - df['cvd_20'].rolling(window=50).median()) / (df['cvd_iqr'] + 1e-8)
     
     # Normalize z_score using rolling median and IQR to adapt to regime
-    df['zscore_median'] = df['z_score_50'].rolling(window=100).median()
-    df['zscore_q25'] = df['z_score_50'].rolling(window=100).quantile(0.25)
-    df['zscore_q75'] = df['z_score_50'].rolling(window=100).quantile(0.75)
+    df['zscore_median'] = df['z_score_50'].rolling(window=50).median()
+    df['zscore_q25'] = df['z_score_50'].rolling(window=50).quantile(0.25)
+    df['zscore_q75'] = df['z_score_50'].rolling(window=50).quantile(0.75)
     df['zscore_iqr'] = df['zscore_q75'] - df['zscore_q25']
     df['zscore_norm'] = (df['z_score_50'] - df['zscore_median']) / (df['zscore_iqr'] + 1e-8)
     
     df['raw_signal'] = 0
     # Require stronger extremes and volatility significantly above median
     vol_ratio = df['volatility_20'] / (df['vol_median'] + 1e-8)
-    vol_strong = vol_ratio > 1.3  # volatility at least 30% above median
-    long_condition = (df['cvd_robust'] < -2.0) & (df['zscore_norm'] < -1.5) & vol_strong
-    short_condition = (df['cvd_robust'] > 2.0) & (df['zscore_norm'] > 1.5) & vol_strong
+    vol_strong = vol_ratio > 1.1  # volatility at least 10% above median
+    long_condition = (df['cvd_robust'] < -1.8) & (df['zscore_norm'] < -1.2) & vol_strong
+    short_condition = (df['cvd_robust'] > 1.8) & (df['zscore_norm'] > 1.2) & vol_strong
 
-    cooldown = 20
+    cooldown = 10
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -79,9 +79,9 @@ def get_signals(df):
         if vol_med > 0:
             # Wider range, more adaptive to volatility regimes
             vol_ratio_local = vol / vol_med
-            # Use sigmoid-like scaling to keep multiplier between 1.8 and 3.5
-            atr_multiplier = 1.8 + (1.7 / (1.0 + np.exp(-vol_ratio_local + 1.0)))
-            atr_multiplier = max(1.8, min(3.5, atr_multiplier))
+            # Use sigmoid-like scaling to keep multiplier between 1.5 and 4.0
+            atr_multiplier = 1.5 + (2.5 / (1.0 + np.exp(-vol_ratio_local + 1.0)))
+            atr_multiplier = max(1.5, min(4.0, atr_multiplier))
         else:
             atr_multiplier = 2.5
 

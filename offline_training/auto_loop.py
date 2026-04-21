@@ -84,7 +84,12 @@ def run_experiment():
         "--message", prompt,
         "--yes", 
         STRATEGY_FILE
-    ], capture_output=True, text=True)
+    # ], capture_output=True, text=True)
+    ])
+
+    print("\n=======================STROUT=======================")
+    print(aider_process.stdout)
+    print("=======================ENDOUT=======================\n")
 
     if aider_process.returncode != 0:
         print(f"⚠️ Aider encountered an API error. Waiting 30 seconds before retrying...")

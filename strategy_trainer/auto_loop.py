@@ -50,24 +50,42 @@ def log_result(commit, score, status, desc):
         os.fsync(f.fileno())
 
 def generate_hypothesis(best_score):
-    """The 'Lead Quant' generates a 1-sentence idea to search the DB against."""
-    print("🤔 Generating new research hypothesis...")
+    """The 'Lead Quant' generates reasoning and a hypothesis to search the DB against."""
+    print("🤔 Lead Quant is analyzing the current state...")
     try:
-        # Route through your local LiteLLM proxy
         response = completion(
             model="openai/deepseek-v3.2",
             api_base="http://localhost:4000", 
-            api_key="sk-dummy-key-1234",  # <-- ADD THIS DUMMY KEY
+            api_key="sk-dummy-key-1234", 
             messages=[
-                {"role": "system", "content": "You are a quantitative researcher. Respond with EXACTLY ONE SENTENCE proposing a specific technical or statistical improvement to a Python trading strategy. Do not explain. Just the hypothesis."},
-                {"role": "user", "content": f"Our current best Out-Of-Sample score is {best_score}. Give me ONE new hypothesis to try."}
+                {
+                    "role": "system", 
+                    "content": (
+                        "You are an elite quantitative researcher. You must output exactly two sections.\n"
+                        "Start section one with 'Thinking: ' followed by 2 sentences explaining your logical reasoning based on quantitative principles.\n"
+                        "Start section two with 'Hypothesis: ' followed by a 1-sentence strict coding instruction."
+                    )
+                },
+                {"role": "user", "content": f"Our current best Out-Of-Sample score is {best_score}. Formulate your next move."}
             ],
-            max_tokens=50
+            max_tokens=200
         )
-        return response.choices[0].message.content.strip()
+        content = response.choices[0].message.content.strip()
+        
+        # Parse the thinking and the hypothesis for the terminal
+        thinking = "Analyzing macro market structure..."
+        hypothesis = content # fallback
+        
+        for line in content.split('\n'):
+            if line.startswith("Thinking:"):
+                thinking = line.replace("Thinking:", "").strip()
+            elif line.startswith("Hypothesis:"):
+                hypothesis = line.replace("Hypothesis:", "").strip()
+                
+        return thinking, hypothesis
     except Exception as e:
         print(f"⚠️ Hypothesis generation failed: {e}")
-        return "Adjust moving average periods and tighten risk management."
+        return "System error fallback.", "Adjust moving average periods and tighten risk management."
 
 def run_experiment(memory_bank):
     best_score, recent_history = get_history_and_best()
@@ -82,20 +100,33 @@ def run_experiment(memory_bank):
     hypothesis = generate_hypothesis(best_score)
     print(f"\n💡 AI Hypothesis: {hypothesis}")
 
+    # --- THE RAG PIPELINE ---
+    # 1. Generate the Idea
+    thinking, hypothesis = generate_hypothesis(best_score)
+    
+    # Print the AI's internal monologue cleanly
+    print(f"\n🧠 AI Reasoning:\n   > {thinking}")
+    print(f"\n💡 AI Hypothesis:\n   > {hypothesis}")
+
     # 2. Query the Memory Bank
     memories = memory_bank.query_similar_trials(hypothesis, n_results=3)
     memory_text = ""
     
     if memories:
-        print("🔍 Found similar past attempts in Memory Bank. Injecting context...")
+        print("\n📚 RAG Memory Triggered! Recalling past trials:")
         memory_text = "--- HISTORICAL MEMORY BANK (SIMILAR PAST TRIALS) ---\n"
-        for m in memories:
+        for i, m in enumerate(memories):
+            # Print exactly what the database found to the terminal
+            print(f"   [{i+1}] {m['status'].upper()} (Score: {m['score']}) -> {m['summary']}")
+            
+            # Format the hidden string for Aider to read
             memory_text += f"PAST IDEA: '{m['summary']}' | RESULT SCORE: {m['score']} | STATUS: {m['status']}\n"
+            
         memory_text += "\nCRITICAL: Analyze why the 'discard' ideas above failed. DO NOT repeat the exact same parameters or logic. Pivot your approach.\n"
     else:
-        print("🔍 No highly similar past attempts found. Entering uncharted territory.")
+        print("\n📚 RAG Memory: No highly similar past attempts found. Entering uncharted territory.")
 
-    # 3. Build the Context-Aware Prompt
+    # 3. Build the Context-Aware Prompt (Aider reads this, but it doesn't flood your screen)
     prompt = (
         f"The ALL-TIME BEST FINAL_RESULT is {best_score}.\n"
         f"Your specific mission for this iteration is: {hypothesis}\n\n"

@@ -58,28 +58,32 @@ def generate_hypothesis(best_score):
                 {
                     "role": "system", 
                     "content": (
-                        "You are an elite quantitative researcher. You must output exactly two sections.\n"
-                        "Start section one with 'Thinking:' followed by 2 sentences explaining your logical reasoning.\n"
-                        "Start section two with 'Hypothesis:' followed by a 1-sentence strict coding instruction."
+                        "You are an elite quantitative researcher.\n"
+                        "You MUST format your response exactly like this:\n"
+                        "THINKING: [Explain your logic in 2 sentences]\n"
+                        "HYPOTHESIS: [Write a 1-sentence strict coding instruction]"
                     )
                 },
                 {"role": "user", "content": f"Our current best Out-Of-Sample score is {best_score}. Formulate your next move."}
             ],
-            max_tokens=200
+            max_tokens=300 # Increased slightly to accommodate DeepSeek's verbosity
         )
         content = response.choices[0].message.content.strip()
         
-        clean_content = content.replace("**", "").replace("*", "")
+        # 1. Strip out any internal <think> reasoning tokens DeepSeek might use
+        import re
+        content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
         
-        thinking = "Analysis failed to parse."
-        hypothesis = "" 
+        # 2. Aggressive Regex hunting (ignores case, allows multi-line)
+        thinking_match = re.search(r'THINKING\s*[:\-]?\s*(.*?)(?=HYPOTHESIS\s*[:\-]?|$)', content, re.IGNORECASE | re.DOTALL)
+        hypothesis_match = re.search(r'HYPOTHESIS\s*[:\-]?\s*(.*)', content, re.IGNORECASE | re.DOTALL)
         
-        for line in clean_content.split('\n'):
-            line = line.strip()
-            if line.startswith("Thinking:"):
-                thinking = line.replace("Thinking:", "").strip()
-            elif line.startswith("Hypothesis:"):
-                hypothesis = line.replace("Hypothesis:", "").strip()
+        thinking = thinking_match.group(1).strip() if thinking_match else "Failed to parse thinking."
+        hypothesis = hypothesis_match.group(1).strip() if hypothesis_match else ""
+        
+        # 3. Clean up stray markdown artifacts
+        thinking = thinking.replace("**", "").replace("*", "").replace("`", "")
+        hypothesis = hypothesis.replace("**", "").replace("*", "").replace("`", "")
                 
         return thinking, hypothesis
     except Exception as e:
@@ -203,6 +207,9 @@ def run_experiment(memory_bank):
     time.sleep(3)
 
 if __name__ == "__main__":
+    from fetch_data import fetch_historical_data
+    fetch_historical_data() # Will silently skip if the file already exists
+
     print("🔥 STARTING RAG-AUGMENTED AUTORESEARCH LOOP 🔥")
     print("Press CTRL+C to stop at any time.")
     

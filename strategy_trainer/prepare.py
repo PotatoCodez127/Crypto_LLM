@@ -11,7 +11,7 @@ import sys
 import os
 
 # Configuration
-DATA_FILE = "../data/btc_1h_1y.csv" # Upgrade to V2 hidden data later
+DATA_FILE = "../data/btc_1h_3y.csv"
 STRATEGY_FILE = "strategy.py"
 INITIAL_CAPITAL = 10000.0
 FEES = 0.0006  # 0.06% Taker Fee

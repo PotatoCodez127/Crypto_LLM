@@ -83,11 +83,11 @@ def get_signals(df):
         if vol_med > 0:
             # Wider range, more adaptive to volatility regimes
             vol_ratio_local = vol / vol_med
-            # Use sigmoid-like scaling to keep multiplier between 1.8 and 3.5
-            atr_multiplier = 1.8 + (1.7 / (1.0 + np.exp(-vol_ratio_local + 1.0)))
-            atr_multiplier = max(1.8, min(3.5, atr_multiplier))
+            # Use sigmoid-like scaling to keep multiplier between 2.0 and 4.0
+            atr_multiplier = 2.0 + (2.0 / (1.0 + np.exp(-vol_ratio_local + 1.0)))
+            atr_multiplier = max(2.0, min(4.0, atr_multiplier))
         else:
-            atr_multiplier = 2.5
+            atr_multiplier = -2.5
 
         if position == 0:
             if raw == 1:

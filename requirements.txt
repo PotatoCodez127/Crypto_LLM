@@ -9,3 +9,4 @@ ollama
 uv
 aider-chat
 litellm[proxy]
+chromadb>=0.4.0

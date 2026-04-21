@@ -3,56 +3,73 @@ import numpy as np
 
 def get_signals(df):
     """
-    V2 Baseline: Stationary Features, CVD Proxy, and Volatility-Scaled Logic.
+    PIVOT APPROACH: Use regime detection via volatility clustering and mean reversion extremes.
+    Avoid repeating previous CVD/z-score combo. Instead, use RSI divergence + volume spike.
     """
-    # A. Log Returns
+    # 1. Log returns for volatility
     df['log_ret'] = np.log(df['close'] / df['close'].shift(1))
-    
-    # B. Volatility Profile
     df['volatility_20'] = df['log_ret'].rolling(window=20).std()
     df['vol_median'] = df['volatility_20'].rolling(window=100).median()
     
-    # C. Cumulative Volume Delta (CVD) Proxy
-    df['candle_dir'] = np.where(df['close'] >= df['open'], 1, -1)
-    df['vol_delta'] = df['volume'] * df['candle_dir']
-    df['cvd_20'] = df['vol_delta'].rolling(window=20).sum()
+    # 2. RSI (14) with smoothing
+    delta = df['close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    rs = gain / (loss + 1e-8)
+    df['rsi'] = 100 - (100 / (1 + rs))
+    # Smoothed RSI
+    df['rsi_smooth'] = df['rsi'].rolling(window=5).mean()
     
-    # D. Normalized Momentum (Z-score)
-    sma_50 = df['close'].rolling(window=50).mean()
-    std_50 = df['close'].rolling(window=50).std()
-    df['z_score_50'] = (df['close'] - sma_50) / (std_50 + 1e-8)
+    # 3. Volume spike detection (relative to rolling median)
+    df['volume_median'] = df['volume'].rolling(window=50).median()
+    df['volume_ratio'] = df['volume'] / (df['volume_median'] + 1e-8)
+    volume_spike = df['volume_ratio'] > 2.0
     
-    df = df.bfill().fillna(0)
-
-    # --- EXECUTION LOGIC ---
-    # Add trend filter: 20-period and 50-period SMA
-    df['sma_20'] = df['close'].rolling(window=20).mean()
-    df['sma_50'] = df['close'].rolling(window=50).mean()
-    df['trend_up'] = df['sma_20'] > df['sma_50']
-    df['trend_down'] = df['sma_20'] < df['sma_50']
+    # 4. Price distance from rolling z-score (different window)
+    sma_30 = df['close'].rolling(window=30).mean()
+    std_30 = df['close'].rolling(window=30).std()
+    df['z_30'] = (df['close'] - sma_30) / (std_30 + 1e-8)
+    # Robust normalization using rolling IQR
+    df['z_median'] = df['z_30'].rolling(window=50).median()
+    df['z_q25'] = df['z_30'].rolling(window=50).quantile(0.25)
+    df['z_q75'] = df['z_30'].rolling(window=50).quantile(0.75)
+    df['z_iqr'] = df['z_q75'] - df['z_q25']
+    df['z_norm'] = (df['z_30'] - df['z_median']) / (df['z_iqr'] + 1e-8)
     
-    # Normalized CVD using robust rolling percentiles (IQR) - shorter window for responsiveness
-    df['cvd_20_q25'] = df['cvd_20'].rolling(window=50).quantile(0.25)
-    df['cvd_20_q75'] = df['cvd_20'].rolling(window=50).quantile(0.75)
-    df['cvd_iqr'] = df['cvd_20_q75'] - df['cvd_20_q25']
-    df['cvd_robust'] = (df['cvd_20'] - df['cvd_20'].rolling(window=50).median()) / (df['cvd_iqr'] + 1e-8)
+    # 5. Regime detection: high volatility + trending vs low volatility + mean reversion
+    df['high_vol_regime'] = df['volatility_20'] > df['vol_median']
+    df['low_vol_regime'] = df['volatility_20'] < df['vol_median'] * 0.7
     
-    # Normalize z_score using rolling median and IQR to adapt to regime - shorter window
-    df['zscore_median'] = df['z_score_50'].rolling(window=50).median()
-    df['zscore_q25'] = df['z_score_50'].rolling(window=50).quantile(0.25)
-    df['zscore_q75'] = df['z_score_50'].rolling(window=50).quantile(0.75)
-    df['zscore_iqr'] = df['zscore_q75'] - df['zscore_q25']
-    df['zscore_norm'] = (df['z_score_50'] - df['zscore_median']) / (df['zscore_iqr'] + 1e-8)
+    # 6. RSI divergence: price makes new low but RSI does not (bullish) or vice versa
+    df['price_low_20'] = df['low'].rolling(window=20).min()
+    df['price_high_20'] = df['high'].rolling(window=20).max()
+    df['rsi_low_20'] = df['rsi_smooth'].rolling(window=20).min()
+    df['rsi_high_20'] = df['rsi_smooth'].rolling(window=20).max()
     
+    bullish_div = (df['low'] <= df['price_low_20'].shift(1)) & (df['rsi_smooth'] > df['rsi_low_20'].shift(1))
+    bearish_div = (df['high'] >= df['price_high_20'].shift(1)) & (df['rsi_smooth'] < df['rsi_high_20'].shift(1))
+    
+    # 7. Entry conditions
+    # Long: RSI oversold (<30) + bullish divergence + volume spike + low volatility regime (mean reversion)
+    long_condition = (
+        (df['rsi_smooth'] < 30) &
+        bullish_div &
+        volume_spike &
+        df['low_vol_regime'] &
+        (df['z_norm'] < -1.0)
+    )
+    # Short: RSI overbought (>70) + bearish divergence + volume spike + low volatility regime
+    short_condition = (
+        (df['rsi_smooth'] > 70) &
+        bearish_div &
+        volume_spike &
+        df['low_vol_regime'] &
+        (df['z_norm'] > 1.0)
+    )
+    
+    # 8. Cooldown and raw signal generation
     df['raw_signal'] = 0
-    # Relax volatility filter and adjust thresholds for more signals
-    vol_ratio = df['volatility_20'] / (df['vol_median'] + 1e-8)
-    vol_strong = vol_ratio > 0.8  # Slightly more permissive volatility filter
-    # Relaxed thresholds for entry signals
-    long_condition = (df['cvd_robust'] < -0.5) & (df['zscore_norm'] < -0.5) & vol_strong  # Removed trend filter
-    short_condition = (df['cvd_robust'] > 0.5) & (df['zscore_norm'] > 0.5) & vol_strong   # Removed trend filter
-
-    cooldown = 10  # Increased cooldown to reduce overtrading
+    cooldown = 15  # Longer cooldown to avoid whipsaw
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -63,35 +80,31 @@ def get_signals(df):
         elif short_condition.iloc[i]:
             df.iloc[i, df.columns.get_loc('raw_signal')] = -1
             last_signal_idx = i
-
-    # --- ADVANCED RISK MANAGEMENT (Adaptive ATR) ---
+    
+    # 9. Risk management: Adaptive ATR with regime‑based multiplier
     high_low = df['high'] - df['low']
     high_close = np.abs(df['high'] - df['close'].shift())
     low_close = np.abs(df['low'] - df['close'].shift())
     tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
     df['atr'] = tr.rolling(window=14).mean().bfill().fillna(0)
-
+    
     df['signal'] = 0
     position = 0
     stop_price = 0.0
     entry_price = 0.0
-
+    
     for i in range(len(df)):
         raw = df['raw_signal'].iloc[i]
         close = df['close'].iloc[i]
         atr = df['atr'].iloc[i]
-        vol = df['volatility_20'].iloc[i]
-        vol_med = df['vol_median'].iloc[i]
+        vol_regime = df['high_vol_regime'].iloc[i]
         
-        if vol_med > 0:
-            # Less aggressive ATR multiplier to avoid being stopped out too early
-            vol_ratio_local = vol / vol_med
-            # Reduced exponential scaling
-            atr_multiplier = 1.2 + (1.3 / (1.0 + np.exp(-vol_ratio_local + 0.5)))
-            atr_multiplier = max(1.2, min(2.5, atr_multiplier))
+        # ATR multiplier depends on regime
+        if vol_regime:
+            atr_multiplier = 2.5  # wider stops in high volatility
         else:
-            atr_multiplier = 1.8
-
+            atr_multiplier = 1.5  # tighter stops in low volatility
+        
         if position == 0:
             if raw == 1:
                 position = 1
@@ -106,15 +119,12 @@ def get_signals(df):
             else:
                 df.iloc[i, df.columns.get_loc('signal')] = 0
         elif position == 1:
-            # Trailing stop logic with a floor based on entry
+            # Trailing stop with profit lock
             new_stop = close - atr_multiplier * atr
-            # Ensure stop never moves below entry - 1.5*ATR (max loss protection)
-            max_loss_stop = entry_price - 1.2 * atr
-            # Take-profit condition: if profit exceeds 2*ATR, tighten stop to entry + 0.5*ATR
-            take_profit_level = entry_price + 2.0 * atr
+            max_loss_stop = entry_price - 1.8 * atr  # wider max loss in high vol
+            take_profit_level = entry_price + 3.0 * atr
             if close >= take_profit_level:
-                # Move stop to entry + 0.5*ATR to lock in profit
-                stop_price = max(stop_price, entry_price + 0.5 * atr)
+                stop_price = max(stop_price, entry_price + 1.0 * atr)
             if new_stop > stop_price and new_stop > max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop > stop_price:
@@ -126,10 +136,10 @@ def get_signals(df):
                 df.iloc[i, df.columns.get_loc('signal')] = 1
         elif position == -1:
             new_stop = close + atr_multiplier * atr
-            max_loss_stop = entry_price + 1.2 * atr
-            take_profit_level = entry_price - 2.0 * atr
+            max_loss_stop = entry_price + 1.8 * atr
+            take_profit_level = entry_price - 3.0 * atr
             if close <= take_profit_level:
-                stop_price = min(stop_price, entry_price - 0.5 * atr)
+                stop_price = min(stop_price, entry_price - 1.0 * atr)
             if new_stop < stop_price and new_stop < max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop < stop_price:
@@ -139,5 +149,5 @@ def get_signals(df):
                 df.iloc[i, df.columns.get_loc('signal')] = 0
             else:
                 df.iloc[i, df.columns.get_loc('signal')] = -1
-
+    
     return df

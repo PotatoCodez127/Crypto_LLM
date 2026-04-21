@@ -1,196 +1,91 @@
 """
-Feature extraction module for transforming market data into feature vectors.
+Feature extraction module tailored for Machine Learning pipelines.
+Focuses on stationarity, microstructure, and normalized features.
 """
 
 import pandas as pd
 import numpy as np
 
-
 class FeatureExtractor:
-    """Extracts technical indicators and features from OHLCV data."""
+    """Extracts ML-ready, stationary features from OHLCV + Derivatives data."""
 
     def __init__(self):
-        """Initialize feature extractor with default parameters."""
         pass
 
-    def calculate_rsi(self, prices, window=14):
+    def calculate_log_returns(self, prices):
+        """Calculate stationary log returns (crucial for ML)."""
+        return np.log(prices / prices.shift(1)).fillna(0)
+
+    def calculate_cvd_approximation(self, df):
         """
-        Calculate Relative Strength Index.
-
-        Args:
-            prices (pd.Series): Price series
-            window (int): Lookback window
-
-        Returns:
-            pd.Series: RSI values
+        Approximates Cumulative Volume Delta (CVD) using bar price action.
+        (True CVD requires tick data, this is the standard bar-level approximation).
         """
-        delta = prices.diff()
-        gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(window=window).mean()
-        rs = gain / loss
-        rsi = 100 - (100 / (1 + rs))
-        return rsi
-
-    def calculate_macd(self, prices, fast_period=12, slow_period=26, signal_period=9):
-        """
-        Calculate MACD indicator.
-
-        Args:
-            prices (pd.Series): Price series
-            fast_period (int): Fast EMA period
-            slow_period (int): Slow EMA period
-            signal_period (int): Signal line period
-
-        Returns:
-            tuple: (MACD line, Signal line, Histogram)
-        """
-        exp1 = prices.ewm(span=fast_period).mean()
-        exp2 = prices.ewm(span=slow_period).mean()
-        macd = exp1 - exp2
-        signal = macd.ewm(span=signal_period).mean()
-        histogram = macd - signal
-        return macd, signal, histogram
+        # Calculate the proportion of the candle that was bullish vs bearish
+        # (close - open) / (high - low) gives a ratio from -1 (full sell) to 1 (full buy)
+        range_hl = df['high'] - df['low']
+        # Prevent division by zero
+        range_hl = range_hl.replace(0, np.nan) 
+        
+        delta_ratio = (df['close'] - df['open']) / range_hl
+        bar_delta = df['volume'] * delta_ratio.fillna(0)
+        
+        return bar_delta.cumsum()
 
     def calculate_atr(self, df, window=14):
-        """
-        Calculate Average True Range.
-
-        Args:
-            df (pd.DataFrame): DataFrame with 'high', 'low', 'close' columns
-            window (int): Lookback window
-
-        Returns:
-            pd.Series: ATR values
-        """
+        """Calculate Average True Range (Volatility representation)."""
         high_low = df["high"] - df["low"]
         high_close = abs(df["high"] - df["close"].shift())
         low_close = abs(df["low"] - df["close"].shift())
-        ranges = pd.concat([high_low, high_close, low_close], axis=1)
-        true_range = ranges.max(axis=1)
-        atr = true_range.rolling(window=window).mean()
-        return atr
+        true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+        return true_range.rolling(window=window).mean().fillna(0)
 
-    def calculate_volume_change(self, volume, window=1):
+    def z_score_normalize(self, series, window=100):
         """
-        Calculate volume change percentage.
-
-        Args:
-            volume (pd.Series): Volume series
-            window (int): Period for change calculation
-
-        Returns:
-            pd.Series: Volume change percentage
+        Rolling Z-Score to normalize features for ML ingestion.
+        Ensures the model sees "relative extremes" rather than absolute numbers.
         """
-        vol_change = volume.pct_change(window).fillna(0)
-        return vol_change
-
-    def calculate_trend_slope(self, prices, window=20):
-        """
-        Calculate trend slope using linear regression.
-
-        Args:
-            prices (pd.Series): Price series
-            window (int): Window for slope calculation
-
-        Returns:
-            pd.Series: Trend slopes
-        """
-        slopes = pd.Series(index=prices.index, dtype=float)
-        for i in range(window, len(prices)):
-            y = prices.iloc[i - window : i].values
-            x = np.arange(len(y))
-            if len(x) > 1:
-                slope = np.polyfit(x, y, 1)[0]
-                slopes.iloc[i] = slope
-        return slopes.fillna(0)
-
-    def calculate_bollinger_bands(self, prices, window=20, num_std=2):
-        """
-        Calculate Bollinger Bands and bandwidth.
-
-        Args:
-            prices (pd.Series): Price series
-            window (int): Lookback window
-            num_std (int): Number of standard deviations
-
-        Returns:
-            tuple: (Upper band, Lower band, Bandwidth)
-        """
-        rolling_mean = prices.rolling(window=window).mean()
-        rolling_std = prices.rolling(window=window).std()
-        upper_band = rolling_mean + (rolling_std * num_std)
-        lower_band = rolling_mean - (rolling_std * num_std)
-        bandwidth = (upper_band - lower_band) / rolling_mean
-        return upper_band, lower_band, bandwidth
+        rolling_mean = series.rolling(window=window).mean()
+        rolling_std = series.rolling(window=window).std()
+        
+        # Prevent division by zero
+        rolling_std = rolling_std.replace(0, 1)
+        return ((series - rolling_mean) / rolling_std).fillna(0)
 
     def extract_features(self, df):
         """
-        Extract all features from OHLCV data.
-
-        Args:
-            df (pd.DataFrame): DataFrame with OHLCV data
-
-        Returns:
-            pd.DataFrame: DataFrame with original data plus feature columns
+        Extract all Phase 1 features suitable for XGBoost/LightGBM.
         """
-        # Make a copy to avoid modifying original data
         feature_df = df.copy()
 
-        # Calculate RSI
-        feature_df["rsi"] = self.calculate_rsi(feature_df["close"])
-
-        # Calculate MACD
-        macd, signal, hist = self.calculate_macd(feature_df["close"])
-        feature_df["macd"] = macd
-        feature_df["macd_signal"] = signal
-        feature_df["macd_histogram"] = hist
-
-        # Calculate ATR
+        # 1. Price Stationarity
+        feature_df["log_return"] = self.calculate_log_returns(feature_df["close"])
+        
+        # 2. Volatility Metrics
         feature_df["atr"] = self.calculate_atr(feature_df)
+        feature_df["atr_normalized"] = self.z_score_normalize(feature_df["atr"], window=100)
+        
+        # 3. Microstructure / Derivatives Edge
+        feature_df["cvd"] = self.calculate_cvd_approximation(feature_df)
+        feature_df["cvd_trend"] = feature_df["cvd"].diff(3) # 3-period change in aggressive flow
+        
+        # Ensure OI and Funding exist (from handler), then calculate derivatives momentum
+        if 'open_interest' in feature_df.columns:
+            # Prevent ZeroDivisionError by temporarily converting 0s to NaNs before pct_change
+            feature_df['oi_change_pct'] = feature_df['open_interest'].replace(0, np.nan).pct_change().fillna(0)
+            feature_df['oi_zscore'] = self.z_score_normalize(feature_df['open_interest'], window=50)
+            
+        if 'funding_rate' in feature_df.columns:
+            feature_df['funding_zscore'] = self.z_score_normalize(feature_df['funding_rate'], window=50)
 
-        # Calculate volume change
-        feature_df["volume_change"] = self.calculate_volume_change(feature_df["volume"])
+        # 4. Standard technicals (Z-scored for ML)
+        feature_df["volume_zscore"] = self.z_score_normalize(feature_df["volume"], window=50)
+        
+        # Drop raw prices (optional, but raw prices cause overfitting in decision trees)
+        # feature_df = feature_df.drop(columns=['open', 'high', 'low', 'close'])
 
-        # Calculate trend slope
-        feature_df["trend_slope"] = self.calculate_trend_slope(feature_df["close"])
-
-        # Calculate Bollinger Band width
-        _, _, bb_width = self.calculate_bollinger_bands(feature_df["close"])
-        feature_df["bb_width"] = bb_width
-
-        # Fill NaN values
-        feature_df = feature_df.fillna(0)
-
-        return feature_df
-
-    def get_feature_vector(self, df, index=-1):
-        """
-        Get feature vector for a specific row.
-
-        Args:
-            df (pd.DataFrame): DataFrame with features
-            index (int): Row index (default: -1 for latest)
-
-        Returns:
-            dict: Feature vector as dictionary
-        """
-        feature_df = self.extract_features(df)
-        if len(feature_df) == 0:
-            return {}
-
-        row = feature_df.iloc[index]
-        return {
-            "rsi": row["rsi"],
-            "macd": row["macd"],
-            "atr": row["atr"],
-            "volume_change": row["volume_change"],
-            "trend_slope": row["trend_slope"],
-            "bb_width": row["bb_width"],
-        }
-
+        return feature_df.fillna(0)
 
 if __name__ == "__main__":
-    # Example usage
     extractor = FeatureExtractor()
-    # This would typically be used with actual OHLCV data
-    print("Feature extractor initialized")
+    print("ML Feature Extractor Initialized.")

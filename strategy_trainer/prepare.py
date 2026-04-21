@@ -1,65 +1,120 @@
+"""
+The Walk-Forward Judge.
+This script evaluates strategy.py using strict Out-Of-Sample validation
+to prevent the AI from overfitting to historical noise.
+"""
+
 import pandas as pd
 import numpy as np
-from strategy import get_signals
+import importlib.util
+import sys
+import os
 
-def evaluate_strategy(timeframe='1y'):
+# Configuration
+DATA_FILE = "data/btc_1h_1y.csv" # We will eventually upgrade this to your V2 data
+STRATEGY_FILE = "strategy.py"
+INITIAL_CAPITAL = 10000.0
+FEES = 0.0006  # 0.06% Taker Fee
+SLIPPAGE = 0.0005 # 0.05% execution slippage
+
+def load_strategy():
+    """Dynamically loads the AI-generated strategy.py."""
+    spec = importlib.util.spec_from_file_location("strategy", STRATEGY_FILE)
+    strategy = importlib.util.module_from_spec(spec)
+    sys.modules["strategy"] = strategy
+    spec.loader.exec_module(strategy)
+    return strategy
+
+def evaluate_window(df_train, df_test, strategy_module):
     """
-    V2 Judge: Walk-Forward Optimization (Train/Test Split)
+    Trains/Generates signals on the training window, 
+    but ONLY evaluates PnL on the strictly unseen test window.
     """
-    csv_path = f"../data/btc_1h_{timeframe}.csv"
-    df = pd.read_csv(csv_path)
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df = df.sort_values('timestamp').reset_index(drop=True)
-
-    # THE SPLIT (60% Train / 40% Test)
-    split_idx = int(len(df) * 0.6)
-    df_train = df.iloc[:split_idx].copy().reset_index(drop=True)
-    df_test = df.iloc[split_idx:].copy().reset_index(drop=True)
-
-    def score_dataset(data):
-        evaluated_df = get_signals(data)
-        
-        evaluated_df['position'] = evaluated_df['signal'].shift(1).fillna(0)
-        evaluated_df['trade_return'] = evaluated_df['position'] * evaluated_df['log_ret']
-        
-        evaluated_df['cum_return'] = evaluated_df['trade_return'].cumsum()
-        
-        total_return = np.exp(evaluated_df['cum_return'].iloc[-1]) - 1 if len(evaluated_df) > 0 else 0
-        
-        mean_ret = evaluated_df['trade_return'].mean()
-        std_ret = evaluated_df['trade_return'].std()
-        sharpe = (mean_ret / std_ret) * np.sqrt(8760) if std_ret > 0 else 0
-        
-        roll_max = evaluated_df['cum_return'].cummax()
-        drawdown = evaluated_df['cum_return'] - roll_max
-        max_dd = np.exp(drawdown.min()) - 1 if len(drawdown) > 0 else 0
-
-        raw_score = (sharpe * 0.40) + (total_return * 0.40) + ((1 + max_dd) * 0.20)
-        
-        trade_count = (evaluated_df['signal'].diff() != 0).sum()
-        if trade_count < 30:
-            raw_score *= (trade_count / 30)
-            
-        return raw_score, total_return, sharpe, max_dd, trade_count
-
-    # Score Both Halves Independently
-    train_score, train_ret, train_sh, train_dd, train_tc = score_dataset(df_train)
-    test_score, test_ret, test_sh, test_dd, test_tc = score_dataset(df_test)
-
-    # The final score penalizes variance between the train and test sets
-    variance_penalty = abs(train_score - test_score) * 0.2
-    final_score = min(train_score, test_score) - variance_penalty
-
-    print("\n--- WALK-FORWARD EVALUATION REPORT ---")
-    print(f"TRAIN SET (First 60%):")
-    print(f"  Return: {train_ret*100:.2f}% | Sharpe: {train_sh:.2f} | Max DD: {train_dd*100:.2f}% | Trades: {train_tc}")
-    print(f"  Train Score: {train_score:.4f}")
+    # 1. The strategy is only allowed to generate signals on the test data
+    # (In a true ML setup, the model fits on df_train and predicts on df_test. 
+    # For now, we apply the logic over the combined window to maintain indicator states, 
+    # but ONLY calculate PnL on the out-of-sample portion).
     
-    print(f"\nTEST SET (Last 40%):")
-    print(f"  Return: {test_ret*100:.2f}% | Sharpe: {test_sh:.2f} | Max DD: {test_dd*100:.2f}% | Trades: {test_tc}")
-    print(f"  Test Score: {test_score:.4f}")
+    combined_df = pd.concat([df_train, df_test]).copy()
+    try:
+        combined_df = strategy_module.get_signals(combined_df)
+    except Exception as e:
+        print(f"Strategy crashed during execution: {e}")
+        return 0.0, 0
     
-    print(f"\nVariance Penalty: -{variance_penalty:.4f}")
-    print(f"FINAL_RESULT:{final_score}")
+    # 2. Isolate the Out-Of-Sample (OOS) testing period
+    oos_df = combined_df.iloc[len(df_train):].copy()
+    
+    if 'signal' not in oos_df.columns:
+        return 0.0, 0
+        
+    # 3. Strict PnL Calculation (incorporating fees and slippage)
+    oos_df['position'] = oos_df['signal'].shift(1).fillna(0)
+    # Calculate returns multiplier
+    oos_df['strategy_returns'] = oos_df['position'] * oos_df['log_return'] # Assuming log returns from V2
+    
+    # Apply fees on position changes
+    trade_triggers = oos_df['position'].diff().fillna(0) != 0
+    oos_df.loc[trade_triggers, 'strategy_returns'] -= (FEES + SLIPPAGE)
 
-    return final_score
+    total_oos_return = np.exp(oos_df['strategy_returns'].sum()) - 1
+    trade_count = trade_triggers.sum()
+    
+    return total_oos_return, trade_count
+
+def run_walk_forward_optimization():
+    print("⚖️ THE JUDGE: Initiating Walk-Forward Optimization...")
+    
+    # Load Data
+    try:
+        df = pd.read_csv(DATA_FILE)
+        # Note: We need to ensure log_return exists for our PnL math
+        if 'log_return' not in df.columns:
+            df['log_return'] = np.log(df['close'] / df['close'].shift(1)).fillna(0)
+    except FileNotFoundError:
+        print(f"❌ Critical Error: Could not find data file {DATA_FILE}")
+        sys.exit(1)
+
+    strategy = load_strategy()
+    
+    # Walk-Forward Parameters
+    total_len = len(df)
+    train_size = int(total_len * 0.4) # 40% of data for training
+    test_size = int(total_len * 0.1)  # 10% steps for testing
+    
+    if train_size + test_size > total_len:
+         print("Dataset too small for WFO.")
+         return
+
+    fold_returns = []
+    total_trades = 0
+    
+    print("\n--- OUT OF SAMPLE (OOS) FOLD RESULTS ---")
+    for start_idx in range(0, total_len - train_size - test_size + 1, test_size):
+        end_train = start_idx + train_size
+        end_test = end_train + test_size
+        
+        df_train = df.iloc[start_idx:end_train]
+        df_test = df.iloc[end_train:end_test]
+        
+        oos_return, trades = evaluate_window(df_train, df_test, strategy)
+        fold_returns.append(oos_return)
+        total_trades += trades
+        
+        print(f"Fold {len(fold_returns)}: OOS Return = {oos_return:.2%}, Trades = {trades}")
+
+    # The Final Uncheatable Score
+    avg_oos_return = np.mean(fold_returns)
+    win_rate_folds = sum(1 for r in fold_returns if r > 0) / len(fold_returns)
+    
+    print("\n==================================================")
+    print(f"⚖️ FINAL WFO SCORE: {avg_oos_return:.4%} Avg OOS Return")
+    print(f"📈 Fold Win Rate:   {win_rate_folds:.2%} ({sum(1 for r in fold_returns if r > 0)}/{len(fold_returns)} positive folds)")
+    print(f"🔄 Total Trades:    {total_trades}")
+    print("==================================================")
+    
+    # We output the FINAL_RESULT so your auto_loop.py can parse it
+    print(f"FINAL_RESULT:{avg_oos_return}")
+
+if __name__ == "__main__":
+    run_walk_forward_optimization()

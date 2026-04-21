@@ -20,7 +20,8 @@ logs/
 # Experimental code/artifacts
 dev/
 
-# Results file
+# Data folders
+chroma_db/
 
 #Private files
 .env

@@ -588,3 +588,83 @@ COMMIT: 033f06e | SCORE: 0.0 | STATUS: CRASH
 ============================================================
 ⚖️ THE JUDGE: Initiating Walk-Forward Optimization...
 ❌ Critical Error: Could not find data file data/btc_1h_1y.csv
+
+============================================================
+COMMIT: 87f301e | SCORE: -0.04944212722540079 | STATUS: DISCARD
+============================================================
+⚖️ THE JUDGE: Initiating Walk-Forward Optimization...
+
+--- OUT OF SAMPLE (OOS) FOLD RESULTS ---
+Fold 1: OOS Return = -5.69%, Trades = 21
+Fold 2: OOS Return = -5.14%, Trades = 14
+Fold 3: OOS Return = -6.90%, Trades = 18
+Fold 4: OOS Return = -7.59%, Trades = 20
+Fold 5: OOS Return = -5.98%, Trades = 19
+Fold 6: OOS Return = 1.63%, Trades = 20
+
+==================================================
+⚖️ FINAL WFO SCORE: -4.9442% Avg OOS Return
+📈 Fold Win Rate:   16.67% (1/6 positive folds)
+🔄 Total Trades:    112
+==================================================
+FINAL_RESULT:-0.04944212722540079
+
+============================================================
+COMMIT: 889f7ac | SCORE: -0.08555390576937845 | STATUS: DISCARD
+============================================================
+⚖️ THE JUDGE: Initiating Walk-Forward Optimization...
+
+--- OUT OF SAMPLE (OOS) FOLD RESULTS ---
+Fold 1: OOS Return = -6.79%, Trades = 26
+Fold 2: OOS Return = -16.19%, Trades = 28
+Fold 3: OOS Return = -3.68%, Trades = 27
+Fold 4: OOS Return = -12.61%, Trades = 38
+Fold 5: OOS Return = -5.50%, Trades = 28
+Fold 6: OOS Return = -6.57%, Trades = 24
+
+==================================================
+⚖️ FINAL WFO SCORE: -8.5554% Avg OOS Return
+📈 Fold Win Rate:   0.00% (0/6 positive folds)
+🔄 Total Trades:    171
+==================================================
+FINAL_RESULT:-0.08555390576937845
+
+============================================================
+COMMIT: 6dbc874 | SCORE: -0.031092317120500774 | STATUS: DISCARD
+============================================================
+⚖️ THE JUDGE: Initiating Walk-Forward Optimization...
+
+--- OUT OF SAMPLE (OOS) FOLD RESULTS ---
+Fold 1: OOS Return = -2.65%, Trades = 10
+Fold 2: OOS Return = -3.01%, Trades = 4
+Fold 3: OOS Return = -1.42%, Trades = 10
+Fold 4: OOS Return = -5.32%, Trades = 8
+Fold 5: OOS Return = -4.30%, Trades = 10
+Fold 6: OOS Return = -1.96%, Trades = 6
+
+==================================================
+⚖️ FINAL WFO SCORE: -3.1092% Avg OOS Return
+📈 Fold Win Rate:   0.00% (0/6 positive folds)
+🔄 Total Trades:    48
+==================================================
+FINAL_RESULT:-0.031092317120500774
+
+============================================================
+COMMIT: 413309c | SCORE: -0.03204469673347996 | STATUS: DISCARD
+============================================================
+⚖️ THE JUDGE: Initiating Walk-Forward Optimization...
+
+--- OUT OF SAMPLE (OOS) FOLD RESULTS ---
+Fold 1: OOS Return = -4.86%, Trades = 8
+Fold 2: OOS Return = -1.68%, Trades = 2
+Fold 3: OOS Return = -0.35%, Trades = 10
+Fold 4: OOS Return = -5.55%, Trades = 10
+Fold 5: OOS Return = -4.12%, Trades = 6
+Fold 6: OOS Return = -2.66%, Trades = 4
+
+==================================================
+⚖️ FINAL WFO SCORE: -3.2045% Avg OOS Return
+📈 Fold Win Rate:   0.00% (0/6 positive folds)
+🔄 Total Trades:    40
+==================================================
+FINAL_RESULT:-0.03204469673347996

@@ -45,7 +45,7 @@ def get_signals(df):
     long_condition = (df['cvd_robust'] < -2.0) & (df['zscore_norm'] < -1.5) & vol_strong
     short_condition = (df['cvd_robust'] > 2.0) & (df['zscore_norm'] > 1.5) & vol_strong
 
-    cooldown = 15
+    cooldown = 20
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -79,9 +79,9 @@ def get_signals(df):
         if vol_med > 0:
             # Wider range, more adaptive to volatility regimes
             vol_ratio_local = vol / vol_med
-            # Use sigmoid-like scaling to keep multiplier between 2.2 and 3.8
-            atr_multiplier = 2.2 + (1.6 / (1.0 + np.exp(-vol_ratio_local + 0.5)))
-            atr_multiplier = max(2.2, min(3.8, atr_multiplier))
+            # Use sigmoid-like scaling to keep multiplier between 1.8 and 3.5
+            atr_multiplier = 1.8 + (1.7 / (1.0 + np.exp(-vol_ratio_local + 1.0)))
+            atr_multiplier = max(1.8, min(3.5, atr_multiplier))
         else:
             atr_multiplier = 2.5
 

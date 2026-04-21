@@ -251,7 +251,7 @@ class QuantitativeEvaluator:
 # Example usage
 if __name__ == "__main__":
     # Test with a simple strategy
-    from offline_training.strategy import get_signals
+    from strategy_trainer.strategy import get_signals
     
     evaluator = QuantitativeEvaluator("data/btc_1h_1y.csv")
     

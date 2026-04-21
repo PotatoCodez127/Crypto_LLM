@@ -1,1 +1,0 @@
-Hi, please read program.md thoroughly. We are adapting this from an LLM trainer to a quantitative trading strategy optimizer. Let's kick off a new experiment! Let's do the setup first.

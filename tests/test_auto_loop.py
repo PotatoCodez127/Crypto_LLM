@@ -3,7 +3,7 @@ import os
 from unittest.mock import patch
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, os.path.join(project_root, 'offline_training'))
+sys.path.insert(0, os.path.join(project_root, 'strategy_trainer'))
 
 # We use patch to override the RESULTS_FILE path inside auto_loop just for this test
 @patch('auto_loop.RESULTS_FILE', 'test_dummy_results.tsv')

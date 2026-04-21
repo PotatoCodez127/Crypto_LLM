@@ -26,7 +26,7 @@ The codebase is strictly modular, separating the continuous execution loop, quan
     │   │   └── extractor.py
     │   └── strategy/              # 🎯 (WIP) State machine & time filters
     ├── tests/                     # 🧪 Unit testing
-    ├── offline_training/          # 🔬 PyTorch LLM pre-training & research
+    ├── strategy_trainer/          # 🔬 PyTorch LLM pre-training & research
     ├── main_live.py               # ▶️ The 24/7 continuous execution loop
     ├── main_backtest.py           # ⏪ The historical strategy evaluator
     └── requirements.txt
@@ -81,7 +81,7 @@ python tests/test_semantic_tape.py
 
 ### [v0.1.0] - Architecture Overhaul
 - Completely restructured the repository into a `src/` module format.
-- Extracted offline PyTorch training logic into `offline_training/`.
+- Extracted offline PyTorch training logic into `strategy_trainer/`.
 - Created `main_live.py` continuous execution loop.
 - Built `SemanticTapeGenerator` to translate quantitative features into LLM-readable text.
 - Fixed absolute/relative import routing across all `src` modules.

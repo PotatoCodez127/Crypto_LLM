@@ -53,7 +53,7 @@ Because you are running inside Aider, you must use Aider's `/run` command to exe
 LOOP FOREVER:
 1. Tune `strategy.py` with an experimental idea by directly hacking the code.
 2. Commit the changes to git.
-3. Run the experiment using Aider's run command: `/run python offline_training/train.py`
+3. Run the experiment using Aider's run command: `/run python strategy_trainer/train.py`
 4. Read the output provided by Aider. Look for `FINAL_RESULT:`.
 5. If the run crashed (Python traceback), attempt a quick fix. If it's fundamentally broken, log "crash" and move on.
 6. Record the results in the `results.tsv` file (leave it untracked by git).

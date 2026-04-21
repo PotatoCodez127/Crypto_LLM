@@ -1,27 +1,0 @@
-warning: `VIRTUAL_ENV=C:\Users\jeand\Desktop\Crypto_LLM\.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
-[*] Found local data: 8761 candles in C:/Users/jeand/Desktop/Crypto_LLM/data/btc_1h_1y.csv
-[*] Resuming download for 1y...
-Progress (1y):   0%|          | 0/1 [00:00<?, ?it/s]Progress (1y):   0%|          | 0/1 [00:16<?, ?it/s]
-C:\Users\jeand\Desktop\Crypto_LLM\offline_training\strategy.py:32: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
-  df['atr'] = df['atr'].fillna(method='bfill').fillna(0)
-C:\Users\jeand\Desktop\Crypto_LLM\offline_training\strategy.py:36: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
-  df['sma200'] = df['sma200'].fillna(method='bfill').fillna(df['close'])
-C:\Users\jeand\Desktop\Crypto_LLM\offline_training\strategy.py:39: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
-  df['sma50'] = df['sma50'].fillna(method='bfill').fillna(df['close'])
-C:\Users\jeand\Desktop\Crypto_LLM\offline_training\strategy.py:42: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
-  df['volume_ma20'] = df['volume_ma20'].fillna(method='bfill').fillna(df['volume'])
-[!] Penalty applied: Excessive Drawdown (-58.07%)
-
-            --- PERFORMANCE REPORT [1y] ---
-            Sharpe Ratio  : -2.24
-            Total Return  : -54.08%
-            Max Drawdown  : -58.07%
-            Profit Factor : 0.91
-            Win Rate      : 29.77%
-            Total Trades  : 261
-            ---------------------------------
-            RAW SCORE     : -0.6539
-            PENALTY MULTI : 0.10
-            FINAL SCORE   : -0.0654
-            
-FINAL_RESULT:-0.06538907201549378

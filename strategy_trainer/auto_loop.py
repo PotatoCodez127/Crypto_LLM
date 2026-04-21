@@ -82,8 +82,9 @@ def run_experiment():
     aider_process = subprocess.run([
         AIDER_CMD,
         "--message", prompt,
-        "--yes", 
-        STRATEGY_FILE
+        "--yes",
+        "--no-show-release-notes", # <-- ADD THIS: Blocks the browser popup for release notes
+        "--no-check-update",       # <-- ADD THIS: Stops Aider from pinging its servers for updatesSTRATEGY_FILE
     # ], capture_output=True, text=True)
     ])
 

@@ -3,9 +3,9 @@ import os
 import pandas as pd
 import numpy as np
 
-# Ensure Python can find the offline_training folder
+# Ensure Python can find the strategy_trainer folder
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, os.path.join(project_root, 'offline_training'))
+sys.path.insert(0, os.path.join(project_root, 'strategy_trainer'))
 
 from strategy import get_signals
 

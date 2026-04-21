@@ -41,3 +41,3241 @@ TEST SET (Last 40%):
 Variance Penalty: -0.2860
 FINAL_RESULT:-0.9307086767941319
 FINAL_RESULT:-0.9307086767941319
+
+============================================================
+COMMIT: 5e4b41f | SCORE: -0.9214783319188574 | STATUS: KEEP
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -24.08% | Sharpe: -1.48 | Max DD: -36.68% | Trades: 340
+  Train Score: -0.5604
+
+TEST SET (Last 40%):
+  Return: 43.99% | Sharpe: 2.26 | Max DD: -18.40% | Trades: 194
+  Test Score: 1.2450
+
+Variance Penalty: -0.3611
+FINAL_RESULT:-0.9214783319188574
+FINAL_RESULT:-0.9214783319188574
+
+============================================================
+COMMIT: a6cae82 | SCORE: -0.4612454299890758 | STATUS: KEEP
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -17.43% | Sharpe: -1.05 | Max DD: -36.88% | Trades: 324
+  Train Score: -0.3650
+
+TEST SET (Last 40%):
+  Return: -1.14% | Sharpe: -0.07 | Max DD: -24.88% | Trades: 216
+  Test Score: 0.1161
+
+Variance Penalty: -0.0962
+FINAL_RESULT:-0.4612454299890758
+FINAL_RESULT:-0.4612454299890758
+
+============================================================
+COMMIT: 320ba8c | SCORE: -1.1864286849718992 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -33.48% | Sharpe: -2.10 | Max DD: -43.25% | Trades: 352
+  Train Score: -0.8619
+
+TEST SET (Last 40%):
+  Return: 23.42% | Sharpe: 1.24 | Max DD: -15.08% | Trades: 214
+  Test Score: 0.7609
+
+Variance Penalty: -0.3246
+FINAL_RESULT:-1.1864286849718992
+FINAL_RESULT:-1.1864286849718992
+
+============================================================
+COMMIT: 05722df | SCORE: -1.5146854585167362 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -40.56% | Sharpe: -2.86 | Max DD: -43.02% | Trades: 330
+  Train Score: -1.1939
+
+TEST SET (Last 40%):
+  Return: 9.56% | Sharpe: 0.58 | Max DD: -30.60% | Trades: 210
+  Test Score: 0.4101
+
+Variance Penalty: -0.3208
+FINAL_RESULT:-1.5146854585167362
+FINAL_RESULT:-1.5146854585167362
+
+============================================================
+COMMIT: 0a19a31 | SCORE: -1.142780183459703 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -30.61% | Sharpe: -2.19 | Max DD: -35.37% | Trades: 273
+  Train Score: -0.8691
+
+TEST SET (Last 40%):
+  Return: 11.99% | Sharpe: 0.78 | Max DD: -31.30% | Trades: 170
+  Test Score: 0.4992
+
+Variance Penalty: -0.2737
+FINAL_RESULT:-1.142780183459703
+FINAL_RESULT:-1.142780183459703
+
+============================================================
+COMMIT: 3021198 | SCORE: -1.1379764279278863 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -29.70% | Sharpe: -2.07 | Max DD: -42.68% | Trades: 277
+  Train Score: -0.8308
+
+TEST SET (Last 40%):
+  Return: 19.26% | Sharpe: 1.16 | Max DD: -17.82% | Trades: 182
+  Test Score: 0.7049
+
+Variance Penalty: -0.3071
+FINAL_RESULT:-1.1379764279278863
+FINAL_RESULT:-1.1379764279278863
+
+============================================================
+COMMIT: 499c535 | SCORE: -0.676660560800915 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -18.68% | Sharpe: -1.23 | Max DD: -37.61% | Trades: 271
+  Train Score: -0.4419
+
+TEST SET (Last 40%):
+  Return: 20.48% | Sharpe: 1.25 | Max DD: -25.65% | Trades: 170
+  Test Score: 0.7320
+
+Variance Penalty: -0.2348
+FINAL_RESULT:-0.676660560800915
+FINAL_RESULT:-0.676660560800915
+
+============================================================
+COMMIT: 6c4aa29 | SCORE: -1.497402686538853 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -37.06% | Sharpe: -2.88 | Max DD: -38.01% | Trades: 392
+  Train Score: -1.1748
+
+TEST SET (Last 40%):
+  Return: 9.22% | Sharpe: 0.59 | Max DD: -17.23% | Trades: 222
+  Test Score: 0.4385
+
+Variance Penalty: -0.3226
+FINAL_RESULT:-1.497402686538853
+FINAL_RESULT:-1.497402686538853
+
+============================================================
+COMMIT: 436b2c7 | SCORE: -0.5501848637422609 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -15.92% | Sharpe: -1.10 | Max DD: -29.26% | Trades: 222
+  Train Score: -0.3606
+
+TEST SET (Last 40%):
+  Return: 14.55% | Sharpe: 0.94 | Max DD: -24.17% | Trades: 151
+  Test Score: 0.5876
+
+Variance Penalty: -0.1896
+FINAL_RESULT:-0.5501848637422609
+FINAL_RESULT:-0.5501848637422609
+
+============================================================
+COMMIT: b5d54e2 | SCORE: -1.1702519090243877 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -31.71% | Sharpe: -2.10 | Max DD: -35.81% | Trades: 470
+  Train Score: -0.8386
+
+TEST SET (Last 40%):
+  Return: 24.76% | Sharpe: 1.39 | Max DD: -17.44% | Trades: 262
+  Test Score: 0.8197
+
+Variance Penalty: -0.3317
+FINAL_RESULT:-1.1702519090243877
+FINAL_RESULT:-1.1702519090243877
+
+============================================================
+COMMIT: 5056c6a | SCORE: -0.932758453051884 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -26.64% | Sharpe: -1.83 | Max DD: -36.24% | Trades: 272
+  Train Score: -0.7116
+
+TEST SET (Last 40%):
+  Return: 8.38% | Sharpe: 0.53 | Max DD: -26.38% | Trades: 176
+  Test Score: 0.3944
+
+Variance Penalty: -0.2212
+FINAL_RESULT:-0.932758453051884
+FINAL_RESULT:-0.932758453051884
+
+============================================================
+COMMIT: a6f1c9c | SCORE: 0.03709845934826206 | STATUS: KEEP
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -0.23% | Sharpe: -0.01 | Max DD: -30.21% | Trades: 246
+  Train Score: 0.1333
+
+TEST SET (Last 40%):
+  Return: 15.55% | Sharpe: 0.99 | Max DD: -21.55% | Trades: 165
+  Test Score: 0.6143
+
+Variance Penalty: -0.0962
+FINAL_RESULT:0.03709845934826206
+FINAL_RESULT:0.03709845934826206
+
+============================================================
+COMMIT: 0d541eb | SCORE: -1.3050398505472511 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -31.13% | Sharpe: -2.62 | Max DD: -34.33% | Trades: 171
+  Train Score: -1.0410
+
+TEST SET (Last 40%):
+  Return: 2.77% | Sharpe: 0.24 | Max DD: -13.89% | Trades: 111
+  Test Score: 0.2791
+
+Variance Penalty: -0.2640
+FINAL_RESULT:-1.3050398505472511
+FINAL_RESULT:-1.3050398505472511
+
+============================================================
+COMMIT: fca1e83 | SCORE: -0.41861897729098596 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -12.31% | Sharpe: -0.92 | Max DD: -26.68% | Trades: 191
+  Train Score: -0.2724
+
+TEST SET (Last 40%):
+  Return: 7.95% | Sharpe: 0.64 | Max DD: -14.71% | Trades: 123
+  Test Score: 0.4584
+
+Variance Penalty: -0.1462
+FINAL_RESULT:-0.41861897729098596
+FINAL_RESULT:-0.41861897729098596
+
+============================================================
+COMMIT: c5f8284 | SCORE: -0.9473522496992458 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -26.45% | Sharpe: -2.07 | Max DD: -30.65% | Trades: 227
+  Train Score: -0.7934
+
+TEST SET (Last 40%):
+  Return: -4.95% | Sharpe: -0.39 | Max DD: -23.38% | Trades: 151
+  Test Score: -0.0238
+
+Variance Penalty: -0.1539
+FINAL_RESULT:-0.9473522496992458
+FINAL_RESULT:-0.9473522496992458
+
+============================================================
+COMMIT: 54137f0 | SCORE: -0.5909490662623051 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -14.78% | Sharpe: -1.04 | Max DD: -24.48% | Trades: 165
+  Train Score: -0.3245
+
+TEST SET (Last 40%):
+  Return: 27.36% | Sharpe: 1.82 | Max DD: -14.50% | Trades: 109
+  Test Score: 1.0075
+
+Variance Penalty: -0.2664
+FINAL_RESULT:-0.5909490662623051
+FINAL_RESULT:-0.5909490662623051
+
+============================================================
+COMMIT: 43fe1bf | SCORE: -0.5866187569027838 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -18.22% | Sharpe: -1.25 | Max DD: -33.05% | Trades: 298
+  Train Score: -0.4388
+
+TEST SET (Last 40%):
+  Return: 4.37% | Sharpe: 0.31 | Max DD: -20.58% | Trades: 185
+  Test Score: 0.3000
+
+Variance Penalty: -0.1478
+FINAL_RESULT:-0.5866187569027838
+FINAL_RESULT:-0.5866187569027838
+
+============================================================
+COMMIT: 9e17dc5 | SCORE: -1.486538386066236 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -41.78% | Sharpe: -2.93 | Max DD: -45.40% | Trades: 384
+  Train Score: -1.2280
+
+TEST SET (Last 40%):
+  Return: -3.05% | Sharpe: -0.20 | Max DD: -21.70% | Trades: 224
+  Test Score: 0.0646
+
+Variance Penalty: -0.2585
+FINAL_RESULT:-1.486538386066236
+FINAL_RESULT:-1.486538386066236
+
+============================================================
+COMMIT: 0e7ee55 | SCORE: -1.4367855729293324 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -29.55% | Sharpe: -2.09 | Max DD: -36.60% | Trades: 286
+  Train Score: -0.8269
+
+TEST SET (Last 40%):
+  Return: 83.20% | Sharpe: 4.28 | Max DD: -10.74% | Trades: 152
+  Test Score: 2.2225
+
+Variance Penalty: -0.6099
+FINAL_RESULT:-1.4367855729293324
+FINAL_RESULT:-1.4367855729293324
+
+============================================================
+COMMIT: 1a1e422 | SCORE: 0.3202105601161108 | STATUS: KEEP
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.21% | Sharpe: 0.39 | Max DD: -10.43% | Trades: 111
+  Train Score: 0.3575
+
+TEST SET (Last 40%):
+  Return: 3.65% | Sharpe: 0.36 | Max DD: -16.06% | Trades: 73
+  Test Score: 0.3264
+
+Variance Penalty: -0.0062
+FINAL_RESULT:0.3202105601161108
+FINAL_RESULT:0.3202105601161108
+
+============================================================
+COMMIT: c08101e | SCORE: -0.10968509990442069 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -5.28% | Sharpe: -0.58 | Max DD: -12.11% | Trades: 79
+  Train Score: -0.0759
+
+TEST SET (Last 40%):
+  Return: -1.52% | Sharpe: -0.19 | Max DD: -12.73% | Trades: 59
+  Test Score: 0.0928
+
+Variance Penalty: -0.0337
+FINAL_RESULT:-0.10968509990442069
+FINAL_RESULT:-0.10968509990442069
+
+============================================================
+COMMIT: 3122418 | SCORE: 0.05819262798233496 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 19.52% | Sharpe: 1.51 | Max DD: -8.65% | Trades: 65
+  Train Score: 0.8640
+
+TEST SET (Last 40%):
+  Return: 0.44% | Sharpe: 0.04 | Max DD: -13.10% | Trades: 61
+  Test Score: 0.1925
+
+Variance Penalty: -0.1343
+FINAL_RESULT:0.05819262798233496
+FINAL_RESULT:0.05819262798233496
+
+============================================================
+COMMIT: 299b9df | SCORE: -0.8703139925775909 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -2.14% | Sharpe: -0.25 | Max DD: -9.62% | Trades: 59
+  Train Score: 0.0726
+
+TEST SET (Last 40%):
+  Return: -13.88% | Sharpe: -2.06 | Max DD: -16.74% | Trades: 47
+  Test Score: -0.7132
+
+Variance Penalty: -0.1572
+FINAL_RESULT:-0.8703139925775909
+FINAL_RESULT:-0.8703139925775909
+
+============================================================
+COMMIT: 4cbf56e | SCORE: -0.08759543226195791 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 8.69% | Sharpe: 0.84 | Max DD: -6.98% | Trades: 73
+  Train Score: 0.5570
+
+TEST SET (Last 40%):
+  Return: -3.10% | Sharpe: -0.36 | Max DD: -11.91% | Trades: 59
+  Test Score: 0.0198
+
+Variance Penalty: -0.1074
+FINAL_RESULT:-0.08759543226195791
+FINAL_RESULT:-0.08759543226195791
+
+============================================================
+COMMIT: 8143763 | SCORE: -1.0540669699984815 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 14.85% | Sharpe: 1.16 | Max DD: -11.07% | Trades: 63
+  Train Score: 0.7001
+
+TEST SET (Last 40%):
+  Return: -15.55% | Sharpe: -2.16 | Max DD: -18.67% | Trades: 49
+  Test Score: -0.7617
+
+Variance Penalty: -0.2924
+FINAL_RESULT:-1.0540669699984815
+FINAL_RESULT:-1.0540669699984815
+
+============================================================
+COMMIT: c5f874e | SCORE: 0.017321898890174103 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 2.14% | Sharpe: 0.14 | Max DD: -23.51% | Trades: 228
+  Train Score: 0.2162
+
+TEST SET (Last 40%):
+  Return: 33.17% | Sharpe: 2.26 | Max DD: -13.17% | Trades: 145
+  Test Score: 1.2104
+
+Variance Penalty: -0.1988
+FINAL_RESULT:0.017321898890174103
+FINAL_RESULT:0.017321898890174103
+
+============================================================
+COMMIT: c7873cc | SCORE: -0.7295097580497677 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.18% | Sharpe: 0.33 | Max DD: -21.86% | Trades: 220
+  Train Score: 0.3107
+
+TEST SET (Last 40%):
+  Return: -16.68% | Sharpe: -1.58 | Max DD: -28.18% | Trades: 146
+  Test Score: -0.5561
+
+Variance Penalty: -0.1734
+FINAL_RESULT:-0.7295097580497677
+FINAL_RESULT:-0.7295097580497677
+
+============================================================
+COMMIT: ac629c3 | SCORE: -0.360109234372614 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 8.41% | Sharpe: 0.55 | Max DD: -15.47% | Trades: 153
+  Train Score: 0.4225
+
+TEST SET (Last 40%):
+  Return: -9.82% | Sharpe: -0.88 | Max DD: -20.19% | Trades: 113
+  Test Score: -0.2297
+
+Variance Penalty: -0.1304
+FINAL_RESULT:-0.360109234372614
+FINAL_RESULT:-0.360109234372614
+
+============================================================
+COMMIT: 29d4f16 | SCORE: 0.04653997885691393 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.16% | Sharpe: -0.14 | Max DD: -10.26% | Trades: 45
+  Train Score: 0.1186
+
+TEST SET (Last 40%):
+  Return: -1.84% | Sharpe: -0.27 | Max DD: -13.86% | Trades: 37
+  Test Score: 0.0585
+
+Variance Penalty: -0.0120
+FINAL_RESULT:0.04653997885691393
+FINAL_RESULT:0.04653997885691393
+
+============================================================
+COMMIT: 2ff61d3 | SCORE: -0.37225705124883 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 12.70% | Sharpe: 0.85 | Max DD: -13.22% | Trades: 127
+  Train Score: 0.5658
+
+TEST SET (Last 40%):
+  Return: -9.39% | Sharpe: -0.85 | Max DD: -19.04% | Trades: 103
+  Test Score: -0.2159
+
+Variance Penalty: -0.1563
+FINAL_RESULT:-0.37225705124883
+FINAL_RESULT:-0.37225705124883
+
+============================================================
+COMMIT: 3ddfeb6 | SCORE: -1.733128098764171 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 10.00% | Sharpe: 0.63 | Max DD: -13.76% | Trades: 193
+  Train Score: 0.4658
+
+TEST SET (Last 40%):
+  Return: -29.82% | Sharpe: -3.46 | Max DD: -31.48% | Trades: 139
+  Test Score: -1.3666
+
+Variance Penalty: -0.3665
+FINAL_RESULT:-1.733128098764171
+FINAL_RESULT:-1.733128098764171
+
+============================================================
+COMMIT: b40de04 | SCORE: -0.817687097734197 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 9.96% | Sharpe: 1.06 | Max DD: -7.14% | Trades: 65
+  Train Score: 0.6512
+
+TEST SET (Last 40%):
+  Return: -11.70% | Sharpe: -1.73 | Max DD: -16.09% | Trades: 51
+  Test Score: -0.5729
+
+Variance Penalty: -0.2448
+FINAL_RESULT:-0.817687097734197
+FINAL_RESULT:-0.817687097734197
+
+============================================================
+COMMIT: 1cf39a1 | SCORE: -0.9433754936463353 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 2.67% | Sharpe: 0.19 | Max DD: -17.85% | Trades: 207
+  Train Score: 0.2511
+
+TEST SET (Last 40%):
+  Return: -18.92% | Sharpe: -2.02 | Max DD: -30.34% | Trades: 141
+  Test Score: -0.7443
+
+Variance Penalty: -0.1991
+FINAL_RESULT:-0.9433754936463353
+FINAL_RESULT:-0.9433754936463353
+
+============================================================
+COMMIT: 0d37e8e | SCORE: -0.38745584865941973 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -12.24% | Sharpe: -1.09 | Max DD: -17.24% | Trades: 190
+  Train Score: -0.3196
+
+TEST SET (Last 40%):
+  Return: -3.30% | Sharpe: -0.31 | Max DD: -21.07% | Trades: 129
+  Test Score: 0.0199
+
+Variance Penalty: -0.0679
+FINAL_RESULT:-0.38745584865941973
+FINAL_RESULT:-0.38745584865941973
+
+============================================================
+COMMIT: 05f1528 | SCORE: -0.7841391966807849 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.94% | Sharpe: 0.86 | Max DD: -22.46% | Trades: 147
+  Train Score: 0.5564
+
+TEST SET (Last 40%):
+  Return: -16.67% | Sharpe: -1.59 | Max DD: -29.71% | Trades: 105
+  Test Score: -0.5607
+
+Variance Penalty: -0.2234
+FINAL_RESULT:-0.7841391966807849
+FINAL_RESULT:-0.7841391966807849
+
+============================================================
+COMMIT: fc62527 | SCORE: -0.8276435430175164 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 7.09% | Sharpe: 0.79 | Max DD: -10.14% | Trades: 43
+  Train Score: 0.5258
+
+TEST SET (Last 40%):
+  Return: -11.78% | Sharpe: -1.82 | Max DD: -14.10% | Trades: 39
+  Test Score: -0.6021
+
+Variance Penalty: -0.2256
+FINAL_RESULT:-0.8276435430175164
+FINAL_RESULT:-0.8276435430175164
+
+============================================================
+COMMIT: 5b34548 | SCORE: -0.3348682665348536 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 1.49% | Sharpe: 0.11 | Max DD: -12.82% | Trades: 173
+  Train Score: 0.2254
+
+TEST SET (Last 40%):
+  Return: -9.05% | Sharpe: -0.93 | Max DD: -16.35% | Trades: 117
+  Test Score: -0.2415
+
+Variance Penalty: -0.0934
+FINAL_RESULT:-0.3348682665348536
+FINAL_RESULT:-0.3348682665348536
+
+============================================================
+COMMIT: 3ba8948 | SCORE: -0.4123095494137273 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.47% | Sharpe: 0.30 | Max DD: -21.61% | Trades: 207
+  Train Score: 0.2938
+
+TEST SET (Last 40%):
+  Return: -10.42% | Sharpe: -1.00 | Max DD: -27.06% | Trades: 149
+  Test Score: -0.2946
+
+Variance Penalty: -0.1177
+FINAL_RESULT:-0.4123095494137273
+FINAL_RESULT:-0.4123095494137273
+
+============================================================
+COMMIT: 24b4e7c | SCORE: -0.0922302890888039 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -4.93% | Sharpe: -0.32 | Max DD: -19.48% | Trades: 196
+  Train Score: 0.0119
+
+TEST SET (Last 40%):
+  Return: 11.00% | Sharpe: 0.81 | Max DD: -17.33% | Trades: 121
+  Test Score: 0.5326
+
+Variance Penalty: -0.1041
+FINAL_RESULT:-0.0922302890888039
+FINAL_RESULT:-0.0922302890888039
+
+============================================================
+COMMIT: 34a1b95 | SCORE: -0.840050155417906 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.26% | Sharpe: 0.21 | Max DD: -14.05% | Trades: 169
+  Train Score: 0.2680
+
+TEST SET (Last 40%):
+  Return: -19.90% | Sharpe: -1.79 | Max DD: -29.62% | Trades: 125
+  Test Score: -0.6554
+
+Variance Penalty: -0.1847
+FINAL_RESULT:-0.840050155417906
+FINAL_RESULT:-0.840050155417906
+
+============================================================
+COMMIT: 050114c | SCORE: -0.7001411783877652 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 7.88% | Sharpe: 0.63 | Max DD: -9.70% | Trades: 241
+  Train Score: 0.4621
+
+TEST SET (Last 40%):
+  Return: -12.05% | Sharpe: -1.55 | Max DD: -19.33% | Trades: 157
+  Test Score: -0.5064
+
+Variance Penalty: -0.1937
+FINAL_RESULT:-0.7001411783877652
+FINAL_RESULT:-0.7001411783877652
+
+============================================================
+COMMIT: 143e361 | SCORE: -0.36071051788291625 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -9.69% | Sharpe: -0.67 | Max DD: -23.73% | Trades: 236
+  Train Score: -0.1552
+
+TEST SET (Last 40%):
+  Return: 22.50% | Sharpe: 1.54 | Max DD: -16.99% | Trades: 162
+  Test Score: 0.8722
+
+Variance Penalty: -0.2055
+FINAL_RESULT:-0.36071051788291625
+FINAL_RESULT:-0.36071051788291625
+
+============================================================
+COMMIT: d6572fa | SCORE: -1.3506803367088223 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.35% | Sharpe: 0.31 | Max DD: -20.34% | Trades: 179
+  Train Score: 0.3017
+
+TEST SET (Last 40%):
+  Return: -23.42% | Sharpe: -2.79 | Max DD: -32.13% | Trades: 127
+  Test Score: -1.0753
+
+Variance Penalty: -0.2754
+FINAL_RESULT:-1.3506803367088223
+FINAL_RESULT:-1.3506803367088223
+
+============================================================
+COMMIT: c355a8f | SCORE: -0.9792957693709176 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -0.94% | Sharpe: -0.06 | Max DD: -20.80% | Trades: 199
+  Train Score: 0.1298
+
+TEST SET (Last 40%):
+  Return: -21.00% | Sharpe: -2.12 | Max DD: -31.21% | Trades: 141
+  Test Score: -0.7945
+
+Variance Penalty: -0.1848
+FINAL_RESULT:-0.9792957693709176
+FINAL_RESULT:-0.9792957693709176
+
+============================================================
+COMMIT: 6aacced | SCORE: -0.5358946968782793 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 6.67% | Sharpe: 0.73 | Max DD: -5.71% | Trades: 61
+  Train Score: 0.5081
+
+TEST SET (Last 40%):
+  Return: -7.92% | Sharpe: -1.24 | Max DD: -16.24% | Trades: 45
+  Test Score: -0.3619
+
+Variance Penalty: -0.1740
+FINAL_RESULT:-0.5358946968782793
+FINAL_RESULT:-0.5358946968782793
+
+============================================================
+COMMIT: e5aba83 | SCORE: -0.24013253395465317 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 1.68% | Sharpe: 0.11 | Max DD: -23.31% | Trades: 185
+  Train Score: 0.2054
+
+TEST SET (Last 40%):
+  Return: -8.29% | Sharpe: -0.72 | Max DD: -21.60% | Trades: 129
+  Test Score: -0.1659
+
+Variance Penalty: -0.0743
+FINAL_RESULT:-0.24013253395465317
+FINAL_RESULT:-0.24013253395465317
+
+============================================================
+COMMIT: b6e24ea | SCORE: 0.2697799112468139 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.43% | Sharpe: 0.26 | Max DD: -10.56% | Trades: 293
+  Train Score: 0.2949
+
+TEST SET (Last 40%):
+  Return: 5.84% | Sharpe: 0.56 | Max DD: -12.67% | Trades: 189
+  Test Score: 0.4208
+
+Variance Penalty: -0.0252
+FINAL_RESULT:0.2697799112468139
+FINAL_RESULT:0.2697799112468139
+
+============================================================
+COMMIT: 82bf582 | SCORE: -1.4292232350189882 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 1.39% | Sharpe: 0.09 | Max DD: -16.64% | Trades: 175
+  Train Score: 0.2086
+
+TEST SET (Last 40%):
+  Return: -26.51% | Sharpe: -2.95 | Max DD: -34.66% | Trades: 123
+  Test Score: -1.1563
+
+Variance Penalty: -0.2730
+FINAL_RESULT:-1.4292232350189882
+FINAL_RESULT:-1.4292232350189882
+
+============================================================
+COMMIT: 6b64e44 | SCORE: -1.4292720621597468 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -0.94% | Sharpe: -0.07 | Max DD: -21.58% | Trades: 165
+  Train Score: 0.1256
+
+TEST SET (Last 40%):
+  Return: -23.95% | Sharpe: -3.03 | Max DD: -31.76% | Trades: 113
+  Test Score: -1.1701
+
+Variance Penalty: -0.2591
+FINAL_RESULT:-1.4292720621597468
+FINAL_RESULT:-1.4292720621597468
+
+============================================================
+COMMIT: bfa1b16 | SCORE: -0.2735708793338485 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 8.82% | Sharpe: 0.76 | Max DD: -13.27% | Trades: 61
+  Train Score: 0.5111
+
+TEST SET (Last 40%):
+  Return: -6.08% | Sharpe: -0.70 | Max DD: -19.21% | Trades: 51
+  Test Score: -0.1428
+
+Variance Penalty: -0.1308
+FINAL_RESULT:-0.2735708793338485
+FINAL_RESULT:-0.2735708793338485
+
+============================================================
+COMMIT: 7f1f78d | SCORE: -1.354786201849929 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.33% | Sharpe: -0.11 | Max DD: -16.06% | Trades: 197
+  Train Score: 0.1189
+
+TEST SET (Last 40%):
+  Return: -21.86% | Sharpe: -2.93 | Max DD: -24.23% | Trades: 127
+  Test Score: -1.1092
+
+Variance Penalty: -0.2456
+FINAL_RESULT:-1.354786201849929
+FINAL_RESULT:-1.354786201849929
+
+============================================================
+COMMIT: 0ca21fb | SCORE: -0.6570812394448987 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 1.90% | Sharpe: 0.12 | Max DD: -17.51% | Trades: 169
+  Train Score: 0.2215
+
+TEST SET (Last 40%):
+  Return: -16.51% | Sharpe: -1.47 | Max DD: -28.18% | Trades: 123
+  Test Score: -0.5107
+
+Variance Penalty: -0.1464
+FINAL_RESULT:-0.6570812394448987
+FINAL_RESULT:-0.6570812394448987
+
+============================================================
+COMMIT: 012f729 | SCORE: -0.9342458883575789 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -3.21% | Sharpe: -0.23 | Max DD: -25.28% | Trades: 206
+  Train Score: 0.0465
+
+TEST SET (Last 40%):
+  Return: -20.10% | Sharpe: -2.08 | Max DD: -29.70% | Trades: 133
+  Test Score: -0.7708
+
+Variance Penalty: -0.1635
+FINAL_RESULT:-0.9342458883575789
+FINAL_RESULT:-0.9342458883575789
+
+============================================================
+COMMIT: 57d8114 | SCORE: -0.12863373166379977 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -5.29% | Sharpe: -0.34 | Max DD: -25.70% | Trades: 204
+  Train Score: -0.0100
+
+TEST SET (Last 40%):
+  Return: 12.32% | Sharpe: 0.94 | Max DD: -20.53% | Trades: 125
+  Test Score: 0.5831
+
+Variance Penalty: -0.1186
+FINAL_RESULT:-0.12863373166379977
+FINAL_RESULT:-0.12863373166379977
+
+============================================================
+COMMIT: 3ada499 | SCORE: -0.22451430459980637 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -4.29% | Sharpe: -0.91 | Max DD: -5.68% | Trades: 29
+  Train Score: -0.1880
+
+TEST SET (Last 40%):
+  Return: -1.61% | Sharpe: -0.50 | Max DD: -5.26% | Trades: 9
+  Test Score: -0.0051
+
+Variance Penalty: -0.0366
+FINAL_RESULT:-0.22451430459980637
+FINAL_RESULT:-0.22451430459980637
+
+============================================================
+COMMIT: 4104a5c | SCORE: -1.446738758839058 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 11.86% | Sharpe: 0.70 | Max DD: -24.42% | Trades: 171
+  Train Score: 0.4782
+
+TEST SET (Last 40%):
+  Return: -27.88% | Sharpe: -2.86 | Max DD: -35.93% | Trades: 129
+  Test Score: -1.1259
+
+Variance Penalty: -0.3208
+FINAL_RESULT:-1.446738758839058
+FINAL_RESULT:-1.446738758839058
+
+============================================================
+COMMIT: 9264b64 | SCORE: 0.005218381454955998 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.76% | Sharpe: 0.45 | Max DD: -11.05% | Trades: 75
+  Train Score: 0.3766
+
+TEST SET (Last 40%):
+  Return: -2.26% | Sharpe: -0.25 | Max DD: -11.91% | Trades: 61
+  Test Score: 0.0671
+
+Variance Penalty: -0.0619
+FINAL_RESULT:0.005218381454955998
+FINAL_RESULT:0.005218381454955998
+
+============================================================
+COMMIT: 33b1bd0 | SCORE: -1.4955794002713594 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -3.96% | Sharpe: -0.27 | Max DD: -22.79% | Trades: 197
+  Train Score: 0.0305
+
+TEST SET (Last 40%):
+  Return: -29.33% | Sharpe: -3.13 | Max DD: -36.75% | Trades: 141
+  Test Score: -1.2412
+
+Variance Penalty: -0.2543
+FINAL_RESULT:-1.4955794002713594
+FINAL_RESULT:-1.4955794002713594
+
+============================================================
+COMMIT: cc8ac20 | SCORE: -0.8719623568635045 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -0.17% | Sharpe: -0.01 | Max DD: -22.58% | Trades: 179
+  Train Score: 0.1494
+
+TEST SET (Last 40%):
+  Return: -19.57% | Sharpe: -1.90 | Max DD: -31.21% | Trades: 125
+  Test Score: -0.7017
+
+Variance Penalty: -0.1702
+FINAL_RESULT:-0.8719623568635045
+FINAL_RESULT:-0.8719623568635045
+
+============================================================
+COMMIT: e1be918 | SCORE: -0.3420424656768714 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -2.29% | Sharpe: -0.16 | Max DD: -19.74% | Trades: 159
+  Train Score: 0.0860
+
+TEST SET (Last 40%):
+  Return: -10.25% | Sharpe: -0.95 | Max DD: -25.58% | Trades: 113
+  Test Score: -0.2707
+
+Variance Penalty: -0.0713
+FINAL_RESULT:-0.3420424656768714
+FINAL_RESULT:-0.3420424656768714
+
+============================================================
+COMMIT: b0fcb6f | SCORE: -0.8443279190332267 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.50% | Sharpe: 0.34 | Max DD: -14.45% | Trades: 169
+  Train Score: 0.3308
+
+TEST SET (Last 40%):
+  Return: -19.81% | Sharpe: -1.77 | Max DD: -30.43% | Trades: 123
+  Test Score: -0.6485
+
+Variance Penalty: -0.1959
+FINAL_RESULT:-0.8443279190332267
+FINAL_RESULT:-0.8443279190332267
+
+============================================================
+COMMIT: c7acd13 | SCORE: -0.3294925436493279 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -9.82% | Sharpe: -0.65 | Max DD: -24.95% | Trades: 260
+  Train Score: -0.1508
+
+TEST SET (Last 40%):
+  Return: 17.83% | Sharpe: 1.27 | Max DD: -17.77% | Trades: 149
+  Test Score: 0.7427
+
+Variance Penalty: -0.1787
+FINAL_RESULT:-0.3294925436493279
+FINAL_RESULT:-0.3294925436493279
+
+============================================================
+COMMIT: ca2e47b | SCORE: -0.4853010000099425 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 1.71% | Sharpe: 0.11 | Max DD: -23.31% | Trades: 183
+  Train Score: 0.2062
+
+TEST SET (Last 40%):
+  Return: -12.82% | Sharpe: -1.17 | Max DD: -25.34% | Trades: 123
+  Test Score: -0.3700
+
+Variance Penalty: -0.1153
+FINAL_RESULT:-0.4853010000099425
+FINAL_RESULT:-0.4853010000099425
+
+============================================================
+COMMIT: f052313 | SCORE: 0.0 | STATUS: CRASH
+============================================================
+Traceback (most recent call last):
+  File "C:\Users\jeand\Desktop\Crypto_LLM\.venv\Lib\site-packages\pandas\core\indexes\base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'atr'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\jeand\Desktop\Crypto_LLM\offline_training\train.py", line 6, in <module>
+    final_score = evaluate_strategy('1y')
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\offline_training\prepare.py", line 46, in evaluate_strategy
+    train_score, train_ret, train_sh, train_dd, train_tc = score_dataset(df_train)
+                                                           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\offline_training\prepare.py", line 20, in score_dataset
+    evaluated_df = get_signals(data)
+                   ^^^^^^^^^^^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\offline_training\strategy.py", line 44, in get_signals
+    df['atr_50_mean'] = df['atr'].rolling(window=50).mean()
+                        ~~^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\.venv\Lib\site-packages\pandas\core\frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\.venv\Lib\site-packages\pandas\core\indexes\base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'atr'
+
+============================================================
+COMMIT: 8788db1 | SCORE: -0.5743413775650235 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 1.05% | Sharpe: 0.10 | Max DD: -9.11% | Trades: 167
+  Train Score: 0.2242
+
+TEST SET (Last 40%):
+  Return: -10.54% | Sharpe: -1.43 | Max DD: -12.83% | Trades: 105
+  Test Score: -0.4413
+
+Variance Penalty: -0.1331
+FINAL_RESULT:-0.5743413775650235
+FINAL_RESULT:-0.5743413775650235
+
+============================================================
+COMMIT: d5dfd40 | SCORE: -0.028367058952840793 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -4.80% | Sharpe: -0.31 | Max DD: -28.88% | Trades: 238
+  Train Score: -0.0003
+
+TEST SET (Last 40%):
+  Return: -0.43% | Sharpe: -0.03 | Max DD: -23.04% | Trades: 156
+  Test Score: 0.1398
+
+Variance Penalty: -0.0280
+FINAL_RESULT:-0.028367058952840793
+FINAL_RESULT:-0.028367058952840793
+
+============================================================
+COMMIT: 19f19a9 | SCORE: -0.21100961520525602 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -9.77% | Sharpe: -0.65 | Max DD: -27.88% | Trades: 212
+  Train Score: -0.1536
+
+TEST SET (Last 40%):
+  Return: -9.88% | Sharpe: -0.80 | Max DD: -21.78% | Trades: 143
+  Test Score: -0.2014
+
+Variance Penalty: -0.0096
+FINAL_RESULT:-0.21100961520525602
+FINAL_RESULT:-0.21100961520525602
+
+============================================================
+COMMIT: 3d0faff | SCORE: -0.7803289679247074 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -0.88% | Sharpe: -0.06 | Max DD: -21.83% | Trades: 201
+  Train Score: 0.1286
+
+TEST SET (Last 40%):
+  Return: -17.21% | Sharpe: -1.75 | Max DD: -29.06% | Trades: 141
+  Test Score: -0.6288
+
+Variance Penalty: -0.1515
+FINAL_RESULT:-0.7803289679247074
+FINAL_RESULT:-0.7803289679247074
+
+============================================================
+COMMIT: 1206df6 | SCORE: -0.6879425187357168 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 9.62% | Sharpe: 0.81 | Max DD: -11.14% | Trades: 123
+  Train Score: 0.5410
+
+TEST SET (Last 40%):
+  Return: -11.15% | Sharpe: -1.49 | Max DD: -21.31% | Trades: 85
+  Test Score: -0.4831
+
+Variance Penalty: -0.2048
+FINAL_RESULT:-0.6879425187357168
+FINAL_RESULT:-0.6879425187357168
+
+============================================================
+COMMIT: 191bf45 | SCORE: -0.6770298097738301 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 2.71% | Sharpe: 0.20 | Max DD: -16.38% | Trades: 139
+  Train Score: 0.2575
+
+TEST SET (Last 40%):
+  Return: -13.89% | Sharpe: -1.53 | Max DD: -27.43% | Trades: 101
+  Test Score: -0.5213
+
+Variance Penalty: -0.1557
+FINAL_RESULT:-0.6770298097738301
+FINAL_RESULT:-0.6770298097738301
+
+============================================================
+COMMIT: 676c156 | SCORE: -0.3657857893569441 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.38% | Sharpe: -0.23 | Max DD: -7.98% | Trades: 43
+  Train Score: 0.0870
+
+TEST SET (Last 40%):
+  Return: -5.98% | Sharpe: -1.11 | Max DD: -11.31% | Trades: 33
+  Test Score: -0.2903
+
+Variance Penalty: -0.0755
+FINAL_RESULT:-0.3657857893569441
+FINAL_RESULT:-0.3657857893569441
+
+============================================================
+COMMIT: 858e424 | SCORE: 0.3391132276029318 | STATUS: KEEP
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.28% | Sharpe: 0.64 | Max DD: -6.44% | Trades: 23
+  Train Score: 0.3520
+
+TEST SET (Last 40%):
+  Return: 4.39% | Sharpe: 0.54 | Max DD: -9.13% | Trades: 33
+  Test Score: 0.4163
+
+Variance Penalty: -0.0129
+FINAL_RESULT:0.3391132276029318
+FINAL_RESULT:0.3391132276029318
+
+============================================================
+COMMIT: 40aa05e | SCORE: 0.019770768318959187 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.15% | Sharpe: 0.89 | Max DD: -5.75% | Trades: 17
+  Train Score: 0.3204
+
+TEST SET (Last 40%):
+  Return: 0.01% | Sharpe: 0.00 | Max DD: -5.02% | Trades: 11
+  Test Score: 0.0699
+
+Variance Penalty: -0.0501
+FINAL_RESULT:0.019770768318959187
+FINAL_RESULT:0.019770768318959187
+
+============================================================
+COMMIT: 00e8da4 | SCORE: 0.11536518377592589 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 10.10% | Sharpe: 1.62 | Max DD: -6.52% | Trades: 15
+  Train Score: 0.4379
+
+TEST SET (Last 40%):
+  Return: 1.85% | Sharpe: 0.36 | Max DD: -5.77% | Trades: 15
+  Test Score: 0.1691
+
+Variance Penalty: -0.0538
+FINAL_RESULT:0.11536518377592589
+FINAL_RESULT:0.11536518377592589
+
+============================================================
+COMMIT: 8c3d0bf | SCORE: -1.0637942563239189 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.04% | Sharpe: 0.62 | Max DD: -6.00% | Trades: 45
+  Train Score: 0.4568
+
+TEST SET (Last 40%):
+  Return: -14.61% | Sharpe: -2.30 | Max DD: -16.26% | Trades: 45
+  Test Score: -0.8104
+
+Variance Penalty: -0.2534
+FINAL_RESULT:-1.0637942563239189
+FINAL_RESULT:-1.0637942563239189
+
+============================================================
+COMMIT: e1c7b51 | SCORE: -0.4011386534834248 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.64% | Sharpe: 0.92 | Max DD: -7.03% | Trades: 23
+  Train Score: 0.4428
+
+TEST SET (Last 40%):
+  Return: -6.51% | Sharpe: -1.11 | Max DD: -9.51% | Trades: 27
+  Test Score: -0.2605
+
+Variance Penalty: -0.1407
+FINAL_RESULT:-0.4011386534834248
+FINAL_RESULT:-0.4011386534834248
+
+============================================================
+COMMIT: 820524d | SCORE: 0.045091967409724446 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -0.87% | Sharpe: -0.17 | Max DD: -5.47% | Trades: 23
+  Train Score: 0.0902
+
+TEST SET (Last 40%):
+  Return: 2.37% | Sharpe: 0.38 | Max DD: -5.99% | Trades: 27
+  Test Score: 0.3159
+
+Variance Penalty: -0.0451
+FINAL_RESULT:0.045091967409724446
+FINAL_RESULT:0.045091967409724446
+
+============================================================
+COMMIT: d27c5dd | SCORE: 0.0 | STATUS: CRASH
+============================================================
+Traceback (most recent call last):
+  File "C:\Users\jeand\Desktop\Crypto_LLM\.venv\Lib\site-packages\pandas\core\indexes\base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'cvd_20'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\jeand\Desktop\Crypto_LLM\offline_training\train.py", line 6, in <module>
+    final_score = evaluate_strategy('1y')
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\offline_training\prepare.py", line 46, in evaluate_strategy
+    train_score, train_ret, train_sh, train_dd, train_tc = score_dataset(df_train)
+                                                           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\offline_training\prepare.py", line 20, in score_dataset
+    evaluated_df = get_signals(data)
+                   ^^^^^^^^^^^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\offline_training\strategy.py", line 29, in get_signals
+    df['cvd_20_q25'] = df['cvd_20'].rolling(window=100).quantile(0.25)
+                       ~~^^^^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\.venv\Lib\site-packages\pandas\core\frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jeand\Desktop\Crypto_LLM\.venv\Lib\site-packages\pandas\core\indexes\base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'cvd_20'
+
+============================================================
+COMMIT: 8dfa88e | SCORE: -0.3462232094822184 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 7.91% | Sharpe: 1.15 | Max DD: -8.21% | Trades: 19
+  Train Score: 0.4281
+
+TEST SET (Last 40%):
+  Return: -6.46% | Sharpe: -1.34 | Max DD: -11.42% | Trades: 17
+  Test Score: -0.2172
+
+Variance Penalty: -0.1291
+FINAL_RESULT:-0.3462232094822184
+FINAL_RESULT:-0.3462232094822184
+
+============================================================
+COMMIT: 918366a | SCORE: 0.04119072247720105 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.78% | Sharpe: -0.17 | Max DD: -14.64% | Trades: 59
+  Train Score: 0.0956
+
+TEST SET (Last 40%):
+  Return: 4.06% | Sharpe: 0.42 | Max DD: -8.65% | Trades: 45
+  Test Score: 0.3679
+
+Variance Penalty: -0.0544
+FINAL_RESULT:0.04119072247720105
+FINAL_RESULT:0.04119072247720105
+
+============================================================
+COMMIT: 7ba1485 | SCORE: 0.2523135639068146 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 6.25% | Sharpe: 1.30 | Max DD: -5.43% | Trades: 15
+  Train Score: 0.3676
+
+TEST SET (Last 40%):
+  Return: 4.01% | Sharpe: 0.84 | Max DD: -4.70% | Trades: 15
+  Test Score: 0.2715
+
+Variance Penalty: -0.0192
+FINAL_RESULT:0.2523135639068146
+FINAL_RESULT:0.2523135639068146
+
+============================================================
+COMMIT: 3029174 | SCORE: -0.6864477628152378 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 1.04% | Sharpe: 0.12 | Max DD: -11.51% | Trades: 77
+  Train Score: 0.2272
+
+TEST SET (Last 40%):
+  Return: -11.93% | Sharpe: -1.62 | Max DD: -18.59% | Trades: 59
+  Test Score: -0.5342
+
+Variance Penalty: -0.1523
+FINAL_RESULT:-0.6864477628152378
+FINAL_RESULT:-0.6864477628152378
+
+============================================================
+COMMIT: 10597ef | SCORE: -0.30900984919164626 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -8.97% | Sharpe: -1.00 | Max DD: -12.90% | Trades: 61
+  Train Score: -0.2629
+
+TEST SET (Last 40%):
+  Return: -3.62% | Sharpe: -0.48 | Max DD: -12.90% | Trades: 51
+  Test Score: -0.0326
+
+Variance Penalty: -0.0461
+FINAL_RESULT:-0.30900984919164626
+FINAL_RESULT:-0.30900984919164626
+
+============================================================
+COMMIT: aca60e6 | SCORE: -0.9283241748480237 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.23% | Sharpe: 0.38 | Max DD: -7.68% | Trades: 53
+  Train Score: 0.3508
+
+TEST SET (Last 40%):
+  Return: -13.24% | Sharpe: -2.08 | Max DD: -15.44% | Trades: 45
+  Test Score: -0.7151
+
+Variance Penalty: -0.2132
+FINAL_RESULT:-0.9283241748480237
+FINAL_RESULT:-0.9283241748480237
+
+============================================================
+COMMIT: c4d76e6 | SCORE: -0.7017176017537914 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -9.00% | Sharpe: -0.97 | Max DD: -12.31% | Trades: 85
+  Train Score: -0.2484
+
+TEST SET (Last 40%):
+  Return: -11.80% | Sharpe: -1.88 | Max DD: -14.39% | Trades: 67
+  Test Score: -0.6262
+
+Variance Penalty: -0.0756
+FINAL_RESULT:-0.7017176017537914
+FINAL_RESULT:-0.7017176017537914
+
+============================================================
+COMMIT: a94ba47 | SCORE: -0.007091705036742197 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.19% | Sharpe: 1.35 | Max DD: -1.81% | Trades: 3
+  Train Score: 0.0755
+
+TEST SET (Last 40%):
+  Return: 0.00% | Sharpe: 0.00 | Max DD: 0.00% | Trades: 1
+  Test Score: 0.0067
+
+Variance Penalty: -0.0138
+FINAL_RESULT:-0.007091705036742197
+FINAL_RESULT:-0.007091705036742197
+
+============================================================
+COMMIT: c764bd6 | SCORE: -0.8985899603047423 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -7.61% | Sharpe: -0.80 | Max DD: -10.97% | Trades: 87
+  Train Score: -0.1730
+
+TEST SET (Last 40%):
+  Return: -14.73% | Sharpe: -2.21 | Max DD: -17.39% | Trades: 77
+  Test Score: -0.7777
+
+Variance Penalty: -0.1209
+FINAL_RESULT:-0.8985899603047423
+FINAL_RESULT:-0.8985899603047423
+
+============================================================
+COMMIT: 1e2416c | SCORE: 0.19647869983877325 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.96% | Sharpe: 2.42 | Max DD: -3.25% | Trades: 13
+  Train Score: 0.5277
+
+TEST SET (Last 40%):
+  Return: 7.48% | Sharpe: 1.54 | Max DD: -3.68% | Trades: 9
+  Test Score: 0.2517
+
+Variance Penalty: -0.0552
+FINAL_RESULT:0.19647869983877325
+FINAL_RESULT:0.19647869983877325
+
+============================================================
+COMMIT: 7266c07 | SCORE: -0.32997446814506853 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -9.08% | Sharpe: -0.93 | Max DD: -10.64% | Trades: 75
+  Train Score: -0.2278
+
+TEST SET (Last 40%):
+  Return: 2.12% | Sharpe: 0.25 | Max DD: -13.48% | Trades: 55
+  Test Score: 0.2834
+
+Variance Penalty: -0.1022
+FINAL_RESULT:-0.32997446814506853
+FINAL_RESULT:-0.32997446814506853
+
+============================================================
+COMMIT: b21bc4f | SCORE: -0.050865981554552325 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.93% | Sharpe: 0.62 | Max DD: -8.29% | Trades: 47
+  Train Score: 0.4497
+
+TEST SET (Last 40%):
+  Return: -2.59% | Sharpe: -0.34 | Max DD: -11.35% | Trades: 41
+  Test Score: 0.0326
+
+Variance Penalty: -0.0834
+FINAL_RESULT:-0.050865981554552325
+FINAL_RESULT:-0.050865981554552325
+
+============================================================
+COMMIT: 9b5d772 | SCORE: 0.07277869137445425 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.34% | Sharpe: -0.19 | Max DD: -9.31% | Trades: 47
+  Train Score: 0.1001
+
+TEST SET (Last 40%):
+  Return: 0.99% | Sharpe: 0.14 | Max DD: -12.21% | Trades: 41
+  Test Score: 0.2365
+
+Variance Penalty: -0.0273
+FINAL_RESULT:0.07277869137445425
+FINAL_RESULT:0.07277869137445425
+
+============================================================
+COMMIT: 80195c0 | SCORE: -0.905619075193448 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 16.09% | Sharpe: 1.28 | Max DD: -14.09% | Trades: 77
+  Train Score: 0.7481
+
+TEST SET (Last 40%):
+  Return: -14.59% | Sharpe: -1.81 | Max DD: -23.64% | Trades: 53
+  Test Score: -0.6300
+
+Variance Penalty: -0.2756
+FINAL_RESULT:-0.905619075193448
+FINAL_RESULT:-0.905619075193448
+
+============================================================
+COMMIT: fb5980d | SCORE: 0.2523135639068146 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 6.25% | Sharpe: 1.30 | Max DD: -5.43% | Trades: 15
+  Train Score: 0.3676
+
+TEST SET (Last 40%):
+  Return: 4.01% | Sharpe: 0.84 | Max DD: -4.70% | Trades: 15
+  Test Score: 0.2715
+
+Variance Penalty: -0.0192
+FINAL_RESULT:0.2523135639068146
+FINAL_RESULT:0.2523135639068146
+
+============================================================
+COMMIT: 160b1a2 | SCORE: -0.5752251207870231 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.99% | Sharpe: 0.52 | Max DD: -11.09% | Trades: 49
+  Train Score: 0.4064
+
+TEST SET (Last 40%):
+  Return: -10.01% | Sharpe: -1.33 | Max DD: -19.11% | Trades: 43
+  Test Score: -0.4116
+
+Variance Penalty: -0.1636
+FINAL_RESULT:-0.5752251207870231
+FINAL_RESULT:-0.5752251207870231
+
+============================================================
+COMMIT: 045c401 | SCORE: 0.3103983505851736 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.30% | Sharpe: 0.89 | Max DD: -5.65% | Trades: 21
+  Train Score: 0.3965
+
+TEST SET (Last 40%):
+  Return: 3.53% | Sharpe: 0.56 | Max DD: -6.47% | Trades: 23
+  Test Score: 0.3248
+
+Variance Penalty: -0.0144
+FINAL_RESULT:0.3103983505851736
+FINAL_RESULT:0.3103983505851736
+
+============================================================
+COMMIT: 2d0f281 | SCORE: 0.19919116420764815 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 0.77% | Sharpe: 0.09 | Max DD: -7.29% | Trades: 73
+  Train Score: 0.2227
+
+TEST SET (Last 40%):
+  Return: 3.40% | Sharpe: 0.38 | Max DD: -12.45% | Trades: 57
+  Test Score: 0.3401
+
+Variance Penalty: -0.0235
+FINAL_RESULT:0.19919116420764815
+FINAL_RESULT:0.19919116420764815
+
+============================================================
+COMMIT: 85dc925 | SCORE: -0.9773963720393176 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 6.74% | Sharpe: 0.71 | Max DD: -7.28% | Trades: 57
+  Train Score: 0.4953
+
+TEST SET (Last 40%):
+  Return: -14.44% | Sharpe: -2.10 | Max DD: -16.28% | Trades: 47
+  Test Score: -0.7319
+
+Variance Penalty: -0.2455
+FINAL_RESULT:-0.9773963720393176
+FINAL_RESULT:-0.9773963720393176
+
+============================================================
+COMMIT: ee6baa3 | SCORE: -0.25859772441413986 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.89% | Sharpe: 0.48 | Max DD: -6.16% | Trades: 45
+  Train Score: 0.3961
+
+TEST SET (Last 40%):
+  Return: -5.34% | Sharpe: -0.74 | Max DD: -15.62% | Trades: 43
+  Test Score: -0.1495
+
+Variance Penalty: -0.1091
+FINAL_RESULT:-0.25859772441413986
+FINAL_RESULT:-0.25859772441413986
+
+============================================================
+COMMIT: 27683df | SCORE: -0.7003341466604104 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -4.41% | Sharpe: -0.62 | Max DD: -9.94% | Trades: 51
+  Train Score: -0.0852
+
+TEST SET (Last 40%):
+  Return: -10.64% | Sharpe: -1.82 | Max DD: -14.39% | Trades: 45
+  Test Score: -0.5978
+
+Variance Penalty: -0.1025
+FINAL_RESULT:-0.7003341466604104
+FINAL_RESULT:-0.7003341466604104
+
+============================================================
+COMMIT: 9785a16 | SCORE: -1.1213593355864495 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -0.53% | Sharpe: -0.05 | Max DD: -10.86% | Trades: 95
+  Train Score: 0.1558
+
+TEST SET (Last 40%):
+  Return: -16.92% | Sharpe: -2.50 | Max DD: -19.69% | Trades: 69
+  Test Score: -0.9085
+
+Variance Penalty: -0.2129
+FINAL_RESULT:-1.1213593355864495
+FINAL_RESULT:-1.1213593355864495
+
+============================================================
+COMMIT: 5b78cc2 | SCORE: -0.1719158759669049 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -7.34% | Sharpe: -0.77 | Max DD: -11.26% | Trades: 59
+  Train Score: -0.1612
+
+TEST SET (Last 40%):
+  Return: -5.43% | Sharpe: -0.64 | Max DD: -15.84% | Trades: 47
+  Test Score: -0.1077
+
+Variance Penalty: -0.0107
+FINAL_RESULT:-0.1719158759669049
+FINAL_RESULT:-0.1719158759669049
+
+============================================================
+COMMIT: 09089fc | SCORE: -0.3455481539590585 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 17.08% | Sharpe: 1.36 | Max DD: -14.00% | Trades: 91
+  Train Score: 0.7843
+
+TEST SET (Last 40%):
+  Return: -6.15% | Sharpe: -0.74 | Max DD: -17.80% | Trades: 57
+  Test Score: -0.1572
+
+Variance Penalty: -0.1883
+FINAL_RESULT:-0.3455481539590585
+FINAL_RESULT:-0.3455481539590585
+
+============================================================
+COMMIT: d9c1cba | SCORE: 0.040458596186549914 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -2.92% | Sharpe: -0.31 | Max DD: -10.66% | Trades: 61
+  Train Score: 0.0431
+
+TEST SET (Last 40%):
+  Return: -2.54% | Sharpe: -0.32 | Max DD: -11.44% | Trades: 47
+  Test Score: 0.0409
+
+Variance Penalty: -0.0004
+FINAL_RESULT:0.040458596186549914
+FINAL_RESULT:0.040458596186549914
+
+============================================================
+COMMIT: ec5c236 | SCORE: -0.2733255994117272 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.44% | Sharpe: 0.50 | Max DD: -8.79% | Trades: 75
+  Train Score: 0.3984
+
+TEST SET (Last 40%):
+  Return: -5.39% | Sharpe: -0.78 | Max DD: -13.46% | Trades: 49
+  Test Score: -0.1614
+
+Variance Penalty: -0.1120
+FINAL_RESULT:-0.2733255994117272
+FINAL_RESULT:-0.2733255994117272
+
+============================================================
+COMMIT: 2d15810 | SCORE: -0.6262966212024991 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 1.69% | Sharpe: 0.23 | Max DD: -9.11% | Trades: 49
+  Train Score: 0.2786
+
+TEST SET (Last 40%):
+  Return: -10.16% | Sharpe: -1.52 | Max DD: -13.80% | Trades: 41
+  Test Score: -0.4755
+
+Variance Penalty: -0.1508
+FINAL_RESULT:-0.6262966212024991
+FINAL_RESULT:-0.6262966212024991
+
+============================================================
+COMMIT: 31c7589 | SCORE: -0.40986090359286353 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -8.80% | Sharpe: -1.03 | Max DD: -11.56% | Trades: 69
+  Train Score: -0.2713
+
+TEST SET (Last 40%):
+  Return: 4.87% | Sharpe: 0.55 | Max DD: -9.28% | Trades: 55
+  Test Score: 0.4212
+
+Variance Penalty: -0.1385
+FINAL_RESULT:-0.40986090359286353
+FINAL_RESULT:-0.40986090359286353
+
+============================================================
+COMMIT: 3a1651f | SCORE: -0.6931695464488481 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -12.97% | Sharpe: -1.41 | Max DD: -14.11% | Trades: 79
+  Train Score: -0.4453
+
+TEST SET (Last 40%):
+  Return: -13.14% | Sharpe: -1.93 | Max DD: -13.31% | Trades: 63
+  Test Score: -0.6519
+
+Variance Penalty: -0.0413
+FINAL_RESULT:-0.6931695464488481
+FINAL_RESULT:-0.6931695464488481
+
+============================================================
+COMMIT: 4088dab | SCORE: -0.9305523357746401 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 0.27% | Sharpe: 0.03 | Max DD: -8.15% | Trades: 95
+  Train Score: 0.1982
+
+TEST SET (Last 40%):
+  Return: -12.08% | Sharpe: -2.17 | Max DD: -14.01% | Trades: 81
+  Test Score: -0.7424
+
+Variance Penalty: -0.1881
+FINAL_RESULT:-0.9305523357746401
+FINAL_RESULT:-0.9305523357746401
+
+============================================================
+COMMIT: a3d5b15 | SCORE: -0.35246845683112515 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -9.67% | Sharpe: -1.18 | Max DD: -14.89% | Trades: 65
+  Train Score: -0.3424
+
+TEST SET (Last 40%):
+  Return: -6.76% | Sharpe: -1.10 | Max DD: -11.69% | Trades: 51
+  Test Score: -0.2921
+
+Variance Penalty: -0.0101
+FINAL_RESULT:-0.35246845683112515
+FINAL_RESULT:-0.35246845683112515
+
+============================================================
+COMMIT: 07a27c0 | SCORE: -0.43430157023910976 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -11.62% | Sharpe: -1.19 | Max DD: -12.41% | Trades: 75
+  Train Score: -0.3477
+
+TEST SET (Last 40%):
+  Return: -2.00% | Sharpe: -0.22 | Max DD: -10.29% | Trades: 59
+  Test Score: 0.0854
+
+Variance Penalty: -0.0866
+FINAL_RESULT:-0.43430157023910976
+FINAL_RESULT:-0.43430157023910976
+
+============================================================
+COMMIT: 7e9d0ae | SCORE: -0.5979451477814276 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -12.57% | Sharpe: -1.43 | Max DD: -13.72% | Trades: 81
+  Train Score: -0.4516
+
+TEST SET (Last 40%):
+  Return: -11.59% | Sharpe: -1.75 | Max DD: -13.31% | Trades: 65
+  Test Score: -0.5736
+
+Variance Penalty: -0.0244
+FINAL_RESULT:-0.5979451477814276
+FINAL_RESULT:-0.5979451477814276
+
+============================================================
+COMMIT: 1b0d171 | SCORE: -2.14134211731813 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 16.53% | Sharpe: 1.31 | Max DD: -9.06% | Trades: 65
+  Train Score: 0.7702
+
+TEST SET (Last 40%):
+  Return: -27.71% | Sharpe: -4.22 | Max DD: -28.11% | Trades: 45
+  Test Score: -1.6561
+
+Variance Penalty: -0.4853
+FINAL_RESULT:-2.14134211731813
+FINAL_RESULT:-2.14134211731813
+
+============================================================
+COMMIT: 4b73d99 | SCORE: -1.818228036148039 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 12.83% | Sharpe: 1.08 | Max DD: -9.06% | Trades: 65
+  Train Score: 0.6664
+
+TEST SET (Last 40%):
+  Return: -24.43% | Sharpe: -3.64 | Max DD: -25.09% | Trades: 49
+  Test Score: -1.4041
+
+Variance Penalty: -0.4141
+FINAL_RESULT:-1.818228036148039
+FINAL_RESULT:-1.818228036148039
+
+============================================================
+COMMIT: e640bcb | SCORE: -0.18897192538670993 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -8.28% | Sharpe: -0.76 | Max DD: -12.98% | Trades: 71
+  Train Score: -0.1632
+
+TEST SET (Last 40%):
+  Return: -4.24% | Sharpe: -0.46 | Max DD: -15.78% | Trades: 51
+  Test Score: -0.0343
+
+Variance Penalty: -0.0258
+FINAL_RESULT:-0.18897192538670993
+FINAL_RESULT:-0.18897192538670993
+
+============================================================
+COMMIT: 4c6da3f | SCORE: -0.5628266455504669 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 14.71% | Sharpe: 1.17 | Max DD: -14.84% | Trades: 91
+  Train Score: 0.6976
+
+TEST SET (Last 40%):
+  Return: -9.76% | Sharpe: -1.18 | Max DD: -20.96% | Trades: 55
+  Test Score: -0.3528
+
+Variance Penalty: -0.2101
+FINAL_RESULT:-0.5628266455504669
+FINAL_RESULT:-0.5628266455504669
+
+============================================================
+COMMIT: 3d0fdbc | SCORE: -0.16948223256646924 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 12.95% | Sharpe: 1.08 | Max DD: -13.18% | Trades: 93
+  Train Score: 0.6567
+
+TEST SET (Last 40%):
+  Return: -3.72% | Sharpe: -0.46 | Max DD: -17.33% | Trades: 57
+  Test Score: -0.0318
+
+Variance Penalty: -0.1377
+FINAL_RESULT:-0.16948223256646924
+FINAL_RESULT:-0.16948223256646924
+
+============================================================
+COMMIT: f7194d5 | SCORE: 0.040458596186549914 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -2.92% | Sharpe: -0.31 | Max DD: -10.66% | Trades: 61
+  Train Score: 0.0431
+
+TEST SET (Last 40%):
+  Return: -2.54% | Sharpe: -0.32 | Max DD: -11.44% | Trades: 47
+  Test Score: 0.0409
+
+Variance Penalty: -0.0004
+FINAL_RESULT:0.040458596186549914
+FINAL_RESULT:0.040458596186549914
+
+============================================================
+COMMIT: 30076e1 | SCORE: -0.14959411959375843 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -5.83% | Sharpe: -0.69 | Max DD: -9.36% | Trades: 63
+  Train Score: -0.1195
+
+TEST SET (Last 40%):
+  Return: -2.48% | Sharpe: -0.32 | Max DD: -14.85% | Trades: 53
+  Test Score: 0.0310
+
+Variance Penalty: -0.0301
+FINAL_RESULT:-0.14959411959375843
+FINAL_RESULT:-0.14959411959375843
+
+============================================================
+COMMIT: 4502c5e | SCORE: -0.5592219742977014 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -10.50% | Sharpe: -1.64 | Max DD: -13.91% | Trades: 59
+  Train Score: -0.5267
+
+TEST SET (Last 40%):
+  Return: -8.04% | Sharpe: -1.27 | Max DD: -12.68% | Trades: 53
+  Test Score: -0.3638
+
+Variance Penalty: -0.0326
+FINAL_RESULT:-0.5592219742977014
+FINAL_RESULT:-0.5592219742977014
+
+============================================================
+COMMIT: 4aaa8c7 | SCORE: 0.11978157496344778 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.89% | Sharpe: 0.80 | Max DD: -5.47% | Trades: 27
+  Train Score: 0.4769
+
+TEST SET (Last 40%):
+  Return: -0.07% | Sharpe: -0.01 | Max DD: -8.25% | Trades: 35
+  Test Score: 0.1793
+
+Variance Penalty: -0.0595
+FINAL_RESULT:0.11978157496344778
+FINAL_RESULT:0.11978157496344778
+
+============================================================
+COMMIT: dd2a14e | SCORE: -0.9786591662780705 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.84% | Sharpe: 0.45 | Max DD: -7.68% | Trades: 51
+  Train Score: 0.3811
+
+TEST SET (Last 40%):
+  Return: -13.77% | Sharpe: -2.17 | Max DD: -15.44% | Trades: 45
+  Test Score: -0.7520
+
+Variance Penalty: -0.2266
+FINAL_RESULT:-0.9786591662780705
+FINAL_RESULT:-0.9786591662780705
+
+============================================================
+COMMIT: 3ae45c9 | SCORE: -0.9744344940062851 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 6.43% | Sharpe: 0.71 | Max DD: -7.68% | Trades: 53
+  Train Score: 0.4963
+
+TEST SET (Last 40%):
+  Return: -13.47% | Sharpe: -2.11 | Max DD: -15.15% | Trades: 45
+  Test Score: -0.7293
+
+Variance Penalty: -0.2451
+FINAL_RESULT:-0.9744344940062851
+FINAL_RESULT:-0.9744344940062851
+
+============================================================
+COMMIT: 7b91cb3 | SCORE: -0.17181730647565002 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -3.75% | Sharpe: -0.67 | Max DD: -7.86% | Trades: 29
+  Train Score: -0.0937
+
+TEST SET (Last 40%):
+  Return: 1.84% | Sharpe: 0.26 | Max DD: -6.96% | Trades: 33
+  Test Score: 0.2966
+
+Variance Penalty: -0.0781
+FINAL_RESULT:-0.17181730647565002
+FINAL_RESULT:-0.17181730647565002
+
+============================================================
+COMMIT: 2bf375d | SCORE: 0.2545748452408242 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 8.54% | Sharpe: 1.82 | Max DD: -2.89% | Trades: 13
+  Train Score: 0.4151
+
+TEST SET (Last 40%):
+  Return: 8.00% | Sharpe: 1.78 | Max DD: -3.17% | Trades: 9
+  Test Score: 0.2813
+
+Variance Penalty: -0.0268
+FINAL_RESULT:0.2545748452408242
+FINAL_RESULT:0.2545748452408242
+
+============================================================
+COMMIT: 697f099 | SCORE: -0.23227786427403016 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 8.30% | Sharpe: 0.99 | Max DD: -6.16% | Trades: 45
+  Train Score: 0.6188
+
+TEST SET (Last 40%):
+  Return: -4.28% | Sharpe: -0.61 | Max DD: -14.21% | Trades: 39
+  Test Score: -0.0904
+
+Variance Penalty: -0.1418
+FINAL_RESULT:-0.23227786427403016
+FINAL_RESULT:-0.23227786427403016
+
+============================================================
+COMMIT: 7ded6ed | SCORE: 0.2987588255220207 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 9.30% | Sharpe: 2.00 | Max DD: -2.70% | Trades: 13
+  Train Score: 0.4470
+
+TEST SET (Last 40%):
+  Return: 9.48% | Sharpe: 2.12 | Max DD: -2.91% | Trades: 9
+  Test Score: 0.3235
+
+Variance Penalty: -0.0247
+FINAL_RESULT:0.2987588255220207
+FINAL_RESULT:0.2987588255220207
+
+============================================================
+COMMIT: 2ee9c48 | SCORE: -0.546243314967425 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.17% | Sharpe: 0.52 | Max DD: -6.83% | Trades: 55
+  Train Score: 0.4102
+
+TEST SET (Last 40%):
+  Return: -8.89% | Sharpe: -1.32 | Max DD: -12.59% | Trades: 43
+  Test Score: -0.3868
+
+Variance Penalty: -0.1594
+FINAL_RESULT:-0.546243314967425
+FINAL_RESULT:-0.546243314967425
+
+============================================================
+COMMIT: db24427 | SCORE: -1.0115681583633618 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.79% | Sharpe: -0.24 | Max DD: -5.98% | Trades: 47
+  Train Score: 0.0837
+
+TEST SET (Last 40%):
+  Return: -14.22% | Sharpe: -2.35 | Max DD: -16.51% | Trades: 45
+  Test Score: -0.8290
+
+Variance Penalty: -0.1825
+FINAL_RESULT:-1.0115681583633618
+FINAL_RESULT:-1.0115681583633618
+
+============================================================
+COMMIT: acf94b7 | SCORE: -0.9512243610122701 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.96% | Sharpe: 0.70 | Max DD: -5.98% | Trades: 49
+  Train Score: 0.4905
+
+TEST SET (Last 40%):
+  Return: -13.19% | Sharpe: -2.07 | Max DD: -15.33% | Trades: 45
+  Test Score: -0.7109
+
+Variance Penalty: -0.2403
+FINAL_RESULT:-0.9512243610122701
+FINAL_RESULT:-0.9512243610122701
+
+============================================================
+COMMIT: b786709 | SCORE: 0.21708510495109534 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.94% | Sharpe: 2.02 | Max DD: -5.30% | Trades: 17
+  Train Score: 0.5971
+
+TEST SET (Last 40%):
+  Return: 6.48% | Sharpe: 1.37 | Max DD: -4.30% | Trades: 11
+  Test Score: 0.2804
+
+Variance Penalty: -0.0633
+FINAL_RESULT:0.21708510495109534
+FINAL_RESULT:0.21708510495109534
+
+============================================================
+COMMIT: 81ba942 | SCORE: 0.18703112853403225 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 10.28% | Sharpe: 1.66 | Max DD: -6.52% | Trades: 15
+  Train Score: 0.4457
+
+TEST SET (Last 40%):
+  Return: 3.33% | Sharpe: 0.64 | Max DD: -5.22% | Trades: 15
+  Test Score: 0.2301
+
+Variance Penalty: -0.0431
+FINAL_RESULT:0.18703112853403225
+FINAL_RESULT:0.18703112853403225
+
+============================================================
+COMMIT: 4832cad | SCORE: 0.2490843900642868 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 6.04% | Sharpe: 1.17 | Max DD: -5.61% | Trades: 17
+  Train Score: 0.3848
+
+TEST SET (Last 40%):
+  Return: 3.62% | Sharpe: 0.69 | Max DD: -5.76% | Trades: 17
+  Test Score: 0.2717
+
+Variance Penalty: -0.0226
+FINAL_RESULT:0.2490843900642868
+FINAL_RESULT:0.2490843900642868
+
+============================================================
+COMMIT: dea4b26 | SCORE: 0.2545748452408242 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 8.54% | Sharpe: 1.82 | Max DD: -2.89% | Trades: 13
+  Train Score: 0.4151
+
+TEST SET (Last 40%):
+  Return: 8.00% | Sharpe: 1.78 | Max DD: -3.17% | Trades: 9
+  Test Score: 0.2813
+
+Variance Penalty: -0.0268
+FINAL_RESULT:0.2545748452408242
+FINAL_RESULT:0.2545748452408242
+
+============================================================
+COMMIT: 975b5fa | SCORE: -0.913179892800524 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 16.92% | Sharpe: 1.64 | Max DD: -6.67% | Trades: 61
+  Train Score: 0.9091
+
+TEST SET (Last 40%):
+  Return: -12.35% | Sharpe: -1.84 | Max DD: -12.52% | Trades: 53
+  Test Score: -0.6095
+
+Variance Penalty: -0.3037
+FINAL_RESULT:-0.913179892800524
+FINAL_RESULT:-0.913179892800524
+
+============================================================
+COMMIT: b969360 | SCORE: 0.09318235589533075 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 14.17% | Sharpe: 2.04 | Max DD: -7.16% | Trades: 15
+  Train Score: 0.5283
+
+TEST SET (Last 40%):
+  Return: 1.37% | Sharpe: 0.25 | Max DD: -6.58% | Trades: 17
+  Test Score: 0.1657
+
+Variance Penalty: -0.0725
+FINAL_RESULT:0.09318235589533075
+FINAL_RESULT:0.09318235589533075
+
+============================================================
+COMMIT: 83a0c39 | SCORE: -0.028236629464639812 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 6.41% | Sharpe: 0.88 | Max DD: -7.23% | Trades: 55
+  Train Score: 0.5636
+
+TEST SET (Last 40%):
+  Return: -1.49% | Sharpe: -0.26 | Max DD: -8.84% | Trades: 45
+  Test Score: 0.0704
+
+Variance Penalty: -0.0986
+FINAL_RESULT:-0.028236629464639812
+FINAL_RESULT:-0.028236629464639812
+
+============================================================
+COMMIT: 3c22566 | SCORE: -0.9283241748480237 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.23% | Sharpe: 0.38 | Max DD: -7.68% | Trades: 53
+  Train Score: 0.3508
+
+TEST SET (Last 40%):
+  Return: -13.24% | Sharpe: -2.08 | Max DD: -15.44% | Trades: 45
+  Test Score: -0.7151
+
+Variance Penalty: -0.2132
+FINAL_RESULT:-0.9283241748480237
+FINAL_RESULT:-0.9283241748480237
+
+============================================================
+COMMIT: fe7faac | SCORE: -0.9437504988908951 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.45% | Sharpe: 0.56 | Max DD: -5.98% | Trades: 47
+  Train Score: 0.4279
+
+TEST SET (Last 40%):
+  Return: -13.24% | Sharpe: -2.08 | Max DD: -15.44% | Trades: 45
+  Test Score: -0.7151
+
+Variance Penalty: -0.2286
+FINAL_RESULT:-0.9437504988908951
+FINAL_RESULT:-0.9437504988908951
+
+============================================================
+COMMIT: 20aefe9 | SCORE: -0.3713212345908429 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -8.94% | Sharpe: -1.07 | Max DD: -11.56% | Trades: 59
+  Train Score: -0.2865
+
+TEST SET (Last 40%):
+  Return: -0.60% | Sharpe: -0.09 | Max DD: -12.29% | Trades: 43
+  Test Score: 0.1375
+
+Variance Penalty: -0.0848
+FINAL_RESULT:-0.3713212345908429
+FINAL_RESULT:-0.3713212345908429
+
+============================================================
+COMMIT: 5d328d9 | SCORE: -0.2533152702839836 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -5.04% | Sharpe: -0.49 | Max DD: -11.78% | Trades: 65
+  Train Score: -0.0412
+
+TEST SET (Last 40%):
+  Return: -7.61% | Sharpe: -0.89 | Max DD: -15.78% | Trades: 49
+  Test Score: -0.2180
+
+Variance Penalty: -0.0354
+FINAL_RESULT:-0.2533152702839836
+FINAL_RESULT:-0.2533152702839836
+
+============================================================
+COMMIT: 2058b6e | SCORE: -0.40071230200244023 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -8.47% | Sharpe: -1.02 | Max DD: -13.80% | Trades: 65
+  Train Score: -0.2709
+
+TEST SET (Last 40%):
+  Return: 3.36% | Sharpe: 0.46 | Max DD: -9.24% | Trades: 51
+  Test Score: 0.3781
+
+Variance Penalty: -0.1298
+FINAL_RESULT:-0.40071230200244023
+FINAL_RESULT:-0.40071230200244023
+
+============================================================
+COMMIT: 70cdcc4 | SCORE: -0.43599210131322863 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.60% | Sharpe: -0.20 | Max DD: -5.62% | Trades: 65
+  Train Score: 0.1030
+
+TEST SET (Last 40%):
+  Return: -8.07% | Sharpe: -1.23 | Max DD: -10.13% | Trades: 49
+  Test Score: -0.3462
+
+Variance Penalty: -0.0898
+FINAL_RESULT:-0.43599210131322863
+FINAL_RESULT:-0.43599210131322863
+
+============================================================
+COMMIT: c14859b | SCORE: -0.5216336767961318 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -14.79% | Sharpe: -1.58 | Max DD: -15.21% | Trades: 95
+  Train Score: -0.5207
+
+TEST SET (Last 40%):
+  Return: -11.88% | Sharpe: -1.60 | Max DD: -15.01% | Trades: 69
+  Test Score: -0.5159
+
+Variance Penalty: -0.0010
+FINAL_RESULT:-0.5216336767961318
+FINAL_RESULT:-0.5216336767961318
+
+============================================================
+COMMIT: 8f3d56a | SCORE: -0.5954499830385974 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 15.35% | Sharpe: 1.25 | Max DD: -11.48% | Trades: 69
+  Train Score: 0.7402
+
+TEST SET (Last 40%):
+  Return: -10.37% | Sharpe: -1.22 | Max DD: -20.93% | Trades: 49
+  Test Score: -0.3728
+
+Variance Penalty: -0.2226
+FINAL_RESULT:-0.5954499830385974
+FINAL_RESULT:-0.5954499830385974
+
+============================================================
+COMMIT: 7ccca5d | SCORE: -1.245709761341205 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 11.95% | Sharpe: 1.15 | Max DD: -11.60% | Trades: 87
+  Train Score: 0.6841
+
+TEST SET (Last 40%):
+  Return: -15.00% | Sharpe: -2.58 | Max DD: -16.59% | Trades: 57
+  Test Score: -0.9241
+
+Variance Penalty: -0.3216
+FINAL_RESULT:-1.245709761341205
+FINAL_RESULT:-1.245709761341205
+
+============================================================
+COMMIT: 5c2fe11 | SCORE: -0.47447315622098507 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 14.93% | Sharpe: 1.24 | Max DD: -13.18% | Trades: 93
+  Train Score: 0.7294
+
+TEST SET (Last 40%):
+  Return: -7.58% | Sharpe: -1.03 | Max DD: -15.12% | Trades: 57
+  Test Score: -0.2738
+
+Variance Penalty: -0.2007
+FINAL_RESULT:-0.47447315622098507
+FINAL_RESULT:-0.47447315622098507
+
+============================================================
+COMMIT: 2facf6a | SCORE: -0.5307702472176578 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 9.97% | Sharpe: 0.87 | Max DD: -11.48% | Trades: 69
+  Train Score: 0.5630
+
+TEST SET (Last 40%):
+  Return: -9.88% | Sharpe: -1.17 | Max DD: -20.61% | Trades: 49
+  Test Score: -0.3485
+
+Variance Penalty: -0.1823
+FINAL_RESULT:-0.5307702472176578
+FINAL_RESULT:-0.5307702472176578
+
+============================================================
+COMMIT: 1c8bc52 | SCORE: 0.013806891946750138 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -2.92% | Sharpe: -0.31 | Max DD: -10.66% | Trades: 61
+  Train Score: 0.0431
+
+TEST SET (Last 40%):
+  Return: 0.20% | Sharpe: 0.03 | Max DD: -10.75% | Trades: 47
+  Test Score: 0.1895
+
+Variance Penalty: -0.0293
+FINAL_RESULT:0.013806891946750138
+FINAL_RESULT:0.013806891946750138
+
+============================================================
+COMMIT: 121bdfd | SCORE: -0.43430157023910976 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -11.62% | Sharpe: -1.19 | Max DD: -12.41% | Trades: 75
+  Train Score: -0.3477
+
+TEST SET (Last 40%):
+  Return: -2.00% | Sharpe: -0.22 | Max DD: -10.29% | Trades: 59
+  Test Score: 0.0854
+
+Variance Penalty: -0.0866
+FINAL_RESULT:-0.43430157023910976
+FINAL_RESULT:-0.43430157023910976
+
+============================================================
+COMMIT: cd8b051 | SCORE: -0.44779998144516064 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -12.42% | Sharpe: -1.34 | Max DD: -13.20% | Trades: 77
+  Train Score: -0.4137
+
+TEST SET (Last 40%):
+  Return: -7.32% | Sharpe: -0.96 | Max DD: -13.95% | Trades: 61
+  Test Score: -0.2431
+
+Variance Penalty: -0.0341
+FINAL_RESULT:-0.44779998144516064
+FINAL_RESULT:-0.44779998144516064
+
+============================================================
+COMMIT: ff921d2 | SCORE: 0.24179644902852543 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 8.54% | Sharpe: 1.82 | Max DD: -2.89% | Trades: 13
+  Train Score: 0.4151
+
+TEST SET (Last 40%):
+  Return: 7.65% | Sharpe: 1.70 | Max DD: -3.49% | Trades: 9
+  Test Score: 0.2707
+
+Variance Penalty: -0.0289
+FINAL_RESULT:0.24179644902852543
+FINAL_RESULT:0.24179644902852543
+
+============================================================
+COMMIT: 95eb943 | SCORE: -0.779068385542226 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -15.56% | Sharpe: -1.80 | Max DD: -16.86% | Trades: 81
+  Train Score: -0.6142
+
+TEST SET (Last 40%):
+  Return: 0.59% | Sharpe: 0.07 | Max DD: -9.98% | Trades: 61
+  Test Score: 0.2103
+
+Variance Penalty: -0.1649
+FINAL_RESULT:-0.779068385542226
+FINAL_RESULT:-0.779068385542226
+
+============================================================
+COMMIT: f950d92 | SCORE: -0.4038243330330719 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 7.47% | Sharpe: 1.09 | Max DD: -6.95% | Trades: 29
+  Train Score: 0.6291
+
+TEST SET (Last 40%):
+  Return: -5.70% | Sharpe: -0.99 | Max DD: -10.76% | Trades: 29
+  Test Score: -0.2317
+
+Variance Penalty: -0.1722
+FINAL_RESULT:-0.4038243330330719
+FINAL_RESULT:-0.4038243330330719
+
+============================================================
+COMMIT: 382565c | SCORE: -0.5807514417327994 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.26% | Sharpe: 0.50 | Max DD: -6.18% | Trades: 29
+  Train Score: 0.3885
+
+TEST SET (Last 40%):
+  Return: -7.54% | Sharpe: -1.46 | Max DD: -10.35% | Trades: 29
+  Test Score: -0.4192
+
+Variance Penalty: -0.1615
+FINAL_RESULT:-0.5807514417327994
+FINAL_RESULT:-0.5807514417327994
+
+============================================================
+COMMIT: 2d9a5af | SCORE: -0.07581386034580058 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.75% | Sharpe: 1.21 | Max DD: -2.23% | Trades: 3
+  Train Score: 0.0695
+
+TEST SET (Last 40%):
+  Return: -1.50% | Sharpe: -1.77 | Max DD: -1.68% | Trades: 3
+  Test Score: -0.0516
+
+Variance Penalty: -0.0242
+FINAL_RESULT:-0.07581386034580058
+FINAL_RESULT:-0.07581386034580058
+
+============================================================
+COMMIT: 9815df1 | SCORE: -0.3319552597659855 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.54% | Sharpe: 0.57 | Max DD: -8.29% | Trades: 47
+  Train Score: 0.4296
+
+TEST SET (Last 40%):
+  Return: -6.22% | Sharpe: -0.89 | Max DD: -11.10% | Trades: 41
+  Test Score: -0.2050
+
+Variance Penalty: -0.1269
+FINAL_RESULT:-0.3319552597659855
+FINAL_RESULT:-0.3319552597659855
+
+============================================================
+COMMIT: 2fb62a6 | SCORE: -0.45802972051190427 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -9.73% | Sharpe: -1.10 | Max DD: -14.85% | Trades: 63
+  Train Score: -0.3082
+
+TEST SET (Last 40%):
+  Return: 4.99% | Sharpe: 0.59 | Max DD: -8.00% | Trades: 45
+  Test Score: 0.4408
+
+Variance Penalty: -0.1498
+FINAL_RESULT:-0.45802972051190427
+FINAL_RESULT:-0.45802972051190427
+
+============================================================
+COMMIT: 34183d6 | SCORE: -1.0270578198201483 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 9.77% | Sharpe: 1.07 | Max DD: -8.57% | Trades: 69
+  Train Score: 0.6505
+
+TEST SET (Last 40%):
+  Return: -12.23% | Sharpe: -2.18 | Max DD: -14.10% | Trades: 53
+  Test Score: -0.7475
+
+Variance Penalty: -0.2796
+FINAL_RESULT:-1.0270578198201483
+FINAL_RESULT:-1.0270578198201483
+
+============================================================
+COMMIT: a215173 | SCORE: -0.35584677295052825 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -12.32% | Sharpe: -1.02 | Max DD: -19.95% | Trades: 212
+  Train Score: -0.2989
+
+TEST SET (Last 40%):
+  Return: -4.25% | Sharpe: -0.39 | Max DD: -20.96% | Trades: 139
+  Test Score: -0.0144
+
+Variance Penalty: -0.0569
+FINAL_RESULT:-0.35584677295052825
+FINAL_RESULT:-0.35584677295052825
+
+============================================================
+COMMIT: 8530e02 | SCORE: -0.36667652759801633 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -10.17% | Sharpe: -1.10 | Max DD: -11.35% | Trades: 79
+  Train Score: -0.3014
+
+TEST SET (Last 40%):
+  Return: -2.80% | Sharpe: -0.36 | Max DD: -10.41% | Trades: 61
+  Test Score: 0.0249
+
+Variance Penalty: -0.0653
+FINAL_RESULT:-0.36667652759801633
+FINAL_RESULT:-0.36667652759801633
+
+============================================================
+COMMIT: 1c0f0e2 | SCORE: 0.04119072247720105 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.78% | Sharpe: -0.17 | Max DD: -14.64% | Trades: 59
+  Train Score: 0.0956
+
+TEST SET (Last 40%):
+  Return: 4.06% | Sharpe: 0.42 | Max DD: -8.65% | Trades: 45
+  Test Score: 0.3679
+
+Variance Penalty: -0.0544
+FINAL_RESULT:0.04119072247720105
+FINAL_RESULT:0.04119072247720105
+
+============================================================
+COMMIT: b3c8b44 | SCORE: -0.47447315622098507 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 14.93% | Sharpe: 1.24 | Max DD: -13.18% | Trades: 93
+  Train Score: 0.7294
+
+TEST SET (Last 40%):
+  Return: -7.58% | Sharpe: -1.03 | Max DD: -15.12% | Trades: 57
+  Test Score: -0.2738
+
+Variance Penalty: -0.2007
+FINAL_RESULT:-0.47447315622098507
+FINAL_RESULT:-0.47447315622098507
+
+============================================================
+COMMIT: 22d7817 | SCORE: 0.20273343965972568 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.51% | Sharpe: 1.14 | Max DD: -5.61% | Trades: 15
+  Train Score: 0.3338
+
+TEST SET (Last 40%):
+  Return: 2.94% | Sharpe: 0.62 | Max DD: -4.84% | Trades: 15
+  Test Score: 0.2246
+
+Variance Penalty: -0.0218
+FINAL_RESULT:0.20273343965972568
+FINAL_RESULT:0.20273343965972568
+
+============================================================
+COMMIT: 0d18b56 | SCORE: -0.9283241748480237 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.23% | Sharpe: 0.38 | Max DD: -7.68% | Trades: 53
+  Train Score: 0.3508
+
+TEST SET (Last 40%):
+  Return: -13.24% | Sharpe: -2.08 | Max DD: -15.44% | Trades: 45
+  Test Score: -0.7151
+
+Variance Penalty: -0.2132
+FINAL_RESULT:-0.9283241748480237
+FINAL_RESULT:-0.9283241748480237
+
+============================================================
+COMMIT: 9a89beb | SCORE: 0.19647869983877325 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.96% | Sharpe: 2.42 | Max DD: -3.25% | Trades: 13
+  Train Score: 0.5277
+
+TEST SET (Last 40%):
+  Return: 7.48% | Sharpe: 1.54 | Max DD: -3.68% | Trades: 9
+  Test Score: 0.2517
+
+Variance Penalty: -0.0552
+FINAL_RESULT:0.19647869983877325
+FINAL_RESULT:0.19647869983877325
+
+============================================================
+COMMIT: 04cf339 | SCORE: -0.5086536449628716 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 11.06% | Sharpe: 1.14 | Max DD: -6.67% | Trades: 57
+  Train Score: 0.6885
+
+TEST SET (Last 40%):
+  Return: -8.22% | Sharpe: -1.13 | Max DD: -11.91% | Trades: 43
+  Test Score: -0.3091
+
+Variance Penalty: -0.1995
+FINAL_RESULT:-0.5086536449628716
+FINAL_RESULT:-0.5086536449628716
+
+============================================================
+COMMIT: cfd96ea | SCORE: 0.19647869983877325 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.96% | Sharpe: 2.42 | Max DD: -3.25% | Trades: 13
+  Train Score: 0.5277
+
+TEST SET (Last 40%):
+  Return: 7.48% | Sharpe: 1.54 | Max DD: -3.68% | Trades: 9
+  Test Score: 0.2517
+
+Variance Penalty: -0.0552
+FINAL_RESULT:0.19647869983877325
+FINAL_RESULT:0.19647869983877325
+
+============================================================
+COMMIT: b849377 | SCORE: -1.0249867156826722 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.73% | Sharpe: 0.46 | Max DD: -6.71% | Trades: 45
+  Train Score: 0.3848
+
+TEST SET (Last 40%):
+  Return: -14.60% | Sharpe: -2.25 | Max DD: -15.63% | Trades: 45
+  Test Score: -0.7900
+
+Variance Penalty: -0.2350
+FINAL_RESULT:-1.0249867156826722
+FINAL_RESULT:-1.0249867156826722
+
+============================================================
+COMMIT: 8ce53e1 | SCORE: -0.32621321096784334 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -9.50% | Sharpe: -0.99 | Max DD: -10.49% | Trades: 75
+  Train Score: -0.2542
+
+TEST SET (Last 40%):
+  Return: -1.47% | Sharpe: -0.17 | Max DD: -10.27% | Trades: 59
+  Test Score: 0.1056
+
+Variance Penalty: -0.0720
+FINAL_RESULT:-0.32621321096784334
+FINAL_RESULT:-0.32621321096784334
+
+============================================================
+COMMIT: 31d989e | SCORE: -0.03058836040896761 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -3.78% | Sharpe: -0.35 | Max DD: -14.89% | Trades: 59
+  Train Score: 0.0146
+
+TEST SET (Last 40%):
+  Return: 1.37% | Sharpe: 0.14 | Max DD: -10.87% | Trades: 45
+  Test Score: 0.2408
+
+Variance Penalty: -0.0452
+FINAL_RESULT:-0.03058836040896761
+FINAL_RESULT:-0.03058836040896761
+
+============================================================
+COMMIT: 807eca1 | SCORE: 0.053454637887800145 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 5.31% | Sharpe: 1.11 | Max DD: -5.43% | Trades: 15
+  Train Score: 0.3278
+
+TEST SET (Last 40%):
+  Return: 0.05% | Sharpe: 0.01 | Max DD: -3.88% | Trades: 15
+  Test Score: 0.0992
+
+Variance Penalty: -0.0457
+FINAL_RESULT:0.053454637887800145
+FINAL_RESULT:0.053454637887800145
+
+============================================================
+COMMIT: 080a87a | SCORE: 0.11238951282100658 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.24% | Sharpe: -0.13 | Max DD: -12.41% | Trades: 55
+  Train Score: 0.1201
+
+TEST SET (Last 40%):
+  Return: -1.20% | Sharpe: -0.14 | Max DD: -12.60% | Trades: 43
+  Test Score: 0.1137
+
+Variance Penalty: -0.0013
+FINAL_RESULT:0.11238951282100658
+FINAL_RESULT:0.11238951282100658
+
+============================================================
+COMMIT: 0943e55 | SCORE: -0.3455481539590585 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 17.08% | Sharpe: 1.36 | Max DD: -14.00% | Trades: 91
+  Train Score: 0.7843
+
+TEST SET (Last 40%):
+  Return: -6.15% | Sharpe: -0.74 | Max DD: -17.80% | Trades: 57
+  Test Score: -0.1572
+
+Variance Penalty: -0.1883
+FINAL_RESULT:-0.3455481539590585
+FINAL_RESULT:-0.3455481539590585
+
+============================================================
+COMMIT: 68ec482 | SCORE: -0.23347855260886713 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -8.31% | Sharpe: -0.80 | Max DD: -12.62% | Trades: 69
+  Train Score: -0.1771
+
+TEST SET (Last 40%):
+  Return: -1.65% | Sharpe: -0.17 | Max DD: -10.18% | Trades: 55
+  Test Score: 0.1045
+
+Variance Penalty: -0.0563
+FINAL_RESULT:-0.23347855260886713
+FINAL_RESULT:-0.23347855260886713
+
+============================================================
+COMMIT: e48d962 | SCORE: -0.29870844614718783 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -7.48% | Sharpe: -0.79 | Max DD: -10.89% | Trades: 61
+  Train Score: -0.1662
+
+TEST SET (Last 40%):
+  Return: 7.00% | Sharpe: 0.72 | Max DD: -9.25% | Trades: 49
+  Test Score: 0.4966
+
+Variance Penalty: -0.1325
+FINAL_RESULT:-0.29870844614718783
+FINAL_RESULT:-0.29870844614718783
+
+============================================================
+COMMIT: 96ae4b1 | SCORE: -1.3877156463435314 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 11.60% | Sharpe: 1.06 | Max DD: -13.26% | Trades: 65
+  Train Score: 0.6433
+
+TEST SET (Last 40%):
+  Return: -18.86% | Sharpe: -2.82 | Max DD: -21.96% | Trades: 45
+  Test Score: -1.0492
+
+Variance Penalty: -0.3385
+FINAL_RESULT:-1.3877156463435314
+FINAL_RESULT:-1.3877156463435314
+
+============================================================
+COMMIT: ed939bb | SCORE: 0.07524594472639329 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.77% | Sharpe: -0.21 | Max DD: -8.27% | Trades: 59
+  Train Score: 0.0919
+
+TEST SET (Last 40%):
+  Return: -0.02% | Sharpe: -0.00 | Max DD: -11.97% | Trades: 47
+  Test Score: 0.1751
+
+Variance Penalty: -0.0166
+FINAL_RESULT:0.07524594472639329
+FINAL_RESULT:0.07524594472639329
+
+============================================================
+COMMIT: 1e754fb | SCORE: -0.8422557404715064 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 3.84% | Sharpe: 0.45 | Max DD: -7.68% | Trades: 51
+  Train Score: 0.3811
+
+TEST SET (Last 40%):
+  Return: -12.14% | Sharpe: -1.91 | Max DD: -13.85% | Trades: 43
+  Test Score: -0.6384
+
+Variance Penalty: -0.2039
+FINAL_RESULT:-0.8422557404715064
+FINAL_RESULT:-0.8422557404715064
+
+============================================================
+COMMIT: 8e76d50 | SCORE: -0.8820385571831197 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 15.38% | Sharpe: 1.17 | Max DD: -15.17% | Trades: 85
+  Train Score: 0.7002
+
+TEST SET (Last 40%):
+  Return: -14.95% | Sharpe: -1.78 | Max DD: -23.96% | Trades: 55
+  Test Score: -0.6183
+
+Variance Penalty: -0.2637
+FINAL_RESULT:-0.8820385571831197
+FINAL_RESULT:-0.8820385571831197
+
+============================================================
+COMMIT: 3b7f559 | SCORE: -0.48341561307304914 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -10.68% | Sharpe: -1.21 | Max DD: -12.79% | Trades: 79
+  Train Score: -0.3512
+
+TEST SET (Last 40%):
+  Return: 2.19% | Sharpe: 0.30 | Max DD: -10.45% | Trades: 53
+  Test Score: 0.3097
+
+Variance Penalty: -0.1322
+FINAL_RESULT:-0.48341561307304914
+FINAL_RESULT:-0.48341561307304914
+
+============================================================
+COMMIT: 4bebd05 | SCORE: -0.8595641598949634 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -0.51% | Sharpe: -0.06 | Max DD: -7.68% | Trades: 55
+  Train Score: 0.1580
+
+TEST SET (Last 40%):
+  Return: -11.95% | Sharpe: -2.03 | Max DD: -15.64% | Trades: 45
+  Test Score: -0.6900
+
+Variance Penalty: -0.1696
+FINAL_RESULT:-0.8595641598949634
+FINAL_RESULT:-0.8595641598949634
+
+============================================================
+COMMIT: cdebf4d | SCORE: -0.5979451477814276 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -12.57% | Sharpe: -1.43 | Max DD: -13.72% | Trades: 81
+  Train Score: -0.4516
+
+TEST SET (Last 40%):
+  Return: -11.59% | Sharpe: -1.75 | Max DD: -13.31% | Trades: 65
+  Test Score: -0.5736
+
+Variance Penalty: -0.0244
+FINAL_RESULT:-0.5979451477814276
+FINAL_RESULT:-0.5979451477814276
+
+============================================================
+COMMIT: 660062a | SCORE: -0.5979451477814276 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -12.57% | Sharpe: -1.43 | Max DD: -13.72% | Trades: 81
+  Train Score: -0.4516
+
+TEST SET (Last 40%):
+  Return: -11.59% | Sharpe: -1.75 | Max DD: -13.31% | Trades: 65
+  Test Score: -0.5736
+
+Variance Penalty: -0.0244
+FINAL_RESULT:-0.5979451477814276
+FINAL_RESULT:-0.5979451477814276
+
+============================================================
+COMMIT: 346df33 | SCORE: -0.26759750436495006 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -7.48% | Sharpe: -0.79 | Max DD: -10.89% | Trades: 61
+  Train Score: -0.1662
+
+TEST SET (Last 40%):
+  Return: 3.55% | Sharpe: 0.37 | Max DD: -9.76% | Trades: 51
+  Test Score: 0.3410
+
+Variance Penalty: -0.1014
+FINAL_RESULT:-0.26759750436495006
+FINAL_RESULT:-0.26759750436495006
+
+============================================================
+COMMIT: 6e98893 | SCORE: 0.19647869983877325 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.96% | Sharpe: 2.42 | Max DD: -3.25% | Trades: 13
+  Train Score: 0.5277
+
+TEST SET (Last 40%):
+  Return: 7.48% | Sharpe: 1.54 | Max DD: -3.68% | Trades: 9
+  Test Score: 0.2517
+
+Variance Penalty: -0.0552
+FINAL_RESULT:0.19647869983877325
+FINAL_RESULT:0.19647869983877325
+
+============================================================
+COMMIT: c8c6e12 | SCORE: 0.19647869983877325 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.96% | Sharpe: 2.42 | Max DD: -3.25% | Trades: 13
+  Train Score: 0.5277
+
+TEST SET (Last 40%):
+  Return: 7.48% | Sharpe: 1.54 | Max DD: -3.68% | Trades: 9
+  Test Score: 0.2517
+
+Variance Penalty: -0.0552
+FINAL_RESULT:0.19647869983877325
+FINAL_RESULT:0.19647869983877325
+
+============================================================
+COMMIT: e60cb68 | SCORE: -0.8820385571831197 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 15.38% | Sharpe: 1.17 | Max DD: -15.17% | Trades: 85
+  Train Score: 0.7002
+
+TEST SET (Last 40%):
+  Return: -14.95% | Sharpe: -1.78 | Max DD: -23.96% | Trades: 55
+  Test Score: -0.6183
+
+Variance Penalty: -0.2637
+FINAL_RESULT:-0.8820385571831197
+FINAL_RESULT:-0.8820385571831197
+
+============================================================
+COMMIT: 08782f5 | SCORE: -1.916163971365544 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 6.89% | Sharpe: 0.67 | Max DD: -9.19% | Trades: 103
+  Train Score: 0.4757
+
+TEST SET (Last 40%):
+  Return: -20.78% | Sharpe: -3.98 | Max DD: -21.23% | Trades: 66
+  Test Score: -1.5175
+
+Variance Penalty: -0.3986
+FINAL_RESULT:-1.916163971365544
+FINAL_RESULT:-1.916163971365544
+
+============================================================
+COMMIT: 8488731 | SCORE: -0.2657543571132543 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -9.42% | Sharpe: -0.93 | Max DD: -10.93% | Trades: 73
+  Train Score: -0.2328
+
+TEST SET (Last 40%):
+  Return: -4.67% | Sharpe: -0.56 | Max DD: -12.94% | Trades: 55
+  Test Score: -0.0679
+
+Variance Penalty: -0.0330
+FINAL_RESULT:-0.2657543571132543
+FINAL_RESULT:-0.2657543571132543
+
+============================================================
+COMMIT: 184649d | SCORE: -0.2301865365975947 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -7.53% | Sharpe: -0.88 | Max DD: -9.75% | Trades: 61
+  Train Score: -0.2018
+
+TEST SET (Last 40%):
+  Return: -4.08% | Sharpe: -0.53 | Max DD: -15.09% | Trades: 53
+  Test Score: -0.0599
+
+Variance Penalty: -0.0284
+FINAL_RESULT:-0.2301865365975947
+FINAL_RESULT:-0.2301865365975947
+
+============================================================
+COMMIT: e041b6e | SCORE: -1.245199630274466 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.74% | Sharpe: -0.20 | Max DD: -10.63% | Trades: 51
+  Train Score: 0.0926
+
+TEST SET (Last 40%):
+  Return: -16.85% | Sharpe: -2.80 | Max DD: -17.89% | Trades: 45
+  Test Score: -1.0222
+
+Variance Penalty: -0.2230
+FINAL_RESULT:-1.245199630274466
+FINAL_RESULT:-1.245199630274466
+
+============================================================
+COMMIT: 7f40e5b | SCORE: -0.09341833973776124 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 7.66% | Sharpe: 2.00 | Max DD: -3.25% | Trades: 7
+  Train Score: 0.2387
+
+TEST SET (Last 40%):
+  Return: -2.78% | Sharpe: -1.02 | Max DD: -4.13% | Trades: 5
+  Test Score: -0.0381
+
+Variance Penalty: -0.0553
+FINAL_RESULT:-0.09341833973776124
+FINAL_RESULT:-0.09341833973776124
+
+============================================================
+COMMIT: b01a8cb | SCORE: -1.1032831787538964 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -6.34% | Sharpe: -0.49 | Max DD: -14.20% | Trades: 127
+  Train Score: -0.0501
+
+TEST SET (Last 40%):
+  Return: -22.27% | Sharpe: -2.43 | Max DD: -34.29% | Trades: 99
+  Test Score: -0.9277
+
+Variance Penalty: -0.1755
+FINAL_RESULT:-1.1032831787538964
+FINAL_RESULT:-1.1032831787538964
+
+============================================================
+COMMIT: 30102fb | SCORE: 0.19647869983877325 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.96% | Sharpe: 2.42 | Max DD: -3.25% | Trades: 13
+  Train Score: 0.5277
+
+TEST SET (Last 40%):
+  Return: 7.48% | Sharpe: 1.54 | Max DD: -3.68% | Trades: 9
+  Test Score: 0.2517
+
+Variance Penalty: -0.0552
+FINAL_RESULT:0.19647869983877325
+FINAL_RESULT:0.19647869983877325
+
+============================================================
+COMMIT: fb6d389 | SCORE: 0.21462928955583033 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 15.66% | Sharpe: 1.89 | Max DD: -7.19% | Trades: 21
+  Train Score: 0.7022
+
+TEST SET (Last 40%):
+  Return: 2.20% | Sharpe: 0.26 | Max DD: -8.83% | Trades: 31
+  Test Score: 0.2959
+
+Variance Penalty: -0.0813
+FINAL_RESULT:0.21462928955583033
+FINAL_RESULT:0.21462928955583033
+
+============================================================
+COMMIT: c4a6954 | SCORE: 0.18281742212806376 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 0.37% | Sharpe: 0.05 | Max DD: -9.46% | Trades: 33
+  Train Score: 0.2037
+
+TEST SET (Last 40%):
+  Return: 2.36% | Sharpe: 0.38 | Max DD: -9.98% | Trades: 27
+  Test Score: 0.3080
+
+Variance Penalty: -0.0209
+FINAL_RESULT:0.18281742212806376
+FINAL_RESULT:0.18281742212806376
+
+============================================================
+COMMIT: 10f4217 | SCORE: 0.22629393690709196 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.96% | Sharpe: 2.42 | Max DD: -3.25% | Trades: 13
+  Train Score: 0.5277
+
+TEST SET (Last 40%):
+  Return: 8.41% | Sharpe: 1.74 | Max DD: -3.68% | Trades: 9
+  Test Score: 0.2765
+
+Variance Penalty: -0.0502
+FINAL_RESULT:0.22629393690709196
+FINAL_RESULT:0.22629393690709196
+
+============================================================
+COMMIT: d0a7275 | SCORE: -1.0115681583633618 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: -1.79% | Sharpe: -0.24 | Max DD: -5.98% | Trades: 47
+  Train Score: 0.0837
+
+TEST SET (Last 40%):
+  Return: -14.22% | Sharpe: -2.35 | Max DD: -16.51% | Trades: 45
+  Test Score: -0.8290
+
+Variance Penalty: -0.1825
+FINAL_RESULT:-1.0115681583633618
+FINAL_RESULT:-1.0115681583633618
+
+============================================================
+COMMIT: d57f744 | SCORE: -0.9141532841269129 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 4.40% | Sharpe: 0.59 | Max DD: -6.22% | Trades: 37
+  Train Score: 0.4427
+
+TEST SET (Last 40%):
+  Return: -12.46% | Sharpe: -2.03 | Max DD: -13.65% | Trades: 39
+  Test Score: -0.6880
+
+Variance Penalty: -0.2261
+FINAL_RESULT:-0.9141532841269129
+FINAL_RESULT:-0.9141532841269129
+
+============================================================
+COMMIT: 66e0d0a | SCORE: -0.5676724238865574 | STATUS: DISCARD
+============================================================
+--- WALK-FORWARD EVALUATION REPORT ---
+TRAIN SET (First 60%):
+  Return: 13.36% | Sharpe: 1.32 | Max DD: -7.88% | Trades: 61
+  Train Score: 0.7645
+
+TEST SET (Last 40%):
+  Return: -9.53% | Sharpe: -1.21 | Max DD: -11.30% | Trades: 59
+  Test Score: -0.3456
+
+Variance Penalty: -0.2220
+FINAL_RESULT:-0.5676724238865574
+FINAL_RESULT:-0.5676724238865574

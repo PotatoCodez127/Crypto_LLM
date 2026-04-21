@@ -582,3 +582,9 @@ Traceback (most recent call last):
     return codecs.charmap_encode(input,self.errors,encoding_table)[0]
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 UnicodeEncodeError: 'charmap' codec can't encode characters in position 0-1: character maps to <undefined>
+
+============================================================
+COMMIT: 033f06e | SCORE: 0.0 | STATUS: CRASH
+============================================================
+⚖️ THE JUDGE: Initiating Walk-Forward Optimization...
+❌ Critical Error: Could not find data file data/btc_1h_1y.csv

@@ -39,13 +39,13 @@ def get_signals(df):
     df['zscore_norm'] = (df['z_score_50'] - df['zscore_median']) / (df['zscore_iqr'] + 1e-8)
     
     df['raw_signal'] = 0
-    # Require stronger extremes and volatility significantly above median
+    # Require moderate extremes and volatility moderately above median
     vol_ratio = df['volatility_20'] / (df['vol_median'] + 1e-8)
-    vol_strong = vol_ratio > 1.3  # volatility at least 30% above median
-    long_condition = (df['cvd_robust'] < -2.0) & (df['zscore_norm'] < -1.5) & vol_strong
-    short_condition = (df['cvd_robust'] > 2.0) & (df['zscore_norm'] > 1.5) & vol_strong
+    vol_strong = vol_ratio > 1.1  # volatility at least 10% above median
+    long_condition = (df['cvd_robust'] < -1.5) & (df['zscore_norm'] < -1.0) & vol_strong
+    short_condition = (df['cvd_robust'] > 1.5) & (df['zscore_norm'] > 1.0) & vol_strong
 
-    cooldown = 20
+    cooldown = 10
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:
@@ -77,11 +77,12 @@ def get_signals(df):
         vol_med = df['vol_median'].iloc[i]
         
         if vol_med > 0:
-            # Wider range, more adaptive to volatility regimes
+            # Narrower range, more adaptive to volatility regimes
             vol_ratio_local = vol / vol_med
-            # Use sigmoid-like scaling to keep multiplier between 1.8 and 3.5
-            atr_multiplier = 1.8 + (1.7 / (1.0 + np.exp(-vol_ratio_local + 1.0)))
-            atr_multiplier = max(1.8, min(3.5, atr_multiplier))
+            # Use linear scaling to keep multiplier between 2.0 and 3.0
+            # Higher volatility -> larger multiplier (wider stops)
+            atr_multiplier = 2.0 + (vol_ratio_local - 1.0) * 0.5
+            atr_multiplier = max(2.0, min(3.0, atr_multiplier))
         else:
             atr_multiplier = 2.5
 

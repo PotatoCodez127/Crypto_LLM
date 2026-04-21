@@ -73,6 +73,9 @@ def get_signals(df):
     entry_price = 0.0
 
     for i in range(len(df)):
+        # Safety bounds check
+        if i >= df.shape[0]:
+            break
         raw = df['raw_signal'].iloc[i]
         close = df['close'].iloc[i]
         atr = df['atr'].iloc[i]
@@ -105,7 +108,7 @@ def get_signals(df):
         elif position == 1:
             # Trailing stop logic with a floor based on entry
             new_stop = close - atr_multiplier * atr
-            # Ensure stop never moves below entry - 2.0*ATR (max loss protection)
+            # Ensure stop never moves below entry - -1.5*ATR (max loss protection)
             max_loss_stop = entry_price - 1.5 * atr
             if new_stop > stop_price and new_stop > max_loss_stop:
                 stop_price = new_stop

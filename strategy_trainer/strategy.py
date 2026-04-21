@@ -3,9 +3,9 @@ import numpy as np
 
 def get_signals(df):
     """
-    MISSION STRATEGY: Use CVD trend, close z-score, and ATR condition.
-    Long when (cvd_trend > 0.8) and (close_zscore_50 < -1.5) and (atr_14 > df['atr_14'].rolling(20).mean()).
-    Short when (cvd_trend < -0.8) and (close_zscore_50 > 1.5) and (atr_14 > df['atr_14'].rolling(20).mean()).
+    MISSION STRATEGY: Use CVD trend, close z-score, volume z-score, and ATR condition.
+    Long when (cvd_trend > 0) & (close_zscore_50 < -1.5) & (volume_zscore_24 > 1.2) & (atr_14 < atr_14 rolling 20 mean).
+    Short when (cvd_trend < 0) & (close_zscore_50 > 1.5) & (volume_zscore_24 > 1.2) & (atr_14 < atr_14 rolling 20 mean).
     Exit: Fixed stop-loss (1.5*ATR) and take-profit (3*ATR) from entry.
     Position sizing: inverse volatility scaling (0.5 to 1.5).
     Cooldown: 5 bars after exit before new entry.
@@ -15,8 +15,8 @@ def get_signals(df):
     df['atr_14_rolling_mean'] = df['atr_14'].rolling(window=20).mean()
     
     # Entry conditions
-    long_entry = (df['cvd_trend'] > 0.8) & (df['close_zscore_50'] < -1.5) & (df['atr_14'] > df['atr_14_rolling_mean'])
-    short_entry = (df['cvd_trend'] < -0.8) & (df['close_zscore_50'] > 1.5) & (df['atr_14'] > df['atr_14_rolling_mean'])
+    long_entry = (df['cvd_trend'] > 0) & (df['close_zscore_50'] < -1.5) & (df['volume_zscore_24'] > 1.2) & (df['atr_14'] < df['atr_14_rolling_mean'])
+    short_entry = (df['cvd_trend'] < 0) & (df['close_zscore_50'] > 1.5) & (df['volume_zscore_24'] > 1.2) & (df['atr_14'] < df['atr_14_rolling_mean'])
     
     df['raw_signal'] = 0
     df.loc[long_entry, 'raw_signal'] = 1

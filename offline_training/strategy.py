@@ -102,7 +102,7 @@ def get_signals(df):
             # Trailing stop logic with a floor based on entry
             new_stop = close - atr_multiplier * atr
             # Ensure stop never moves below entry - 2.0*ATR (max loss protection)
-            max_loss_stop = entry_price - 2.0 * atr
+            max_loss_stop = entry_price - 2.5 * atr
             if new_stop > stop_price and new_stop > max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop > stop_price:
@@ -114,7 +114,7 @@ def get_signals(df):
                 df.iloc[i, df.columns.get_loc('signal')] = 1
         elif position == -1:
             new_stop = close + atr_multiplier * atr
-            max_loss_stop = entry_price + 2.0 * atr
+            max_loss_stop = entry_price + 2.5 * atr
             if new_stop < stop_price and new_stop < max_loss_stop:
                 stop_price = new_stop
             elif max_loss_stop < stop_price:

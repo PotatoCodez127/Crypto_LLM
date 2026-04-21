@@ -58,7 +58,15 @@ def generate_hypothesis(best_score):
             messages=[
                 {
                     "role": "system", 
-                    "content": "You are an elite quantitative researcher improving a Python trading strategy."
+                    "content": (
+                        "You are an elite quantitative researcher improving a Python trading strategy.\n"
+                        "CRITICAL MARKET DATA: The DataFrame 'df' contains advanced V2 features:\n"
+                        "- 'cvd_trend': Order flow momentum (positive = buyer dominance).\n"
+                        "- 'atr_14': 14-period Volatility.\n"
+                        "- 'close_zscore_50': Mean reversion normalized price.\n"
+                        "- 'volume_zscore_24': Volume anomaly detection.\n"
+                        "USE THESE V2 FEATURES heavily in your hypotheses."
+                    )
                 },
                 {
                     "role": "user", 
@@ -69,20 +77,26 @@ def generate_hypothesis(best_score):
                         "HYPOTHESIS: [Write a 1-sentence strict coding instruction]"
                     )
                 }
-            ],
-            max_tokens=400
+            ]
+            # NOTICE: max_tokens has been completely removed to prevent truncation panics
         )
+        
+        # --- RAW METADATA DUMP ---
+        # print("\n--- DIAGNOSTIC: RAW API RESPONSE ---")
+        # print(response)
+        # print("------------------------------------\n")
         
         content = response.choices[0].message.content
         
         if content is None or content.strip() == "":
-            print("\n❌ API ERROR: The model returned an empty string.")
+            print("\n❌ API ERROR: The model returned a completely empty string.")
             return "API error.", ""
 
         content = content.strip()
         
         import re
-        content_clean = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
+        # Aggressive unclosed <think> tag remover
+        content_clean = re.sub(r'<think>.*?(</think>|$)', '', content, flags=re.DOTALL).strip()
         
         thinking_match = re.search(r'THINKING\s*[:\-]?\s*(.*?)(?=HYPOTHESIS\s*[:\-]?|$)', content_clean, re.IGNORECASE | re.DOTALL)
         hypothesis_match = re.search(r'HYPOTHESIS\s*[:\-]?\s*(.*)', content_clean, re.IGNORECASE | re.DOTALL)
@@ -96,6 +110,7 @@ def generate_hypothesis(best_score):
         if not hypothesis or len(hypothesis) < 5:
             print("\n❌ PARSING ERROR: The AI completely ignored formatting.")
             with open("llm_error_log.txt", "a", encoding="utf-8") as f:
+                import time
                 f.write(f"--- FAILED PARSE AT {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n{content}\n\n")
                 
         return thinking, hypothesis
@@ -181,6 +196,9 @@ def run_experiment(memory_bank):
         f"The ALL-TIME BEST FINAL_RESULT is {best_score}.\n"
         f"Your specific mission for this iteration is: {hypothesis}\n\n"
         f"{memory_text}\n"
+        f"CRITICAL DATA DICTIONARY: The input 'df' ALREADY contains these calculated columns: "
+        f"['open', 'high', 'low', 'close', 'volume', 'log_return', 'candle_dir', 'volume_delta', 'cvd', 'cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24']. "
+        f"DO NOT calculate these from scratch. Just use them directly in your logic.\n\n"
         f"Modify the code in {STRATEGY_FILE} right now to execute this mission and try to beat {best_score}. "
         "Output the actual code edits using the correct SEARCH/REPLACE format. "
         "Do not apologize, do not explain. Just write the code edits."

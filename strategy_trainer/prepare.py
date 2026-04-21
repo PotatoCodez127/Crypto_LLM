@@ -11,7 +11,8 @@ import sys
 import os
 
 # Configuration
-DATA_FILE = "../data/btc_1h_3y.csv"
+# DATA_FILE = "../data/btc_1h_3y.csv"
+DATA_FILE = "../data/btc_1h_3y_v2.csv"
 STRATEGY_FILE = "strategy.py"
 INITIAL_CAPITAL = 10000.0
 FEES = 0.0006  # 0.06% Taker Fee

@@ -49,27 +49,48 @@ def get_signals(df):
     bullish_div = (df['low'] <= df['price_low_20'].shift(1)) & (df['rsi_smooth'] > df['rsi_low_20'].shift(1))
     bearish_div = (df['high'] >= df['price_high_20'].shift(1)) & (df['rsi_smooth'] < df['rsi_high_20'].shift(1))
     
+    # Additional features for regime‑based entries
+    df['sma_50'] = df['close'].rolling(window=50).mean()
+    df['high_5'] = df['high'].rolling(window=5).max()
+    df['low_5'] = df['low'].rolling(window=5).min()
+    
     # 7. Entry conditions
-    # Long: RSI oversold (<30) + bullish divergence + volume spike + low volatility regime (mean reversion)
-    long_condition = (
-        (df['rsi_smooth'] < 30) &
+    # High volatility regime: momentum with trend filter
+    high_vol_long = (
+        df['high_vol_regime'] &
+        (df['close'] > df['sma_50']) &
+        (df['rsi_smooth'] > 40) & (df['rsi_smooth'] < 60) &
+        (df['volume_ratio'] > 1.5) &
+        (df['close'] >= df['high_5'].shift(1))
+    )
+    high_vol_short = (
+        df['high_vol_regime'] &
+        (df['close'] < df['sma_50']) &
+        (df['rsi_smooth'] > 40) & (df['rsi_smooth'] < 60) &
+        (df['volume_ratio'] > 1.5) &
+        (df['close'] <= df['low_5'].shift(1))
+    )
+    # Low volatility regime: mean reversion with divergence
+    low_vol_long = (
+        df['low_vol_regime'] &
+        (df['rsi_smooth'] < 35) &
         bullish_div &
-        volume_spike &
-        df['low_vol_regime'] &
-        (df['z_norm'] < -1.0)
+        (df['volume_ratio'] > 1.8) &
+        (df['z_norm'] < -0.8)
     )
-    # Short: RSI overbought (>70) + bearish divergence + volume spike + low volatility regime
-    short_condition = (
-        (df['rsi_smooth'] > 70) &
+    low_vol_short = (
+        df['low_vol_regime'] &
+        (df['rsi_smooth'] > 65) &
         bearish_div &
-        volume_spike &
-        df['low_vol_regime'] &
-        (df['z_norm'] > 1.0)
+        (df['volume_ratio'] > 1.8) &
+        (df['z_norm'] > 0.8)
     )
+    long_condition = high_vol_long | low_vol_long
+    short_condition = high_vol_short | low_vol_short
     
     # 8. Cooldown and raw signal generation
     df['raw_signal'] = 0
-    cooldown = 15  # Longer cooldown to avoid whipsaw
+    cooldown = 5  # Shorter cooldown for more opportunities
     last_signal_idx = -cooldown
     for i in range(len(df)):
         if i < last_signal_idx + cooldown:

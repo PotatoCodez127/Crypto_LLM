@@ -54,21 +54,37 @@ def generate_hypothesis(best_score):
             model="openai/deepseek-v3.2",
             api_base="http://localhost:4000", 
             api_key="sk-dummy-key-1234", 
+            temperature=0.7, # Added to prevent model freeze
             messages=[
                 {
                     "role": "system", 
+                    "content": "You are an elite quantitative researcher improving a Python trading strategy."
+                },
+                {
+                    "role": "user", 
                     "content": (
-                        "You are an elite quantitative researcher.\n"
-                        "You MUST format your response exactly like this:\n"
+                        f"Our current best Out-Of-Sample score is {best_score}. Formulate your next move.\n\n"
+                        "You MUST format your response EXACTLY like this:\n"
                         "THINKING: [Explain your logic in 2 sentences]\n"
                         "HYPOTHESIS: [Write a 1-sentence strict coding instruction]"
                     )
-                },
-                {"role": "user", "content": f"Our current best Out-Of-Sample score is {best_score}. Formulate your next move."}
+                }
             ],
-            max_tokens=300
+            max_tokens=400
         )
-        content = response.choices[0].message.content.strip()
+        
+        # Safely grab the content
+        content = response.choices[0].message.content
+        
+        # --- NEW DIAGNOSTIC CATCH ---
+        if content is None or content.strip() == "":
+            print("\n❌ API ERROR: The model returned an absolutely empty string.")
+            print("--- FULL API RESPONSE OBJECT ---")
+            print(response) # This will print finish_reasons and token usage!
+            print("--------------------------------\n")
+            return "API generated empty response.", ""
+
+        content = content.strip()
         
         # 1. Strip out any internal <think> reasoning tokens
         import re
@@ -85,14 +101,13 @@ def generate_hypothesis(best_score):
         thinking = thinking.replace("**", "").replace("*", "").replace("`", "")
         hypothesis = hypothesis.replace("**", "").replace("*", "").replace("`", "")
         
-        # --- THE NEW RAW ERROR LOGGER ---
+        # --- THE RAW ERROR LOGGER ---
         if not hypothesis or len(hypothesis) < 5:
             print("\n❌ PARSING ERROR: The AI completely ignored the formatting instructions.")
             print("--- RAW AI OUTPUT ---")
             print(content)
             print("---------------------\n")
             
-            # Save to a log file so we can inspect it
             with open("llm_error_log.txt", "a", encoding="utf-8") as f:
                 import time
                 f.write(f"--- FAILED PARSE AT {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")

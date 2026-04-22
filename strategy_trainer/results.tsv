@@ -1,26 +1,4 @@
 commit	final_result	status	description
-fca9f8a	-0.10120477207981375	keep	Auto-experiment success
-d293d64	-0.0016321032450772321	keep	Auto-experiment success
-187e351	-0.007731088206311909	discard	Failed attempt logged
-87f5506	-0.030265469022524583	discard	Failed attempt logged
-7af8b38	0.0	crash	Failed attempt logged
-319b407	0.0	keep	Auto-experiment success
-1732993	0.0	discard	Failed attempt logged
-4a0f891	0.020171680095346017	keep	Auto-experiment success
-099a6df	-0.00262889297184656	discard	Failed attempt logged
-cb1cb4d	0.0	discard	Failed attempt logged
-250d0f6	0.0	discard	Failed attempt logged
-0c99f23	-0.008819964314592643	discard	Failed attempt logged
-cce7461	0.04055100646188461	keep	Auto-experiment success
-88fe414	0.00794619202625844	discard	Failed attempt logged
-ae55d28	0.01941944769340076	discard	Failed attempt logged
-64887e2	0.0	discard	Failed attempt logged
-e8bdce9	0.0	discard	Failed attempt logged
-295e584	-0.0010366368009337064	discard	Failed attempt logged
-d0f657d	0.006239375512916793	discard	Failed attempt logged
-5926bb8	-0.0028754502270884053	discard	Failed attempt logged
-aa1546c	0.014459440898175783	discard	Failed attempt logged
-33bb83d	0.0307504162130633	discard	Failed attempt logged
-2ba1109	-0.5125449406749314	discard	Failed attempt logged
-1b72d41	-999.0	discard	Failed attempt logged
-db3859a	-0.10819327994884392	discard	Failed attempt logged
+8f8e3c2	-999.0	discard	Failed attempt logged
+0b79850	-0.005884216440099169	keep	Auto-experiment success
+e919631	-0.09470300278723387	discard	Failed attempt logged

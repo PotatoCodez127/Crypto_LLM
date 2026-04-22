@@ -1,84 +1,61 @@
 import pandas as pd
 import numpy as np
+import xgboost as xgb
 
-def get_signals(df):
+def generate_signals(df):
     """
-    MISSION STRATEGY: Use CVD trend, close z-score, volume z-score, and ATR condition.
-    Long when (cvd_trend > 0) & (close_zscore_50 < -1.5) & (volume_zscore_24 > 1.2) & (atr_14 < atr_14 rolling 20 mean).
-    Short when (cvd_trend < 0) & (close_zscore_50 > 1.5) & (volume_zscore_24 > 1.2) & (atr_14 < atr_14 rolling 20 mean).
-    Exit: Fixed stop-loss (1.5*ATR) and take-profit (3*ATR) from entry.
-    Position sizing: inverse volatility scaling (0.5 to 1.5).
-    Cooldown: 5 bars after exit before new entry.
+    XGBoost Machine Learning Strategy Template.
+    The AI will modify features and hyperparameters here to find edge.
     """
-    # Ensure required columns exist (they should from feature extraction)
-    # Calculate rolling mean of atr_14 for condition
-    df['atr_14_rolling_mean'] = df['atr_14'].rolling(window=20).mean()
+    # Create a safe copy and initialize flat signals
+    data = df.copy()
+    data['signal'] = 0
     
-    # Entry conditions
-    long_entry = (df['cvd_trend'] > 0) & (df['close_zscore_50'] < -1.5) & (df['volume_zscore_24'] > 1.2) & (df['atr_14'] < df['atr_14_rolling_mean'])
-    short_entry = (df['cvd_trend'] < 0) & (df['close_zscore_50'] > 1.5) & (df['volume_zscore_24'] > 1.2) & (df['atr_14'] < df['atr_14_rolling_mean'])
+    # --- 1. FEATURE SELECTION (AI Tunes This) ---
+    features = [
+        'cvd_trend', 
+        'atr_14', 
+        'close_zscore_50', 
+        'volume_zscore_24'
+    ]
     
-    df['raw_signal'] = 0
-    df.loc[long_entry, 'raw_signal'] = 1
-    df.loc[short_entry, 'raw_signal'] = -1
+    # --- 2. TARGET DEFINITION ---
+    # Predicting if the NEXT candle's close will be higher than THIS candle's close
+    data['target'] = (data['close'].shift(-1) > data['close']).astype(int)
     
-    # Volatility scaling factor (0.5 to 1.5) using existing volatility column if present, else compute
-    if 'volatility' not in df.columns:
-        vol_window = 50
-        df['volatility'] = df['close'].pct_change().rolling(vol_window).std()
-    vol_median = df['volatility'].median()
-    df['size_factor'] = np.clip(vol_median / (df['volatility'] + 1e-8), 0.5, 1.5)
+    # --- 3. DATA CLEANING ---
+    clean_data = data.dropna(subset=features + ['target']).copy()
     
-    # Position management with fixed stop/target and cooldown
-    df['signal'] = 0.0
-    position = 0
-    entry_price = 0.0
-    stop_price = 0.0
-    target_price = 0.0
-    cooldown = 0
-    
-    for i in range(len(df)):
-        raw = df['raw_signal'].iloc[i]
-        close = df['close'].iloc[i]
-        atr = df['atr_14'].iloc[i]
-        size_factor = df['size_factor'].iloc[i]
+    if len(clean_data) < 100:
+        return data # Failsafe if data is too short
         
-        # Decrease cooldown
-        if cooldown > 0:
-            cooldown -= 1
-        
-        if position == 0 and cooldown == 0:
-            if raw == 1:
-                position = 1
-                entry_price = close
-                stop_price = close - 1.5 * atr
-                target_price = close + 3.0 * atr
-                df.iloc[i, df.columns.get_loc('signal')] = 1.0 * size_factor
-            elif raw == -1:
-                position = -1
-                entry_price = close
-                stop_price = close + 1.5 * atr
-                target_price = close - 3.0 * atr
-                df.iloc[i, df.columns.get_loc('signal')] = -1.0 * size_factor
-            else:
-                df.iloc[i, df.columns.get_loc('signal')] = 0.0
-        elif position == 1:
-            # Check exit
-            if close <= stop_price or close >= target_price:
-                position = 0
-                df.iloc[i, df.columns.get_loc('signal')] = 0.0
-                cooldown = 5  # bars cooldown
-                # No immediate re-entry
-            else:
-                df.iloc[i, df.columns.get_loc('signal')] = 1.0 * size_factor
-        elif position == -1:
-            if close >= stop_price or close <= target_price:
-                position = 0
-                df.iloc[i, df.columns.get_loc('signal')] = 0.0
-                cooldown = 5
-            else:
-                df.iloc[i, df.columns.get_loc('signal')] = -1.0 * size_factor
-        else:
-            df.iloc[i, df.columns.get_loc('signal')] = 0.0
+    X = clean_data[features]
+    y = clean_data['target']
     
-    return df
+    # --- 4. CHRONOLOGICAL SPLIT ---
+    # Train on the past, predict the future. NO LOOKAHEAD BIAS.
+    split_idx = int(len(clean_data) * 0.6)
+    X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
+    y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
+    
+    # --- 5. THE XGBOOST MODEL (AI Tunes This) ---
+    model = xgb.XGBClassifier(
+        max_depth=3,           # AI tunes how complex the trees are
+        learning_rate=0.05,    # AI tunes how fast the model learns
+        n_estimators=100,      # AI tunes the number of trees
+        random_state=42,
+        n_jobs=-1              # Use all CPU cores
+    )
+    
+    # Train the model
+    model.fit(X_train, y_train)
+    
+    # --- 6. PREDICT & EXECUTE ---
+    # Generate predictions ONLY on the unseen Out-Of-Sample data
+    predictions = model.predict(X_test)
+    
+    # Map predictions back to the original dataframe (1 = Buy, 0 = Hold/Close)
+    test_indices = X_test.index
+    data.loc[test_indices, 'signal'] = predictions
+    
+    return data

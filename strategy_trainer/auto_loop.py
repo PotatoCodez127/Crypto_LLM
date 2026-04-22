@@ -59,13 +59,10 @@ def generate_hypothesis(best_score):
                 {
                     "role": "system", 
                     "content": (
-                        "You are an elite quantitative researcher improving a Python trading strategy.\n"
-                        "CRITICAL MARKET DATA: The DataFrame 'df' contains advanced V2 features:\n"
-                        "- 'cvd_trend': Order flow momentum (positive = buyer dominance).\n"
-                        "- 'atr_14': 14-period Volatility.\n"
-                        "- 'close_zscore_50': Mean reversion normalized price.\n"
-                        "- 'volume_zscore_24': Volume anomaly detection.\n"
-                        "USE THESE V2 FEATURES heavily in your hypotheses."
+                        "You are an elite AI Data Scientist tuning an XGBoost trading strategy.\n"
+                        "Your job is NO LONGER to write if/else heuristic rules.\n"
+                        "Instead, you must tune the XGBoost hyperparameters (max_depth, learning_rate, n_estimators) "
+                        "and select/combine the V2 features ('cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24') to maximize the Out-Of-Sample score."
                     )
                 },
                 {
@@ -196,12 +193,12 @@ def run_experiment(memory_bank):
         f"The ALL-TIME BEST FINAL_RESULT is {best_score}.\n"
         f"Your specific mission for this iteration is: {hypothesis}\n\n"
         f"{memory_text}\n"
-        f"CRITICAL DATA DICTIONARY: The input 'df' ALREADY contains these calculated columns: "
-        f"['open', 'high', 'low', 'close', 'volume', 'log_return', 'candle_dir', 'volume_delta', 'cvd', 'cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24']. "
-        f"DO NOT calculate these from scratch. Just use them directly in your logic.\n\n"
+        f"CRITICAL RULES FOR strategy.py:\n"
+        f"1. Do NOT write manual if/else trading logic. You are tuning the XGBoost model.\n"
+        f"2. You may change the XGBClassifier hyperparameters.\n"
+        f"3. You may change the 'features' list using the available columns: ['open', 'high', 'low', 'close', 'volume', 'cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24'].\n\n"
         f"Modify the code in {STRATEGY_FILE} right now to execute this mission and try to beat {best_score}. "
-        "Output the actual code edits using the correct SEARCH/REPLACE format. "
-        "Do not apologize, do not explain. Just write the code edits."
+        "Output the actual code edits using the correct SEARCH/REPLACE format."
     )
     
     print(f"\n🤖 Aider is coding the hypothesis...") 

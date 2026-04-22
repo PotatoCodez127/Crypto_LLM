@@ -9,8 +9,8 @@ FEATURES = [
 ]
 
 MODEL_PARAMS = {
-    'max_depth': 10,
-    'learning_rate': 0.05,
+    'max_depth': 20,
+    'learning_rate': 0.3,
     'n_estimators': 200,
     'random_state': 42,
     'n_jobs': -1

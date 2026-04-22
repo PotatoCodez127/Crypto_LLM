@@ -238,16 +238,6 @@ def run_experiment(memory_bank):
         time.sleep(3)
         return
 
-    # === UPDATED LOGGING BLOCK ===
-    # Only save to Git and the Memory Bank if it is a REAL score.
-    # We ignore 0.0 (lazy flatline) and -999.0 (code crash).
-    
-    if score == 0.0 or score == -999.0:
-        print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is {score}. Abandoning memory log and restoring base code to prevent database poisoning...")
-        subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
-        time.sleep(3)
-        return
-
     if status == "keep":
         print(f"✅ SUCCESS! New high score.")
         log_result(commit_after, score, status, "Auto-experiment success")

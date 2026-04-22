@@ -1,0 +1,5 @@
+commit	final_result	status	description
+ebe601d	-999.0	discard	Failed attempt logged
+8487ea0	-999.0	discard	Failed attempt logged
+ab0db14	-0.2291770686653163	keep	Auto-experiment success
+6a02359	-0.35151677270604265	discard	Failed attempt logged

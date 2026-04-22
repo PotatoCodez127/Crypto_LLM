@@ -38,40 +38,17 @@ def generate_signals(df):
     X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
     y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
     
-    # Further split training data for early stopping validation
-    val_split_idx = int(len(X_train) * 0.8)
-    X_train_fit, X_val = X_train.iloc[:val_split_idx], X_train.iloc[val_split_idx:]
-    y_train_fit, y_val = y_train.iloc[:val_split_idx], y_train.iloc[val_split_idx:]
-    
     # --- 5. THE XGBOOST MODEL (AI Tunes This) ---
-    # Calculate scale_pos_weight to handle class imbalance
-    pos_count = y_train_fit.sum()
-    neg_count = len(y_train_fit) - pos_count
-    scale_pos_weight = neg_count / pos_count if pos_count > 0 else 1.0
-    
     model = xgb.XGBClassifier(
-        max_depth=3,           # Set to 3 as per mission requirements
-        learning_rate=0.05,    # Set to 0.05 as per mission requirements
-        n_estimators=200,      # Set to 200 as per mission requirements
-        subsample=0.8,         # Add regularization to improve OOS performance
-        colsample_bytree=0.8,  # Feature sampling per tree
-        min_child_weight=5,    # Minimum sum of instance weight needed in a child
-        gamma=0.1,             # Minimum loss reduction required to make a split
-        reg_alpha=0.1,         # L1 regularization
-        reg_lambda=1.0,        # L2 regularization
+        max_depth=3,           # AI tunes how complex the trees are
+        learning_rate=0.05,    # AI tunes how fast the model learns
+        n_estimators=100,      # AI tunes the number of trees
         random_state=42,
-        n_jobs=-1,             # Use all CPU cores
-        scale_pos_weight=scale_pos_weight,
-        eval_metric='logloss'
+        n_jobs=-1              # Use all CPU cores
     )
     
-    # Train the model with early stopping
-    model.fit(
-        X_train_fit, y_train_fit,
-        eval_set=[(X_val, y_val)],
-        early_stopping_rounds=50,
-        verbose=False
-    )
+    # Train the model
+    model.fit(X_train, y_train)
     
     # --- 6. PREDICT & EXECUTE ---
     # Generate predictions ONLY on the unseen Out-Of-Sample data

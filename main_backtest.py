@@ -255,19 +255,47 @@ if __name__ == "__main__":
     
     evaluator = QuantitativeEvaluator("data/btc_1h_1y.csv")
     
-    # Define parameter grid for optimization
-    param_grid = {
-        'ema_short': [10, 20, 30],
-        'ema_long': [50, 100],
-        'rsi_period': [14, 21],
-        'rsi_overbought': [70, 75],
-        'rsi_oversold': [25, 30]
+    # Use the specific parameters from the mission
+    # All four features are used by default in the strategy
+    # The model parameters are configured in ai_config.py
+    params = {
+        'max_depth': 7,
+        'learning_rate': 0.05,
+        'n_estimators': 300,
+        'features': ['cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24']
     }
     
-    # Run optimization
-    result = evaluator.optimize_parameters(get_signals, param_grid, train_days=90, test_days=30)
+    # Direct evaluation with our parameters
+    metrics = evaluator.evaluate_strategy_with_params(
+        get_signals, 
+        params, 
+        train_days=180, 
+        test_days=30
+    )
     
-    print("Optimization Results:")
-    print(f"Best Parameters: {result['best_params']}")
-    print(f"Best Score: {result['best_score']}")
-    print(f"Metrics: {result['best_metrics']}")
+    print("Direct Evaluation Results:")
+    print(f"Parameters: {params}")
+    print(f"Total Return: {metrics.get('total_return', 0):.4f}")
+    print(f"Sharpe Ratio: {metrics.get('sharpe_ratio', 0):.4f}")
+    print(f"Sortino Ratio: {metrics.get('sortino_ratio', 0):.4f}")
+    print(f"Max Drawdown: {metrics.get('max_drawdown', 0):.4f}")
+    print(f"Calmar Ratio: {metrics.get('calmar_ratio', 0):.4f}")
+    print(f"Win Rate: {metrics.get('win_rate', 0):.4f}")
+    print(f"Profit Factor: {metrics.get('profit_factor', 0):.4f}")
+    print(f"Number of Trades: {metrics.get('num_trades', 0)}")
+    
+    # Calculate a composite score similar to the optimization scoring
+    score = (
+        metrics.get('sharpe_ratio', 0) * 0.4 +
+        metrics.get('total_return', 0) * 0.3 +
+        (1 - abs(metrics.get('max_drawdown', 0))) * 0.2 +
+        metrics.get('profit_factor', 0) * 0.1
+    )
+    print(f"\nComposite Score: {score:.6f}")
+    
+    # Compare with all-time best
+    all_time_best = -29.865629282669932
+    if score > all_time_best:
+        print(f"🎉 New best score! Beat previous best of {all_time_best:.6f}")
+    else:
+        print(f"❌ Did not beat all-time best of {all_time_best:.6f}")

@@ -58,3 +58,22 @@ class StrategyMemoryBank:
                     "commit": meta["commit"]
                 })
         return memories
+
+    def get_global_best_score(self):
+        """Polls the shared ChromaDB to find the absolute highest score across all swarm workers."""
+        try:
+            # Fetch all successful trials from all workers
+            results = self.collection.get(where={"status": "keep"})
+            
+            if not results or 'metadatas' not in results or not results['metadatas']:
+                return -999.0
+            
+            # Extract scores and find the maximum
+            scores = [float(meta['score']) for meta in results['metadatas'] if 'score' in meta]
+            
+            if scores:
+                return max(scores)
+            return -999.0
+        except Exception as e:
+            print(f"⚠️ Could not fetch global score: {e}")
+            return -999.0

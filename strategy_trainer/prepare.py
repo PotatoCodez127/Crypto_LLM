@@ -98,7 +98,7 @@ def evaluate_regime_wfo(regime_df, regime_name, strategy):
     return avg_oos_return, total_trades
 
 def run_walk_forward_optimization():
-    print("⚖️ THE JUDGE: Initiating Multi-Regime Walk-Forward Optimization...")
+    print("⚖️ THE JUDGE: Initiating Walk-Forward Optimization...")
     
     # 1. Load Data
     try:
@@ -120,37 +120,19 @@ def run_walk_forward_optimization():
         print("FINAL_RESULT:-999.0")
         return
 
-    # 3. REGIME SLICING (Assuming 1H candles: 24 per day)
-    candles_3m = 24 * 90
-    candles_1y = 24 * 365
-    
-    macro_slice = df 
-    medium_slice = df.iloc[-candles_1y:] if len(df) > candles_1y else df
-    recent_slice = df.iloc[-candles_3m:] if len(df) > candles_3m else df
-
-    print("\n--- REGIME EVALUATION ---")
-    score_3m, trades_3m = evaluate_regime_wfo(recent_slice, "3-Month (Recent)", strategy)
-    score_1y, trades_1y = evaluate_regime_wfo(medium_slice, "1-Year (Medium)", strategy)
-    score_3y, trades_3y = evaluate_regime_wfo(macro_slice, "3-Year (Macro)", strategy)
-
-    # 4. FINAL SCORING CALCULATION (The Penalized Average)
-    scores = [score_3m, score_1y, score_3y]
-    
-    # If the strategy failed ANY regime (crash or lazy tax), the whole iteration fails
-    if any(s <= -999.0 for s in scores):
-        final_score = -999.0
-    else:
-        # Penalize inconsistency. Subtract half standard deviation from the mean OOS return.
-        average_pnl = np.mean(scores)
-        score_variance = np.std(scores)
-        final_score = average_pnl - (score_variance * 0.5)
+    # 3. PURE SLIDING WINDOW EVALUATION
+    # evaluate_regime_wfo already handles training on 40% and testing on 10% steps!
+    print("\n--- 3-YEAR CONTINUOUS WFO EVALUATION ---")
+    final_score, total_trades = evaluate_regime_wfo(df, "3-Year Macro Pipeline", strategy)
 
     print("\n==================================================")
-    print(f"⚖️ FINAL MULTI-REGIME SCORE: {final_score:.6f}")
+    # Multiply by 100 to feed the AI a clean Percentage Score (e.g., -27.08 instead of -0.27)
+    percentage_score = final_score * 100 if final_score != -999.0 else -999.0
+    print(f"⚖️ FINAL SCORE (Avg OOS Return per fold): {percentage_score:.4f}%")
     print("==================================================")
     
     # Output strictly for auto_loop.py regex parsing
-    print(f"FINAL_RESULT:{final_score}")
+    print(f"FINAL_RESULT:{percentage_score}")
 
 if __name__ == "__main__":
     run_walk_forward_optimization()

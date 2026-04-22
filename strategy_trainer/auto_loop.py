@@ -110,7 +110,16 @@ def generate_hypothesis(best_score):
         return "System error.", ""
 
 def run_experiment(memory_bank):
-    best_score, recent_history = get_history_and_best()
+    def run_experiment(memory_bank):
+    # 1. Check local history
+    local_best, recent_history = get_history_and_best()
+    
+    # 2. Check global swarm history
+    global_best = memory_bank.get_global_best_score()
+    
+    # 3. Target the absolute highest score available
+    best_score = max(local_best, global_best)
+    
     print(f"\n" + "="*50)
     print(f"🚀 STARTING NEW ITERATION | Target to beat: {best_score}")
     print("="*50)

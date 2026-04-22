@@ -7,6 +7,5 @@ python-dotenv>=0.21.0
 openai
 ollama
 uv
-aider-chat
 litellm[proxy]
 chromadb>=0.4.0

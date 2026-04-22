@@ -3,15 +3,13 @@
 
 FEATURES = [
     'cvd_trend', 
-    'atr_14', 
-    'close_zscore_50', 
-    'volume_zscore_24'
+    'close_zscore_50'
 ]
 
 MODEL_PARAMS = {
     'max_depth': 10,
-    'learning_rate': 0.1,
-    'n_estimators': 100,
+    'learning_rate': 0.2,
+    'n_estimators': 200,
     'random_state': 42,
     'n_jobs': -1
 }

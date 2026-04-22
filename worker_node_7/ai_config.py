@@ -1,5 +1,4 @@
 # ai_config.py
-# Mission: Tune XGBoost with max_depth=6, learning_rate=0.05, n_estimators=150, and use all four V2 features.
 # The AI will modify these lists and dictionaries to find edge.
 
 FEATURES = [
@@ -10,9 +9,9 @@ FEATURES = [
 ]
 
 MODEL_PARAMS = {
-    'max_depth': 6,
-    'learning_rate': 0.05,
-    'n_estimators': 150,
+    'max_depth': 10,
+    'learning_rate': 0.1,
+    'n_estimators': 100,
     'random_state': 42,
     'n_jobs': -1
 }

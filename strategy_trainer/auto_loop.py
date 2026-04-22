@@ -9,7 +9,8 @@ from litellm import completion
 from rag_memory import StrategyMemoryBank
 
 AIDER_CMD = os.path.join(os.path.dirname(sys.executable), "aider.exe")
-STRATEGY_FILE = "strategy.py"
+# POINT AIDER TO THE CONTROL PANEL
+STRATEGY_FILE = "ai_config.py" 
 TRAIN_CMD = [sys.executable, "train.py"]
 RESULTS_FILE = "results.tsv"
 
@@ -47,14 +48,13 @@ def log_result(commit, score, status, desc):
         os.fsync(f.fileno())
 
 def generate_hypothesis(best_score):
-    """The 'Lead Quant' generates reasoning and a hypothesis to search the DB against."""
     print("🤔 Lead Quant is analyzing the current state...")
     try:
         response = completion(
             model="openai/deepseek-v3.2",
             api_base="http://localhost:4000", 
             api_key="sk-dummy-key-1234", 
-            temperature=0.8, # Bumped slightly to encourage more creative parameter guesses
+            temperature=0.8, 
             messages=[
                 {
                     "role": "system", 
@@ -87,11 +87,8 @@ def generate_hypothesis(best_score):
 
         content = content.strip()
         
-        import re
         content_clean = re.sub(r'<think>.*?(</think>|$)', '', content, flags=re.DOTALL).strip()
         
-        # --- THE TYPO-PROOF PARSER ---
-        # Now catches HYPOTHESIS, HYPATHESIS, HYPERTUNING, ACTION, etc.
         thinking_match = re.search(r'THINKING\s*[:\-]?\s*(.*?)(?=(?:HYPOTHESIS|HYPATHESIS|HYPERTUNING|ACTION)\s*[:\-]?|$)', content_clean, re.IGNORECASE | re.DOTALL)
         hypothesis_match = re.search(r'(?:HYPOTHESIS|HYPATHESIS|HYPERTUNING|ACTION)\s*[:\-]?\s*(.*)', content_clean, re.IGNORECASE | re.DOTALL)
         
@@ -104,7 +101,6 @@ def generate_hypothesis(best_score):
         if not hypothesis or len(hypothesis) < 5:
             print("\n❌ PARSING ERROR: The AI completely ignored formatting.")
             with open("llm_error_log.txt", "a", encoding="utf-8") as f:
-                import time
                 f.write(f"--- FAILED PARSE AT {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n{content}\n\n")
                 
         return thinking, hypothesis
@@ -121,7 +117,6 @@ def run_experiment(memory_bank):
 
     commit_before = get_current_commit()
 
-    # --- 1 & 2. The Self-Correcting Idea Generator (Rejection Loop) ---
     max_retries = 3
     hypothesis = ""
     memory_text = ""
@@ -137,10 +132,8 @@ def run_experiment(memory_bank):
         print(f"\n🧠 AI Reasoning (Attempt {attempt + 1}):\n   > {thinking}")
         print(f"💡 AI Hypothesis:\n   > {temp_hypothesis}")
         
-        # Query 10 memories for deep context
         raw_memories = memory_bank.query_similar_trials(temp_hypothesis, n_results=10)
         
-        # Count failures among the top 5 most similar to act as the Bouncer
         top_5 = raw_memories[:5]
         discard_count = sum(1 for m in top_5 if m['status'] in ['discard', 'crash'])
         
@@ -148,18 +141,14 @@ def run_experiment(memory_bank):
             print(f"🛑 REJECTION LOOP: ChromaDB found {discard_count} past failures for this exact concept!")
             print("Sending the Lead Quant back to the drawing board to save Aider tokens...")
             time.sleep(2)
-            continue # Force Lead Quant to try again
+            continue 
         else:
-            # Idea is safe to proceed!
             hypothesis = temp_hypothesis
-            
-            # --- THE SMART FILTER ---
             if raw_memories:
                 print("\n📚 RAG Memory Triggered! Filtering optimal context...")
                 successes = [m for m in raw_memories if m['status'] == 'keep']
                 failures = [m for m in raw_memories if m['status'] in ['discard', 'crash']]
                 
-                # Grab Top 1 Success and Top 2 Worst Failures
                 best_success = sorted(successes, key=lambda x: x['score'], reverse=True)[:1]
                 worst_failures = failures[:2]
                 final_memories = best_success + worst_failures
@@ -177,24 +166,22 @@ def run_experiment(memory_bank):
                     print("   > No highly relevant extremes found after filtering.")
             else:
                 print("\n📚 RAG Memory: No past attempts found. Entering uncharted territory.")
-            
-            break # Break out of the retry loop
+            break 
 
     if not hypothesis:
         print("\n⚠️ Lead Quant couldn't find a novel idea after 3 tries. Skipping iteration to avoid loop trap.")
         time.sleep(3)
         return
 
-    # --- 3. Build the Prompt & Code ---
+    # NEW AIDER PROMPT TARGETING ONLY CONFIG
     prompt = (
         f"The ALL-TIME BEST FINAL_RESULT is {best_score}.\n"
         f"Your specific mission for this iteration is: {hypothesis}\n\n"
         f"{memory_text}\n"
-        f"CRITICAL RULES FOR strategy.py:\n"
-        f"1. Do NOT write manual if/else trading logic. You are tuning the XGBoost model.\n"
-        f"2. You may change the XGBClassifier hyperparameters.\n"
-        f"3. You may change the 'features' list using the available columns: ['open', 'high', 'low', 'close', 'volume', 'cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24'].\n\n"
-        f"Modify the code in {STRATEGY_FILE} right now to execute this mission and try to beat {best_score}. "
+        f"CRITICAL RULES:\n"
+        f"Modify the variables in {STRATEGY_FILE} right now to execute this mission and try to beat {best_score}. "
+        f"ONLY modify the FEATURES list and the MODEL_PARAMS dictionary. "
+        f"Available features are: ['cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24'].\n"
         "Output the actual code edits using the correct SEARCH/REPLACE format."
     )
     
@@ -204,17 +191,9 @@ def run_experiment(memory_bank):
         AIDER_CMD,
         "--message", prompt,
         "--no-auto-commits",
-        "--no-show-release-notes",
-        "--no-check-update",
-        "--no-show-model-warnings",
         "--yes", 
         STRATEGY_FILE
     ], capture_output=True, text=True, encoding="utf-8")
-
-    if aider_process.returncode != 0:
-        print(f"⚠️ Aider encountered an error. Waiting 10 seconds...")
-        time.sleep(10)
-        return
 
     git_status = subprocess.getoutput(f"git status --porcelain {STRATEGY_FILE}").strip()
 
@@ -228,7 +207,6 @@ def run_experiment(memory_bank):
     
     commit_after = get_current_commit()
 
-    # --- 4. The WFO Judge ---
     print(f"\n📈 Running the Walk-Forward Judge...") 
     result = subprocess.run(TRAIN_CMD, capture_output=True, text=True, encoding="utf-8")
     full_output = result.stdout + "\n" + result.stderr
@@ -239,20 +217,26 @@ def run_experiment(memory_bank):
         score = float(match.group(1))
         status = "keep" if score > best_score else "discard"
         print(f"\n📊 OOS Result: {score}")
+        
+        # EXPOSE THE SILENT LOGS
+        if score == -999.0:
+            print("\n--- 🚨 JUDGE SILENT VETO LOGS 🚨 ---")
+            print(full_output.strip())
+            print("------------------------------------\n")
+            
     else:
         score = 0.0
         status = "crash"
-        print(f"\n⚠️ Judge crashed or returned invalid output.")
+        print(f"\n⚠️ Judge crashed or returned invalid output. Error logs below:")
+        print("--- 🚨 CRASH LOGS 🚨 ---")
+        print(full_output.strip())
+        print("------------------------\n")
 
-    # GUARDRAIL: Reject 0.0 Scores
     if score == 0.0:
-        print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is exactly 0.0. Restoring code and abandoning memory log...")
         subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
-        subprocess.run(["git", "commit", "-m", f"Auto-revert (0.0 score) to {commit_before}"], capture_output=True)
         time.sleep(3)
         return
 
-    # --- 5. Save Valid Results ---
     if status == "keep":
         print(f"✅ SUCCESS! New high score.")
         log_result(commit_after, score, status, "Auto-experiment success")
@@ -261,9 +245,7 @@ def run_experiment(memory_bank):
         print(f"❌ FAILED (Score {score} <= {best_score}). Preserving history and restoring base...")
         log_result(commit_after, score, status, "Failed attempt logged")
         memory_bank.log_trial(commit_after, hypothesis, score, status) 
-        
         subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
-        subprocess.run(["git", "commit", "-m", f"Auto-revert to {commit_before}"], capture_output=True)
 
     print("Waiting 3 seconds before the next loop...")
     time.sleep(3)
@@ -271,9 +253,6 @@ def run_experiment(memory_bank):
 if __name__ == "__main__":
     from fetch_data import fetch_historical_data
     fetch_historical_data() 
-    
-    print("🔥 STARTING RAG-AUGMENTED AUTORESEARCH LOOP 🔥")
-    print("Press CTRL+C to stop at any time.")
     
     db = StrategyMemoryBank() 
     

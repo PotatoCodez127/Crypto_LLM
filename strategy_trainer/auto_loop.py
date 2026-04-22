@@ -54,7 +54,7 @@ def generate_hypothesis(best_score):
             model="openai/deepseek-v3.2",
             api_base="http://localhost:4000", 
             api_key="sk-dummy-key-1234", 
-            temperature=0.7, 
+            temperature=0.8, # Bumped slightly to encourage more creative parameter guesses
             messages=[
                 {
                     "role": "system", 
@@ -68,35 +68,32 @@ def generate_hypothesis(best_score):
                 {
                     "role": "user", 
                     "content": (
-                        f"Our current best Out-Of-Sample score is {best_score}. Formulate your next move.\n\n"
+                        f"Our current best Out-Of-Sample score is {best_score}.\n"
+                        "CRITICAL WARNING: If the score is -999.0, your model is acting cowardly. It is predicting '0' (Hold) for every candle and taking 0 trades. "
+                        "You MUST force the model to take risks. Try drastically increasing max_depth, changing learning_rate, or using a subset of features.\n\n"
                         "You MUST format your response EXACTLY like this:\n"
                         "THINKING: [Explain your logic in 2 sentences]\n"
                         "HYPOTHESIS: [Write a 1-sentence strict coding instruction]"
                     )
                 }
             ]
-            # NOTICE: max_tokens has been completely removed to prevent truncation panics
         )
-        
-        # --- RAW METADATA DUMP ---
-        # print("\n--- DIAGNOSTIC: RAW API RESPONSE ---")
-        # print(response)
-        # print("------------------------------------\n")
         
         content = response.choices[0].message.content
         
         if content is None or content.strip() == "":
-            print("\n❌ API ERROR: The model returned a completely empty string.")
+            print("\n❌ API ERROR: The model returned an empty string.")
             return "API error.", ""
 
         content = content.strip()
         
         import re
-        # Aggressive unclosed <think> tag remover
         content_clean = re.sub(r'<think>.*?(</think>|$)', '', content, flags=re.DOTALL).strip()
         
-        thinking_match = re.search(r'THINKING\s*[:\-]?\s*(.*?)(?=HYPOTHESIS\s*[:\-]?|$)', content_clean, re.IGNORECASE | re.DOTALL)
-        hypothesis_match = re.search(r'HYPOTHESIS\s*[:\-]?\s*(.*)', content_clean, re.IGNORECASE | re.DOTALL)
+        # --- THE TYPO-PROOF PARSER ---
+        # Now catches HYPOTHESIS, HYPATHESIS, HYPERTUNING, ACTION, etc.
+        thinking_match = re.search(r'THINKING\s*[:\-]?\s*(.*?)(?=(?:HYPOTHESIS|HYPATHESIS|HYPERTUNING|ACTION)\s*[:\-]?|$)', content_clean, re.IGNORECASE | re.DOTALL)
+        hypothesis_match = re.search(r'(?:HYPOTHESIS|HYPATHESIS|HYPERTUNING|ACTION)\s*[:\-]?\s*(.*)', content_clean, re.IGNORECASE | re.DOTALL)
         
         thinking = thinking_match.group(1).strip() if thinking_match else "Failed to parse thinking."
         hypothesis = hypothesis_match.group(1).strip() if hypothesis_match else ""

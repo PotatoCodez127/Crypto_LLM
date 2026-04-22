@@ -41,7 +41,7 @@ def generate_signals(df):
     # --- 5. THE XGBOOST MODEL (AI Tunes This) ---
     model = xgb.XGBClassifier(
         max_depth=3,           # AI tunes how complex the trees are
-        learning_rate=0.05,    # AI tunes how fast the model learns
+        learning_rate=0.01,    # AI tunes how fast the model learns
         n_estimators=100,      # AI tunes the number of trees
         random_state=42,
         n_jobs=-1              # Use all CPU cores

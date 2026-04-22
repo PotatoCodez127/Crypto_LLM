@@ -7,10 +7,10 @@ import chromadb
 from chromadb.utils import embedding_functions
 
 class StrategyMemoryBank:
-    def __init__(self, db_path="./chroma_db"):
-        """Initializes the persistent ChromaDB client."""
-        # This creates a hidden folder to permanently store the memories
-        self.client = chromadb.PersistentClient(path=db_path)
+    def __init__(self):
+        # Move the DB up one level so all worker clones can share it
+        shared_db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared_chroma_db"))
+        self.client = chromadb.PersistentClient(path=shared_db_path)
         
         # We use Chroma's default lightweight local embedding model. 
         # (It will download a small ~80MB model on the very first run).

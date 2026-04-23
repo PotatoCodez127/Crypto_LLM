@@ -47,9 +47,10 @@ def get_signals(df):
     # Array of strictly entry signals (1 = ML says buy right now)
     ml_entries = np.where(probs >= threshold, 1, 0)
     
-    # Map the ML signals back to the full timeline
-    full_entries = np.zeros(len(data))
-    full_entries[X.index] = ml_entries
+    # Map the ML signals back to the full timeline using safe Pandas indexing
+    data['ml_signal'] = 0
+    data.loc[X.index, 'ml_signal'] = ml_entries
+    full_entries = data['ml_signal'].values
 
     # ==========================================
     # 3. THE MERGE: State Machine Risk Management

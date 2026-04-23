@@ -10,19 +10,24 @@ from litellm import completion
 
 from rag_memory import StrategyMemoryBank
 
-# --- SMART PATH LOGIC ---
-# If running inside a worker node, point up to the root. Otherwise, use current directory.
-if "worker_node" in os.getcwd():
-    ROOT_DIR = ".."
+# ==========================================
+# 📂 STRICT PATHING ARCHITECTURE
+# ==========================================
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if "worker_node" in CURRENT_DIR:
+    ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 else:
-    ROOT_DIR = "."
+    ROOT_DIR = CURRENT_DIR
 
+# LOCAL TO WORKER: Each clone gets its own config file to test
 STRATEGY_FILE = "ai_config.py" 
 BEST_CONFIG_FILE = "best_ai_config.py" 
-TRAIN_CMD = [sys.executable, "train.py"]
 
-# Centralize the TSV scorecard in the root folder!
-RESULTS_FILE = f"{ROOT_DIR}/results.tsv"
+# GLOBAL SHARED: All workers write to the root database and results folder
+RESULTS_FILE = os.path.join(ROOT_DIR, "results.tsv")
+RESULTS_DIR = os.path.join(ROOT_DIR, "results")
+
+TRAIN_CMD = [sys.executable, "train.py"]
 
 def get_code_hash(code_string):
     return hashlib.md5(code_string.encode('utf-8')).hexdigest()[:7]
@@ -55,7 +60,6 @@ def log_result(trial_id, score, status, desc):
         os.fsync(f.fileno())
 
 def get_memory_context(memory_bank):
-    """Fetches the best winner and worst landmines directly from ChromaDB."""
     try:
         results = memory_bank.collection.get(include=["metadatas", "documents"])
         if not results or not results['metadatas'] or len(results['metadatas']) == 0:
@@ -77,10 +81,8 @@ def get_memory_context(memory_bank):
             context += f"🏆 BEST PAST WINNER (Score: {winners[0]['score']}):\n{winners[0]['doc']}\n\n"
         if losers:
             context += "☠️ PAST LANDMINES (DO NOT REPEAT THESE):\n"
-            # Give the AI its worst 3 failures to avoid
             for l in losers[:3]:
                 context += f"- Failed Score {l['score']}: {l['doc']}\n"
-                
         return context
     except Exception as e:
         return "Could not fetch memory."
@@ -135,10 +137,7 @@ def generate_hypothesis(best_score, memory_context):
         thinking = thinking_match.group(1).strip() if thinking_match else "Failed to parse thinking."
         hypothesis = hypothesis_match.group(1).strip() if hypothesis_match else ""
         
-        thinking = thinking.replace("**", "").replace("*", "").replace("`", "")
-        hypothesis = hypothesis.replace("**", "").replace("*", "").replace("`", "")
-        
-        return thinking, hypothesis
+        return thinking.replace("**", "").replace("*", "").replace("`", ""), hypothesis.replace("**", "").replace("*", "").replace("`", "")
         
     except Exception as e:
         print(f"⚠️ Hypothesis generation failed: {e}")
@@ -153,10 +152,7 @@ def run_experiment(memory_bank):
     print(f"🚀 STARTING NEW ITERATION | Target to beat: {best_score}")
     print("="*50)
 
-    # 1. Fetch Context BEFORE generating the hypothesis
     memory_context = get_memory_context(memory_bank)
-    
-    # 2. Generate Hypothesis with context actively in the prompt
     thinking, hypothesis = generate_hypothesis(best_score, memory_context)
     
     if not hypothesis or len(hypothesis) < 5:
@@ -167,7 +163,6 @@ def run_experiment(memory_bank):
     print(f"\n🧠 AI Reasoning:\n   > {thinking}")
     print(f"💡 AI Hypothesis:\n   > {hypothesis}")
     
-    # 3. Direct Code Injection
     print(f"\n⚡ Direct Code Injection: Extracting variables and writing to {STRATEGY_FILE}...")
     try:
         features_match = re.search(r"FEATURES\s*=\s*\[.*?\]", hypothesis, re.DOTALL)
@@ -189,7 +184,6 @@ def run_experiment(memory_bank):
         
         with open(STRATEGY_FILE, "w", encoding="utf-8") as f:
             f.write(clean_code)
-            
         trial_id = get_code_hash(clean_code)
             
     except Exception as e:
@@ -197,7 +191,6 @@ def run_experiment(memory_bank):
         time.sleep(3)
         return
 
-    # 4. Evaluate via Judge
     print(f"\n📈 Running the Walk-Forward Judge...") 
     result = subprocess.run(TRAIN_CMD, capture_output=True, text=True, encoding="utf-8")
     full_output = result.stdout + "\n" + result.stderr
@@ -207,14 +200,11 @@ def run_experiment(memory_bank):
         score = float(match.group(1))
         status = "keep" if score > best_score else "discard"
         print(f"\n📊 OOS Result: {score}")
-
-        # ===============================================
-        # 📂 NEW FEATURE: SAVE DETAILED REPORTS
-        # ===============================================
+        
+        # 📂 SAVE REPORT TO CENTRAL ROOT FOLDER
         if score != -999.0 and score != 0.0:
-            os.makedirs("results", exist_ok=True)
-            # Create a safe filename (e.g., results/0.6679.txt)
-            filename = f"results/{score}.txt"
+            os.makedirs(RESULTS_DIR, exist_ok=True)
+            filename = os.path.join(RESULTS_DIR, f"{score:.4f}_{trial_id}.txt")
             try:
                 with open(filename, "w", encoding="utf-8") as f:
                     f.write(f"=== AI HYPOTHESIS ===\n{hypothesis}\n\n")
@@ -231,9 +221,8 @@ def run_experiment(memory_bank):
         status = "crash"
         print(f"\n⚠️ Judge crashed or returned invalid output.")
 
-    # 5. Restore or Save State
     if score == 0.0 or score == -999.0:
-        print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is {score}. Restoring {BEST_CONFIG_FILE} to avoid database poisoning...")
+        print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is {score}. Restoring {BEST_CONFIG_FILE}...")
         if os.path.exists(BEST_CONFIG_FILE):
             shutil.copy(BEST_CONFIG_FILE, STRATEGY_FILE)
         time.sleep(3)
@@ -245,7 +234,7 @@ def run_experiment(memory_bank):
         log_result(trial_id, score, status, "Auto-experiment success")
         memory_bank.log_trial(trial_id, hypothesis, score, status) 
     else:
-        print(f"❌ FAILED (Score {score} <= {best_score}). Preserving history and restoring base...")
+        print(f"❌ FAILED (Score {score} <= {best_score}). Restoring base...")
         if os.path.exists(BEST_CONFIG_FILE):
             shutil.copy(BEST_CONFIG_FILE, STRATEGY_FILE)
         log_result(trial_id, score, status, "Failed attempt logged")
@@ -260,6 +249,10 @@ if __name__ == "__main__":
     
     if not os.path.exists(BEST_CONFIG_FILE) and os.path.exists(STRATEGY_FILE):
         shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE)
+    
+    # Initialize DB (pointing Chroma to the ROOT directory so all workers share it)
+    import chromadb
+    client = chromadb.PersistentClient(path=os.path.join(ROOT_DIR, "shared_chroma_db"))
     
     db = StrategyMemoryBank() 
     while True:

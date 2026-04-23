@@ -1,18 +1,20 @@
-trial_id	final_result	status	description
-c3de244	5.377350808462467	keep	Auto-experiment success
-fdca5e0	-1.331873850373666	discard	Failed attempt logged
-06566ed	-8.660134476372171	discard	Failed attempt logged
-caf5797	-1.3469372311209815	discard	Failed attempt logged
-7b6d930	25.03677388631087	keep	Auto-experiment success
-dad5a73	10.031898273064233	keep	Auto-experiment success
-2a57cf6	16.22369989332433	discard	Failed attempt logged
-014dd75	3.8013419999157305	discard	Failed attempt logged
-4e53db2	16.54884744461056	discard	Failed attempt logged
-4e53db2	16.54884744461056	discard	Failed attempt logged
-32bfcaa	-0.8569277412897924	discard	Failed attempt logged
-8e07ab7	6.324247485831158	discard	Failed attempt logged
-32bfcaa	-0.8569277412897924	discard	Failed attempt logged
-712be89	36.45204218551348	keep	Auto-experiment success
-70eb3af	10.9927714986092	discard	Failed attempt logged
-2bf30f0	5.752071823600113	discard	Failed attempt logged
-7792134	8.919890577106159	discard	Failed attempt logged
+f5a9e07	-23.955567499820052	keep	Auto-experiment success
+c2b7c21	14.165853550158314	keep	Auto-experiment success
+5f06ffb	-17.04773714339799	keep	Auto-experiment success
+1ab3bba	-6.320065960473908	keep	Auto-experiment success
+6f6e901	44.77275883819778	keep	Auto-experiment success
+1192d87	-12.824021212364267	discard	Failed attempt logged
+8a9b4b4	3.3024960716636187	discard	Failed attempt logged
+8a9b4b4	3.3024960716636187	discard	Failed attempt logged
+ecf3905	15.383753227446807	discard	Failed attempt logged
+46b6428	-15.588663488219012	discard	Failed attempt logged
+0833810	30.69336376567189	discard	Failed attempt logged
+48437e3	-3.913794120863734	discard	Failed attempt logged
+b6a8a80	20.57593000169615	discard	Failed attempt logged
+6879a27	8.606934544647293	discard	Failed attempt logged
+5bc138f	-16.112416292159203	discard	Failed attempt logged
+406e94b	6.851989785409951	discard	Failed attempt logged
+72812b3	-9.763364097174044	discard	Failed attempt logged
+9ac6f7c	-2.653991760587371	discard	Failed attempt logged
+ef2f748	12.11828232912211	discard	Failed attempt logged
+c683594	-1.9949964373261686	discard	Failed attempt logged

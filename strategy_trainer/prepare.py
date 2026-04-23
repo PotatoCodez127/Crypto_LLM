@@ -8,9 +8,9 @@ import os
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 
-DATA_FILE = os.path.join(PROJECT_ROOT, "data", "btc_1h_3y.csv")
+DATA_FILE = os.path.join(PROJECT_ROOT, "data", "btc_1h_3y_v2.csv")
 STRATEGY_FILE = "strategy.py"
-FEES = 0.0006  
+FEES = 0.0002  
 SLIPPAGE = 0.0005
 
 def load_strategy():

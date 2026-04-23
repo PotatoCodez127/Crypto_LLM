@@ -100,25 +100,31 @@ def generate_hypothesis(best_score, memory_context):
                     "role": "system", 
                     "content": (
                         "You are an elite AI Data Scientist tuning an XGBoost trading strategy.\n"
-                        "Your job is NO LONGER to write if/else heuristic rules.\n"
-                        "Instead, you must tune the XGBoost hyperparameters, select from the 8 available features, "
-                        "AND tune the TARGET_LOOKAHEAD (1 to 5) and THRESHOLD_PERCENTILE (70 to 95) variables to maximize the Out-Of-Sample score."
+                        "Your job is to tune the XGBoost hyperparameters, select from the 8 available features, "
+                        "and tune the TARGET_LOOKAHEAD and THRESHOLD_PERCENTILE variables to maximize the Out-Of-Sample score.\n"
+                        "CRITICAL: You are currently severely overfitting the training data. You MUST constrain model complexity."
                     )
                 },
                 {
                     "role": "user", 
                     "content": (
                         f"Our current best Out-Of-Sample score is {best_score}.\n"
-                        "CRITICAL WARNING: If the score is -999.0, your model is acting cowardly. You MUST force it to take risks.\n\n"
+                        "WARNING: If the score is -999.0, your model is acting cowardly. Lower the threshold to force trades.\n\n"
                         f"{memory_context}\n\n"
-                        "CRITICAL RULE: You may ONLY use these exact feature names: ['cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24', 'rsi_14', 'macd_line', 'bb_lower', 'bb_upper']. Do NOT invent features.\n\n"
+                        "ANTI-OVERFITTING RULES (STRICT):\n"
+                        "1. TARGET_LOOKAHEAD MUST be strictly 2. 1 is too noisy.\n"
+                        "2. 'max_depth' MUST be exactly 3 or 4. Allow slight complexity to find patterns.\n"
+                        "3. 'n_estimators' MUST be between 100 and 200.\n"
+                        "4. 'reg_alpha' (L1) and 'reg_lambda' (L2) MUST be between 0.1 and 2.0. Do not over-regularize.\n"
+                        "5. THRESHOLD_PERCENTILE MUST be between 96 and 99. You are taking 1,000 trades and bleeding out to exchange fees. You MUST be a sniper. Only trade the absolute highest conviction setups.\n\n"
+                        "CRITICAL RULE: You may ONLY use these exact feature names: ['cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24', 'rsi_14', 'macd_line', 'bb_lower', 'bb_upper'].\n\n"
                         "You MUST format your response EXACTLY like this (valid multi-line Python code):\n"
                         "THINKING: [Explain your logic]\n"
                         "HYPOTHESIS:\n"
                         "FEATURES=['cvd_trend', 'rsi_14', 'macd_line']\n"
                         "TARGET_LOOKAHEAD=2\n"
                         "THRESHOLD_PERCENTILE=85\n"
-                        "MODEL_PARAMS={'max_depth': 6, 'learning_rate': 0.1, 'n_estimators': 100}"
+                        "MODEL_PARAMS={'max_depth': 2, 'learning_rate': 0.05, 'n_estimators': 100, 'reg_alpha': 2, 'reg_lambda': 5}"
                     )
                 }
             ]

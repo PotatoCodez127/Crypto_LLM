@@ -220,6 +220,11 @@ def run_experiment(memory_bank):
         score = 0.0
         status = "crash"
         print(f"\n⚠️ Judge crashed or returned invalid output.")
+        # FIX: Un-hide the Python Traceback so you can see exactly what broke!
+        print("--- 🚨 CRASH LOGS 🚨 ---")
+        print(full_output.strip())
+        print("------------------------\n")
+
 
     if score == 0.0 or score == -999.0:
         print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is {score}. Restoring {BEST_CONFIG_FILE}...")

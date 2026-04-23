@@ -28,7 +28,9 @@ def calc_metrics(df):
     if 'signal' not in df.columns or len(df) == 0:
         return 0, 0, 0, 0, 0, 0
 
-    df = df.copy()
+    # FIX: Reset the index to prevent Pandas .loc collisions from overlapping WFO folds
+    df = df.reset_index(drop=True).copy()
+    
     df['position'] = df['signal'].shift(1).fillna(0)
     
     if 'log_return' not in df.columns:

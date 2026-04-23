@@ -4,17 +4,14 @@ import importlib.util
 import sys
 import os
 
-# Robust pathing for the data file regardless of worker location
+# Clean, foolproof pathing: Jump up exactly one level to the Crypto_LLM root directory
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-if "worker_node" in CURRENT_DIR:
-    ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
-else:
-    ROOT_DIR = CURRENT_DIR
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 
-DATA_FILE = os.path.join(ROOT_DIR, "..", "data", "btc_1h_3y.csv")
+DATA_FILE = os.path.join(PROJECT_ROOT, "data", "btc_1h_3y.csv")
 STRATEGY_FILE = "strategy.py"
 FEES = 0.0006  
-SLIPPAGE = 0.0005 
+SLIPPAGE = 0.0005
 
 def load_strategy():
     spec = importlib.util.spec_from_file_location("strategy", STRATEGY_FILE)

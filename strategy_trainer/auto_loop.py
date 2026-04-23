@@ -4,19 +4,25 @@ import re
 import time
 import sys
 import traceback
+import hashlib
+import shutil
 from litellm import completion
 
 from rag_memory import StrategyMemoryBank
 
-# TARGET CONFIG FILE
 STRATEGY_FILE = "ai_config.py" 
+BEST_CONFIG_FILE = "best_ai_config.py" # Replaces Git restores
 TRAIN_CMD = [sys.executable, "train.py"]
 RESULTS_FILE = "results.tsv"
+
+def get_code_hash(code_string):
+    """Generates a unique 7-character hash to replace Git Commits for the database."""
+    return hashlib.md5(code_string.encode('utf-8')).hexdigest()[:7]
 
 def get_history_and_best():
     if not os.path.exists(RESULTS_FILE):
         with open(RESULTS_FILE, "w") as f:
-            f.write("commit\tfinal_result\tstatus\tdescription\n")
+            f.write("trial_id\tfinal_result\tstatus\tdescription\n")
         return -999.0, []
     
     best_score = -999.0
@@ -37,12 +43,9 @@ def get_history_and_best():
     
     return best_score, history[-5:] 
 
-def get_current_commit():
-    return subprocess.getoutput("git rev-parse --short HEAD").strip()
-
-def log_result(commit, score, status, desc):
+def log_result(trial_id, score, status, desc):
     with open(RESULTS_FILE, "a") as f:
-        f.write(f"{commit}\t{score}\t{status}\t{desc}\n")
+        f.write(f"{trial_id}\t{score}\t{status}\t{desc}\n")
         f.flush()
         os.fsync(f.fileno())
 
@@ -89,7 +92,6 @@ def generate_hypothesis(best_score):
             return "API error.", ""
 
         content = content.strip()
-        
         content_clean = re.sub(r'<think>.*?(</think>|$)', '', content, flags=re.DOTALL).strip()
         
         thinking_match = re.search(r'THINKING\s*[:\-]?\s*(.*?)(?=(?:HYPOTHESIS|HYPATHESIS|HYPERTUNING|ACTION)\s*[:\-]?|$)', content_clean, re.IGNORECASE | re.DOTALL)
@@ -103,9 +105,6 @@ def generate_hypothesis(best_score):
         
         if not hypothesis or len(hypothesis) < 5:
             print("\n❌ PARSING ERROR: The AI completely ignored formatting.")
-            with open("llm_error_log.txt", "a", encoding="utf-8") as f:
-                f.write(f"--- FAILED PARSE AT {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n{content}\n\n")
-                
         return thinking, hypothesis
         
     except Exception as e:
@@ -113,24 +112,16 @@ def generate_hypothesis(best_score):
         return "System error.", ""
 
 def run_experiment(memory_bank):
-    # 1. Check local history
     local_best, recent_history = get_history_and_best()
-    
-    # 2. Check global swarm history
     global_best = memory_bank.get_global_best_score()
-    
-    # 3. Target the absolute highest score available
     best_score = max(local_best, global_best)
     
     print(f"\n" + "="*50)
     print(f"🚀 STARTING NEW ITERATION | Target to beat: {best_score}")
     print("="*50)
 
-    commit_before = get_current_commit()
-
     max_retries = 3
     hypothesis = ""
-    memory_text = ""
     
     for attempt in range(max_retries):
         thinking, temp_hypothesis = generate_hypothesis(best_score)
@@ -158,23 +149,9 @@ def run_experiment(memory_bank):
             if raw_memories:
                 print("\n📚 RAG Memory Triggered! Filtering optimal context...")
                 successes = [m for m in raw_memories if m['status'] == 'keep']
-                failures = [m for m in raw_memories if m['status'] in ['discard', 'crash']]
-                
                 best_success = sorted(successes, key=lambda x: x['score'], reverse=True)[:1]
-                worst_failures = failures[:2]
-                final_memories = best_success + worst_failures
-                
-                if final_memories:
-                    memory_text = "--- HISTORICAL MEMORY BANK (CRITICAL CONTEXT) ---\n"
-                    for i, m in enumerate(final_memories):
-                        tag = "🏆 WINNER" if m['status'] == 'keep' else "☠️ LANDMINE"
-                        summary_preview = m['summary'][:75] + "..." if len(m['summary']) > 75 else m['summary']
-                        print(f"   [{i+1}] {tag} (Score: {m['score']}) -> {summary_preview}")
-                        memory_text += f"PAST IDEA: '{m['summary']}' | RESULT SCORE: {m['score']} | STATUS: {m['status']}\n"
-                    
-                    memory_text += "\nCRITICAL: Analyze the ☠️ LANDMINE ideas above and DO NOT repeat them. Analyze the 🏆 WINNER ideas for inspiration to pivot your approach.\n"
-                else:
-                    print("   > No highly relevant extremes found after filtering.")
+                if best_success:
+                    print(f"   [1] 🏆 WINNER (Score: {best_success[0]['score']}) -> {best_success[0]['summary'][:75]}...")
             else:
                 print("\n📚 RAG Memory: No past attempts found. Entering uncharted territory.")
             break 
@@ -184,14 +161,9 @@ def run_experiment(memory_bank):
         time.sleep(3)
         return
 
-    # ==========================================
-    # PHASE 2: THE NEURAL LINK (STRICT EXTRACTION)
-    # ==========================================
     print(f"\n⚡ Direct Code Injection: Extracting variables and writing to {STRATEGY_FILE}...")
     
-    clean_code = ""
     try:
-        # Surgically extract only the 4 required variables using Regex
         features_match = re.search(r"FEATURES\s*=\s*\[.*?\]", hypothesis, re.DOTALL)
         lookahead_match = re.search(r"TARGET_LOOKAHEAD\s*=\s*\d+", hypothesis)
         threshold_match = re.search(r"THRESHOLD_PERCENTILE\s*=\s*\d+", hypothesis)
@@ -202,7 +174,6 @@ def run_experiment(memory_bank):
             time.sleep(3)
             return
 
-        # Reconstruct a pristine, syntactically perfect Python file
         clean_code = (
             f"{features_match.group(0)}\n"
             f"{lookahead_match.group(0)}\n"
@@ -210,30 +181,17 @@ def run_experiment(memory_bank):
             f"{params_match.group(0)}\n"
         )
         
+        # Write to the execution file
         with open(STRATEGY_FILE, "w", encoding="utf-8") as f:
             f.write(clean_code)
+            
+        trial_id = get_code_hash(clean_code)
             
     except Exception as e:
         print(f"⚠️ Failed to parse or write to {STRATEGY_FILE}: {e}")
         time.sleep(3)
         return
 
-    git_status = subprocess.getoutput(f"git status --porcelain {STRATEGY_FILE}").strip()
-
-    if not git_status:
-        print("⚠️ No changes detected in config. Skipping test.")
-        time.sleep(3)
-        return
-
-    subprocess.run(["git", "add", STRATEGY_FILE], capture_output=True)
-    clean_hypothesis_msg = hypothesis.replace('\n', ' ')[:50]
-    subprocess.run(["git", "commit", "-m", f"Auto-experiment: {clean_hypothesis_msg}..."], capture_output=True)
-    
-    commit_after = get_current_commit()
-
-    # ==========================================
-    # PHASE 3: THE GYM (WFO JUDGE EVALUATION)
-    # ==========================================
     print(f"\n📈 Running the Walk-Forward Judge...") 
     result = subprocess.run(TRAIN_CMD, capture_output=True, text=True, encoding="utf-8")
     full_output = result.stdout + "\n" + result.stderr
@@ -245,47 +203,38 @@ def run_experiment(memory_bank):
         status = "keep" if score > best_score else "discard"
         print(f"\n📊 OOS Result: {score}")
         
-        # EXPOSE THE SILENT LOGS
         if score == -999.0:
             print("\n--- 🚨 JUDGE SILENT VETO LOGS 🚨 ---")
             print(full_output.strip())
             print("------------------------------------\n")
-            
     else:
         score = 0.0
         status = "crash"
-        print(f"\n⚠️ Judge crashed or returned invalid output. Error logs below:")
-        print("--- 🚨 CRASH LOGS 🚨 ---")
-        print(full_output.strip())
-        print("------------------------\n")
+        print(f"\n⚠️ Judge crashed or returned invalid output.")
 
-    if score == 0.0:
-        subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
-        time.sleep(3)
-        return
-
-    # === UPDATED LOGGING BLOCK ===
-    # Only save to Git and the Memory Bank if it is a REAL score.
-    # We ignore 0.0 (lazy flatline) and -999.0 (code crash).
-    
+    # ===============================================
+    # THE REVERT LOGIC (No Git Required)
+    # ===============================================
     if score == 0.0 or score == -999.0:
-        print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is {score}. Abandoning memory log and restoring base code to prevent database poisoning...")
-        subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
+        print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is {score}. Restoring {BEST_CONFIG_FILE} to avoid database poisoning...")
+        if os.path.exists(BEST_CONFIG_FILE):
+            shutil.copy(BEST_CONFIG_FILE, STRATEGY_FILE)
         time.sleep(3)
         return
 
-    # ==========================================
-    # PHASE 4 & 5: EVALUATION AND MEMORY LOGGING
-    # ==========================================
     if status == "keep":
         print(f"✅ SUCCESS! New high score.")
-        log_result(commit_after, score, status, "Auto-experiment success")
-        memory_bank.log_trial(commit_after, hypothesis, score, status) 
+        # Backup this winning config to be our new baseline!
+        shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE)
+        log_result(trial_id, score, status, "Auto-experiment success")
+        memory_bank.log_trial(trial_id, hypothesis, score, status) 
     else:
         print(f"❌ FAILED (Score {score} <= {best_score}). Preserving history and restoring base...")
-        log_result(commit_after, score, status, "Failed attempt logged")
-        memory_bank.log_trial(commit_after, hypothesis, score, status) 
-        subprocess.run(["git", "restore", "--source", commit_before, "--staged", "--worktree", STRATEGY_FILE], capture_output=True)
+        # Revert back to the last known winner
+        if os.path.exists(BEST_CONFIG_FILE):
+            shutil.copy(BEST_CONFIG_FILE, STRATEGY_FILE)
+        log_result(trial_id, score, status, "Failed attempt logged")
+        memory_bank.log_trial(trial_id, hypothesis, score, status) 
 
     print("Waiting 3 seconds before the next loop...")
     time.sleep(3)
@@ -293,6 +242,10 @@ def run_experiment(memory_bank):
 if __name__ == "__main__":
     from fetch_data import fetch_historical_data
     fetch_historical_data() 
+    
+    # Initialize the backup file on the very first run
+    if not os.path.exists(BEST_CONFIG_FILE) and os.path.exists(STRATEGY_FILE):
+        shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE)
     
     db = StrategyMemoryBank() 
     

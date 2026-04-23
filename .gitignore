@@ -22,6 +22,11 @@ dev/
 
 # Data folders
 chroma_db/
+worker_node_1/
+worker_node_2/
+worker_node_3/
+worker_node_4/
+shared_chroma_db/
 
 #Private files
 .env

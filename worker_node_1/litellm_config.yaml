@@ -1,0 +1,115 @@
+model_list:
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      # Reverted to domain name. The hosts file will handle the routing.
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_1
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_2
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_3
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_4
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_5
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_6
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_7
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_8
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_9
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_10
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_11
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_12
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_13
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_14
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_15
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_16
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_17
+
+  - model_name: deepseek-v3.2
+    litellm_params:
+      model: ollama_chat/qwen3.5:397b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/KEY_18
+
+router_settings:
+  routing_strategy: simple-shuffle # Shuffles requests across all healthy keys
+  num_retries: 3                   # If a key hits a quota or 500 error, try the next one
+  allowed_fails: 1                 # How many times a key can fail before being temporarily removed from the pool
+  cooldown_time: 300

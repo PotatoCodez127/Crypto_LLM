@@ -5,7 +5,7 @@ import time
 import sys
 
 # Configuration
-NUM_WORKERS = 8
+NUM_WORKERS = 2
 BASE_DIR = os.path.abspath("strategy_trainer")
 WORKER_PREFIX = "worker_node_"
 

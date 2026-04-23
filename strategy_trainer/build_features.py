@@ -49,12 +49,39 @@ def engineer_features():
     df['close_zscore_50'] = (df['close'] - df['close'].rolling(50).mean()) / df['close'].rolling(50).std()
     df['volume_zscore_24'] = (df['volume'] - df['volume'].rolling(24).mean()) / df['volume'].rolling(24).std()
 
+
+    # Pass the dataframe through our new math function before saving
+    df = add_new_indicators(df)
+    
     # 5. Clean and Save
     df.dropna(inplace=True) # Drop the initial rows that have NaNs from rolling windows
     df.to_csv(OUTPUT_FILE, index=False)
     
     print(f"✅ SUCCESS! V2 Dataset saved to: {OUTPUT_FILE}")
     print(f"📊 New Features Available: cvd_trend, atr_14, close_zscore_50, volume_zscore_24")
+
+def add_new_indicators(df):
+    print("📈 Calculating new Institutional Features natively...")
+    
+    # 1. RSI (Relative Strength Index) - 14 period
+    delta = df['close'].diff()
+    gain = delta.where(delta > 0, 0).ewm(alpha=1/14, adjust=False).mean()
+    loss = -delta.where(delta < 0, 0).ewm(alpha=1/14, adjust=False).mean()
+    rs = gain / loss
+    df['rsi_14'] = 100 - (100 / (1 + rs))
+    
+    # 2. MACD (Moving Average Convergence Divergence) - 12, 26 period
+    ema_12 = df['close'].ewm(span=12, adjust=False).mean()
+    ema_26 = df['close'].ewm(span=26, adjust=False).mean()
+    df['macd_line'] = ema_12 - ema_26
+    
+    # 3. Bollinger Bands (20 period, 2 Standard Deviations)
+    bb_mean = df['close'].rolling(window=20).mean()
+    bb_std = df['close'].rolling(window=20).std()
+    df['bb_upper'] = bb_mean + (bb_std * 2)
+    df['bb_lower'] = bb_mean - (bb_std * 2)
+    
+    return df
 
 if __name__ == "__main__":
     engineer_features()

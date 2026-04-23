@@ -8,8 +8,7 @@ from litellm import completion
 
 from rag_memory import StrategyMemoryBank
 
-AIDER_CMD = os.path.join(os.path.dirname(sys.executable), "aider.exe")
-# POINT AIDER TO THE CONTROL PANEL
+# TARGET CONFIG FILE
 STRATEGY_FILE = "ai_config.py" 
 TRAIN_CMD = [sys.executable, "train.py"]
 RESULTS_FILE = "results.tsv"
@@ -61,19 +60,23 @@ def generate_hypothesis(best_score):
                     "content": (
                         "You are an elite AI Data Scientist tuning an XGBoost trading strategy.\n"
                         "Your job is NO LONGER to write if/else heuristic rules.\n"
-                        "Instead, you must tune the XGBoost hyperparameters (max_depth, learning_rate, n_estimators) "
-                        "and select/combine the V2 features ('cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24') to maximize the Out-Of-Sample score."
+                        "Instead, you must tune the XGBoost hyperparameters, select from the 8 available features, "
+                        "AND tune the TARGET_LOOKAHEAD (1 to 5) and THRESHOLD_PERCENTILE (70 to 95) variables to maximize the Out-Of-Sample score."
                     )
                 },
                 {
                     "role": "user", 
                     "content": (
                         f"Our current best Out-Of-Sample score is {best_score}.\n"
-                        "CRITICAL WARNING: If the score is -999.0, your model is acting cowardly. It is predicting '0' (Hold) for every candle and taking 0 trades. "
-                        "You MUST force the model to take risks. Try drastically increasing max_depth, changing learning_rate, or using a subset of features.\n\n"
-                        "You MUST format your response EXACTLY like this:\n"
-                        "THINKING: [Explain your logic in 2 sentences]\n"
-                        "HYPOTHESIS: [Write a 1-sentence strict coding instruction]"
+                        "CRITICAL WARNING: If the score is -999.0, your model is acting cowardly. You MUST force it to take risks.\n\n"
+                        "CRITICAL RULE: You may ONLY use these exact feature names: ['cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24', 'rsi_14', 'macd_line', 'bb_lower', 'bb_upper']. Do NOT invent features like 'bb_width' or 'volume_ma'.\n\n"
+                        "You MUST format your response EXACTLY like this (valid multi-line Python code):\n"
+                        "THINKING: [Explain your logic]\n"
+                        "HYPOTHESIS:\n"
+                        "FEATURES=['cvd_trend', 'rsi_14', 'macd_line']\n"
+                        "TARGET_LOOKAHEAD=2\n"
+                        "THRESHOLD_PERCENTILE=85\n"
+                        "MODEL_PARAMS={'max_depth': 6, 'learning_rate': 0.1, 'n_estimators': 100}"
                     )
                 }
             ]
@@ -110,7 +113,6 @@ def generate_hypothesis(best_score):
         return "System error.", ""
 
 def run_experiment(memory_bank):
-    def run_experiment(memory_bank):
     # 1. Check local history
     local_best, recent_history = get_history_and_best()
     
@@ -148,7 +150,7 @@ def run_experiment(memory_bank):
         
         if discard_count >= 2:
             print(f"🛑 REJECTION LOOP: ChromaDB found {discard_count} past failures for this exact concept!")
-            print("Sending the Lead Quant back to the drawing board to save Aider tokens...")
+            print("Sending the Lead Quant back to the drawing board to save LLM tokens...")
             time.sleep(2)
             continue 
         else:
@@ -182,41 +184,56 @@ def run_experiment(memory_bank):
         time.sleep(3)
         return
 
-    # NEW AIDER PROMPT TARGETING ONLY CONFIG
-    prompt = (
-        f"The ALL-TIME BEST FINAL_RESULT is {best_score}.\n"
-        f"Your specific mission for this iteration is: {hypothesis}\n\n"
-        f"{memory_text}\n"
-        f"CRITICAL RULES:\n"
-        f"Modify the variables in {STRATEGY_FILE} right now to execute this mission and try to beat {best_score}. "
-        f"ONLY modify the FEATURES list and the MODEL_PARAMS dictionary. "
-        f"Available features are: ['cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24'].\n"
-        "Output the actual code edits using the correct SEARCH/REPLACE format."
-    )
+    # ==========================================
+    # PHASE 2: THE NEURAL LINK (STRICT EXTRACTION)
+    # ==========================================
+    print(f"\n⚡ Direct Code Injection: Extracting variables and writing to {STRATEGY_FILE}...")
     
-    print(f"\n🤖 Aider is coding the hypothesis...") 
-    
-    aider_process = subprocess.run([
-        AIDER_CMD,
-        "--message", prompt,
-        "--no-auto-commits",
-        "--yes", 
-        "--no-show-model-warnings",
-        STRATEGY_FILE
-    ], capture_output=True, text=True, encoding="utf-8")
+    clean_code = ""
+    try:
+        # Surgically extract only the 4 required variables using Regex
+        features_match = re.search(r"FEATURES\s*=\s*\[.*?\]", hypothesis, re.DOTALL)
+        lookahead_match = re.search(r"TARGET_LOOKAHEAD\s*=\s*\d+", hypothesis)
+        threshold_match = re.search(r"THRESHOLD_PERCENTILE\s*=\s*\d+", hypothesis)
+        params_match = re.search(r"MODEL_PARAMS\s*=\s*\{.*?\}", hypothesis, re.DOTALL)
+
+        if not (features_match and lookahead_match and threshold_match and params_match):
+            print("⚠️ AI provided incomplete Python variables. Skipping injection.")
+            time.sleep(3)
+            return
+
+        # Reconstruct a pristine, syntactically perfect Python file
+        clean_code = (
+            f"{features_match.group(0)}\n"
+            f"{lookahead_match.group(0)}\n"
+            f"{threshold_match.group(0)}\n"
+            f"{params_match.group(0)}\n"
+        )
+        
+        with open(STRATEGY_FILE, "w", encoding="utf-8") as f:
+            f.write(clean_code)
+            
+    except Exception as e:
+        print(f"⚠️ Failed to parse or write to {STRATEGY_FILE}: {e}")
+        time.sleep(3)
+        return
 
     git_status = subprocess.getoutput(f"git status --porcelain {STRATEGY_FILE}").strip()
 
     if not git_status:
-        print("⚠️ Aider did not make any changes. Skipping test.")
+        print("⚠️ No changes detected in config. Skipping test.")
         time.sleep(3)
         return
 
     subprocess.run(["git", "add", STRATEGY_FILE], capture_output=True)
-    subprocess.run(["git", "commit", "-m", f"Auto-experiment: {hypothesis[:50]}..."], capture_output=True)
+    clean_hypothesis_msg = hypothesis.replace('\n', ' ')[:50]
+    subprocess.run(["git", "commit", "-m", f"Auto-experiment: {clean_hypothesis_msg}..."], capture_output=True)
     
     commit_after = get_current_commit()
 
+    # ==========================================
+    # PHASE 3: THE GYM (WFO JUDGE EVALUATION)
+    # ==========================================
     print(f"\n📈 Running the Walk-Forward Judge...") 
     result = subprocess.run(TRAIN_CMD, capture_output=True, text=True, encoding="utf-8")
     full_output = result.stdout + "\n" + result.stderr
@@ -257,6 +274,9 @@ def run_experiment(memory_bank):
         time.sleep(3)
         return
 
+    # ==========================================
+    # PHASE 4 & 5: EVALUATION AND MEMORY LOGGING
+    # ==========================================
     if status == "keep":
         print(f"✅ SUCCESS! New high score.")
         log_result(commit_after, score, status, "Auto-experiment success")

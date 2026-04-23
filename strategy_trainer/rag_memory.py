@@ -8,19 +8,15 @@ from chromadb.utils import embedding_functions
 
 class StrategyMemoryBank:
     def __init__(self):
-        # Move the DB up one level so all worker clones can share it
-        shared_db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared_chroma_db"))
-        self.client = chromadb.PersistentClient(path=shared_db_path)
-        
-        # We use Chroma's default lightweight local embedding model. 
-        # (It will download a small ~80MB model on the very first run).
-        self.emb_fn = embedding_functions.DefaultEmbeddingFunction()
-        
-        # Get or create our specific memory table
-        self.collection = self.client.get_or_create_collection(
-            name="strategy_trials",
-            embedding_function=self.emb_fn
-        )
+        # UPGRADED: Connect to the dedicated ChromaDB Server via HTTP
+        # This completely eliminates file-locking race conditions.
+        try:
+            self.client = chromadb.HttpClient(host="localhost", port=8000)
+            self.collection = self.client.get_or_create_collection(name="strategy_trials")
+        except Exception as e:
+            print(f"❌ FATAL: Could not connect to ChromaDB Server. Is it running? Error: {e}")
+            import sys
+            sys.exit(1)
 
     def log_trial(self, commit_hash: str, summary: str, score: float, status: str):
         """Saves a strategy attempt into the vector database."""

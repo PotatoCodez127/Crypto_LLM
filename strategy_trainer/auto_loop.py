@@ -198,6 +198,21 @@ def run_experiment(memory_bank):
         score = float(match.group(1))
         status = "keep" if score > best_score else "discard"
         print(f"\n📊 OOS Result: {score}")
+
+        # ===============================================
+        # 📂 NEW FEATURE: SAVE DETAILED REPORTS
+        # ===============================================
+        if score != -999.0 and score != 0.0:
+            os.makedirs("results", exist_ok=True)
+            # Create a safe filename (e.g., results/0.6679.txt)
+            filename = f"results/{score}.txt"
+            try:
+                with open(filename, "w", encoding="utf-8") as f:
+                    f.write(f"=== AI HYPOTHESIS ===\n{hypothesis}\n\n")
+                    f.write(f"=== DETAILED REPORT ===\n{full_output.strip()}\n")
+            except Exception as e:
+                print(f"⚠️ Could not save result file: {e}")
+
         if score == -999.0:
             print("\n--- 🚨 JUDGE SILENT VETO LOGS 🚨 ---")
             print(full_output.strip())

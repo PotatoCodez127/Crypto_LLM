@@ -11,12 +11,11 @@ from litellm import completion
 from rag_memory import StrategyMemoryBank
 
 STRATEGY_FILE = "ai_config.py" 
-BEST_CONFIG_FILE = "best_ai_config.py" # Replaces Git restores
+BEST_CONFIG_FILE = "best_ai_config.py" 
 TRAIN_CMD = [sys.executable, "train.py"]
 RESULTS_FILE = "results.tsv"
 
 def get_code_hash(code_string):
-    """Generates a unique 7-character hash to replace Git Commits for the database."""
     return hashlib.md5(code_string.encode('utf-8')).hexdigest()[:7]
 
 def get_history_and_best():
@@ -26,7 +25,6 @@ def get_history_and_best():
         return -999.0, []
     
     best_score = -999.0
-    history = []
     with open(RESULTS_FILE, "r") as f:
         lines = f.readlines()[1:]
         for line in lines:
@@ -37,11 +35,9 @@ def get_history_and_best():
                     status = parts[2]
                     if status == "keep" and score > best_score:
                         best_score = score
-                    history.append(f"Score: {score} | Status: {status}")
                 except ValueError:
                     pass
-    
-    return best_score, history[-5:] 
+    return best_score, [] 
 
 def log_result(trial_id, score, status, desc):
     with open(RESULTS_FILE, "a") as f:
@@ -49,8 +45,39 @@ def log_result(trial_id, score, status, desc):
         f.flush()
         os.fsync(f.fileno())
 
-def generate_hypothesis(best_score):
-    print("🤔 Lead Quant is analyzing the current state...")
+def get_memory_context(memory_bank):
+    """Fetches the best winner and worst landmines directly from ChromaDB."""
+    try:
+        results = memory_bank.collection.get(include=["metadatas", "documents"])
+        if not results or not results['metadatas'] or len(results['metadatas']) == 0:
+            return "No historical data yet. You are the first generation."
+            
+        trials = []
+        for i in range(len(results['metadatas'])):
+            meta = results['metadatas'][i]
+            doc = results['documents'][i] if results['documents'] else ""
+            score = float(meta.get('score', -999.0))
+            status = meta.get('status', 'discard')
+            trials.append({'score': score, 'status': status, 'doc': doc})
+            
+        winners = sorted([t for t in trials if t['status'] == 'keep'], key=lambda x: x['score'], reverse=True)
+        losers = sorted([t for t in trials if t['status'] in ['discard', 'crash']], key=lambda x: x['score'])
+        
+        context = "--- HISTORICAL MEMORY BANK ---\n"
+        if winners:
+            context += f"🏆 BEST PAST WINNER (Score: {winners[0]['score']}):\n{winners[0]['doc']}\n\n"
+        if losers:
+            context += "☠️ PAST LANDMINES (DO NOT REPEAT THESE):\n"
+            # Give the AI its worst 3 failures to avoid
+            for l in losers[:3]:
+                context += f"- Failed Score {l['score']}: {l['doc']}\n"
+                
+        return context
+    except Exception as e:
+        return "Could not fetch memory."
+
+def generate_hypothesis(best_score, memory_context):
+    print("🤔 Lead Quant is analyzing the historical data and current state...")
     try:
         response = completion(
             model="openai/deepseek-v3.2",
@@ -72,7 +99,8 @@ def generate_hypothesis(best_score):
                     "content": (
                         f"Our current best Out-Of-Sample score is {best_score}.\n"
                         "CRITICAL WARNING: If the score is -999.0, your model is acting cowardly. You MUST force it to take risks.\n\n"
-                        "CRITICAL RULE: You may ONLY use these exact feature names: ['cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24', 'rsi_14', 'macd_line', 'bb_lower', 'bb_upper']. Do NOT invent features like 'bb_width' or 'volume_ma'.\n\n"
+                        f"{memory_context}\n\n"
+                        "CRITICAL RULE: You may ONLY use these exact feature names: ['cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24', 'rsi_14', 'macd_line', 'bb_lower', 'bb_upper']. Do NOT invent features.\n\n"
                         "You MUST format your response EXACTLY like this (valid multi-line Python code):\n"
                         "THINKING: [Explain your logic]\n"
                         "HYPOTHESIS:\n"
@@ -86,9 +114,7 @@ def generate_hypothesis(best_score):
         )
         
         content = response.choices[0].message.content
-        
-        if content is None or content.strip() == "":
-            print("\n❌ API ERROR: The model returned an empty string.")
+        if not content:
             return "API error.", ""
 
         content = content.strip()
@@ -103,8 +129,6 @@ def generate_hypothesis(best_score):
         thinking = thinking.replace("**", "").replace("*", "").replace("`", "")
         hypothesis = hypothesis.replace("**", "").replace("*", "").replace("`", "")
         
-        if not hypothesis or len(hypothesis) < 5:
-            print("\n❌ PARSING ERROR: The AI completely ignored formatting.")
         return thinking, hypothesis
         
     except Exception as e:
@@ -112,7 +136,7 @@ def generate_hypothesis(best_score):
         return "System error.", ""
 
 def run_experiment(memory_bank):
-    local_best, recent_history = get_history_and_best()
+    local_best, _ = get_history_and_best()
     global_best = memory_bank.get_global_best_score()
     best_score = max(local_best, global_best)
     
@@ -120,49 +144,22 @@ def run_experiment(memory_bank):
     print(f"🚀 STARTING NEW ITERATION | Target to beat: {best_score}")
     print("="*50)
 
-    max_retries = 3
-    hypothesis = ""
+    # 1. Fetch Context BEFORE generating the hypothesis
+    memory_context = get_memory_context(memory_bank)
     
-    for attempt in range(max_retries):
-        thinking, temp_hypothesis = generate_hypothesis(best_score)
-        
-        if not temp_hypothesis or len(temp_hypothesis) < 5:
-            print("\n⚠️ Invalid hypothesis generated. Retrying...")
-            time.sleep(2)
-            continue
-            
-        print(f"\n🧠 AI Reasoning (Attempt {attempt + 1}):\n   > {thinking}")
-        print(f"💡 AI Hypothesis:\n   > {temp_hypothesis}")
-        
-        raw_memories = memory_bank.query_similar_trials(temp_hypothesis, n_results=10)
-        
-        top_5 = raw_memories[:5]
-        discard_count = sum(1 for m in top_5 if m['status'] in ['discard', 'crash'])
-        
-        if discard_count >= 2:
-            print(f"🛑 REJECTION LOOP: ChromaDB found {discard_count} past failures for this exact concept!")
-            print("Sending the Lead Quant back to the drawing board to save LLM tokens...")
-            time.sleep(2)
-            continue 
-        else:
-            hypothesis = temp_hypothesis
-            if raw_memories:
-                print("\n📚 RAG Memory Triggered! Filtering optimal context...")
-                successes = [m for m in raw_memories if m['status'] == 'keep']
-                best_success = sorted(successes, key=lambda x: x['score'], reverse=True)[:1]
-                if best_success:
-                    print(f"   [1] 🏆 WINNER (Score: {best_success[0]['score']}) -> {best_success[0]['summary'][:75]}...")
-            else:
-                print("\n📚 RAG Memory: No past attempts found. Entering uncharted territory.")
-            break 
-
-    if not hypothesis:
-        print("\n⚠️ Lead Quant couldn't find a novel idea after 3 tries. Skipping iteration to avoid loop trap.")
+    # 2. Generate Hypothesis with context actively in the prompt
+    thinking, hypothesis = generate_hypothesis(best_score, memory_context)
+    
+    if not hypothesis or len(hypothesis) < 5:
+        print("\n⚠️ Invalid hypothesis generated. Skipping iteration.")
         time.sleep(3)
         return
-
-    print(f"\n⚡ Direct Code Injection: Extracting variables and writing to {STRATEGY_FILE}...")
+        
+    print(f"\n🧠 AI Reasoning:\n   > {thinking}")
+    print(f"💡 AI Hypothesis:\n   > {hypothesis}")
     
+    # 3. Direct Code Injection
+    print(f"\n⚡ Direct Code Injection: Extracting variables and writing to {STRATEGY_FILE}...")
     try:
         features_match = re.search(r"FEATURES\s*=\s*\[.*?\]", hypothesis, re.DOTALL)
         lookahead_match = re.search(r"TARGET_LOOKAHEAD\s*=\s*\d+", hypothesis)
@@ -181,28 +178,26 @@ def run_experiment(memory_bank):
             f"{params_match.group(0)}\n"
         )
         
-        # Write to the execution file
         with open(STRATEGY_FILE, "w", encoding="utf-8") as f:
             f.write(clean_code)
             
         trial_id = get_code_hash(clean_code)
             
     except Exception as e:
-        print(f"⚠️ Failed to parse or write to {STRATEGY_FILE}: {e}")
+        print(f"⚠️ Failed to parse or write: {e}")
         time.sleep(3)
         return
 
+    # 4. Evaluate via Judge
     print(f"\n📈 Running the Walk-Forward Judge...") 
     result = subprocess.run(TRAIN_CMD, capture_output=True, text=True, encoding="utf-8")
     full_output = result.stdout + "\n" + result.stderr
     
     match = re.search(r"FINAL_RESULT:([-\d.]+)", full_output)
-    
     if match:
         score = float(match.group(1))
         status = "keep" if score > best_score else "discard"
         print(f"\n📊 OOS Result: {score}")
-        
         if score == -999.0:
             print("\n--- 🚨 JUDGE SILENT VETO LOGS 🚨 ---")
             print(full_output.strip())
@@ -212,9 +207,7 @@ def run_experiment(memory_bank):
         status = "crash"
         print(f"\n⚠️ Judge crashed or returned invalid output.")
 
-    # ===============================================
-    # THE REVERT LOGIC (No Git Required)
-    # ===============================================
+    # 5. Restore or Save State
     if score == 0.0 or score == -999.0:
         print(f"\n🗑️ GUARDRAIL TRIGGERED: Score is {score}. Restoring {BEST_CONFIG_FILE} to avoid database poisoning...")
         if os.path.exists(BEST_CONFIG_FILE):
@@ -224,13 +217,11 @@ def run_experiment(memory_bank):
 
     if status == "keep":
         print(f"✅ SUCCESS! New high score.")
-        # Backup this winning config to be our new baseline!
         shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE)
         log_result(trial_id, score, status, "Auto-experiment success")
         memory_bank.log_trial(trial_id, hypothesis, score, status) 
     else:
         print(f"❌ FAILED (Score {score} <= {best_score}). Preserving history and restoring base...")
-        # Revert back to the last known winner
         if os.path.exists(BEST_CONFIG_FILE):
             shutil.copy(BEST_CONFIG_FILE, STRATEGY_FILE)
         log_result(trial_id, score, status, "Failed attempt logged")
@@ -243,12 +234,10 @@ if __name__ == "__main__":
     from fetch_data import fetch_historical_data
     fetch_historical_data() 
     
-    # Initialize the backup file on the very first run
     if not os.path.exists(BEST_CONFIG_FILE) and os.path.exists(STRATEGY_FILE):
         shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE)
     
     db = StrategyMemoryBank() 
-    
     while True:
         try:
             run_experiment(db)

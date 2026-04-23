@@ -100,7 +100,7 @@ def generate_hypothesis(best_score, memory_context):
                     "role": "system", 
                     "content": (
                         "You are an elite AI Data Scientist tuning an XGBoost trading strategy.\n"
-                        "Your job is to tune the XGBoost hyperparameters, select from the 8 available features, "
+                        "Your job is to tune the XGBoost hyperparameters, select from the available features, "
                         "and tune the TARGET_LOOKAHEAD and THRESHOLD_PERCENTILE variables to maximize the Out-Of-Sample score.\n"
                         "CRITICAL: You are currently severely overfitting the training data. You MUST constrain model complexity."
                     )
@@ -112,19 +112,19 @@ def generate_hypothesis(best_score, memory_context):
                         "WARNING: If the score is -999.0, your model is acting cowardly. Lower the threshold to force trades.\n\n"
                         f"{memory_context}\n\n"
                         "ANTI-OVERFITTING RULES (STRICT):\n"
-                        "1. TARGET_LOOKAHEAD MUST be strictly 2. 1 is too noisy.\n"
-                        "2. 'max_depth' MUST be exactly 3 or 4. Allow slight complexity to find patterns.\n"
-                        "3. 'n_estimators' MUST be between 100 and 200.\n"
-                        "4. 'reg_alpha' (L1) and 'reg_lambda' (L2) MUST be between 0.1 and 2.0. Do not over-regularize.\n"
-                        "5. THRESHOLD_PERCENTILE MUST be between 96 and 99. You are taking 1,000 trades and bleeding out to exchange fees. You MUST be a sniper. Only trade the absolute highest conviction setups.\n\n"
-                        "CRITICAL RULE: You may ONLY use these exact feature names: ['cvd_trend', 'atr_14', 'close_zscore_50', 'volume_zscore_24', 'rsi_14', 'macd_line', 'bb_lower', 'bb_upper'].\n\n"
+                        "1. TARGET_LOOKAHEAD MUST be strictly 2.\n"
+                        "2. 'max_depth' MUST be exactly 3. A depth of 4 causes severe out-of-sample drawdowns.\n"
+                        "3. 'n_estimators' MUST be strictly between 105 and 150.\n"
+                        "4. 'reg_alpha' (L1) and 'reg_lambda' (L2) MUST be strictly between 1.5 and 1.8. Going below 1.5 causes overfitting, and going to 2.0 causes underfitting.\n"
+                        "5. THRESHOLD_PERCENTILE MUST be between 96 and 98.\n\n"
+                        "CRITICAL RULE: You MUST ONLY use exactly these three features: ['cvd_trend', 'rsi_14', 'macd_line']. Do not add any other features as they destroy out-of-sample performance.\n\n"
                         "You MUST format your response EXACTLY like this (valid multi-line Python code):\n"
                         "THINKING: [Explain your logic]\n"
                         "HYPOTHESIS:\n"
                         "FEATURES=['cvd_trend', 'rsi_14', 'macd_line']\n"
                         "TARGET_LOOKAHEAD=2\n"
-                        "THRESHOLD_PERCENTILE=85\n"
-                        "MODEL_PARAMS={'max_depth': 2, 'learning_rate': 0.05, 'n_estimators': 100, 'reg_alpha': 2, 'reg_lambda': 5}"
+                        "THRESHOLD_PERCENTILE=97\n"
+                        "MODEL_PARAMS={'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 125, 'reg_alpha': 1.6, 'reg_lambda': 1.6}"
                     )
                 }
             ]

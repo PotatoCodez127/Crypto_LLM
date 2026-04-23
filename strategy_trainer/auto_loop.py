@@ -10,10 +10,19 @@ from litellm import completion
 
 from rag_memory import StrategyMemoryBank
 
+# --- SMART PATH LOGIC ---
+# If running inside a worker node, point up to the root. Otherwise, use current directory.
+if "worker_node" in os.getcwd():
+    ROOT_DIR = ".."
+else:
+    ROOT_DIR = "."
+
 STRATEGY_FILE = "ai_config.py" 
 BEST_CONFIG_FILE = "best_ai_config.py" 
 TRAIN_CMD = [sys.executable, "train.py"]
-RESULTS_FILE = "results.tsv"
+
+# Centralize the TSV scorecard in the root folder!
+RESULTS_FILE = f"{ROOT_DIR}/results.tsv"
 
 def get_code_hash(code_string):
     return hashlib.md5(code_string.encode('utf-8')).hexdigest()[:7]

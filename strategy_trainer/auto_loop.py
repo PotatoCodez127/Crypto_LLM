@@ -33,10 +33,11 @@ def get_code_hash(code_string):
     return hashlib.md5(code_string.encode('utf-8')).hexdigest()[:7]
 
 def get_history_and_best():
+    tested_hashes = set()
     if not os.path.exists(RESULTS_FILE):
         with open(RESULTS_FILE, "w") as f:
             f.write("trial_id\tfinal_result\tstatus\tdescription\n")
-        return -999.0, []
+        return -999.0, tested_hashes
     
     best_score = -999.0
     with open(RESULTS_FILE, "r") as f:
@@ -44,6 +45,7 @@ def get_history_and_best():
         for line in lines:
             parts = line.strip().split("\t")
             if len(parts) >= 3:
+                tested_hashes.add(parts[0]) # Save the trial_id to our duplicate tracker
                 try:
                     score = float(parts[1])
                     status = parts[2]
@@ -51,7 +53,7 @@ def get_history_and_best():
                         best_score = score
                 except ValueError:
                     pass
-    return best_score, [] 
+    return best_score, tested_hashes
 
 def log_result(trial_id, score, status, desc):
     with open(RESULTS_FILE, "a") as f:
@@ -117,15 +119,15 @@ def generate_hypothesis(best_score, memory_context):
                         f"{memory_context}\n\n"
                         "ANTI-OVERFITTING RULES (STRICT):\n"
                         "1. TARGET_LOOKAHEAD MUST be strictly 2.\n"
-                        "2. 'max_depth' MUST be exactly 3. A depth of 4 causes severe out-of-sample drawdowns.\n"
-                        "3. 'n_estimators' MUST be strictly between 105 and 150.\n"
-                        "4. 'reg_alpha' (L1) and 'reg_lambda' (L2) MUST be strictly between 1.5 and 1.8. Going below 1.5 causes overfitting, and going to 2.0 causes underfitting.\n"
-                        "5. THRESHOLD_PERCENTILE MUST be between 96 and 98.\n\n"
-                        "CRITICAL RULE: You MUST ONLY use exactly these three features: ['cvd_trend', 'rsi_14', 'macd_line']. Do not add any other features as they destroy out-of-sample performance.\n\n"
+                        "2. 'max_depth' MUST be exactly 3 or 4. Do not exceed 4.\n"
+                        "3. 'n_estimators' MUST be strictly between 100 and 200.\n"
+                        "4. 'reg_alpha' (L1) and 'reg_lambda' (L2) MUST be strictly between 1.5 and 2.2.\n"
+                        "5. THRESHOLD_PERCENTILE MUST be between 95 and 99.\n\n"
+                        "FEATURE EXPANSION RULE: You MUST retain the core profitable trinity: ['cvd_trend', 'rsi_14', 'macd_line']. However, to break our high score, you are now AUTHORIZED to add 1 or 2 experimental features to this list. DO NOT exceed 5 features total.\n\n"
                         "You MUST format your response EXACTLY like this (valid multi-line Python code):\n"
                         "THINKING: [Explain your logic]\n"
                         "HYPOTHESIS:\n"
-                        "FEATURES=['cvd_trend', 'rsi_14', 'macd_line']\n"
+                        "FEATURES=['cvd_trend', 'rsi_14', 'macd_line', 'experimental_feature_here']\n"
                         "TARGET_LOOKAHEAD=2\n"
                         "THRESHOLD_PERCENTILE=97\n"
                         "MODEL_PARAMS={'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 125, 'reg_alpha': 1.6, 'reg_lambda': 1.6}"
@@ -154,14 +156,15 @@ def generate_hypothesis(best_score, memory_context):
         return "System error.", ""
 
 def run_experiment(memory_bank):
-    local_best, _ = get_history_and_best()
+    # 🛑 CRITICAL FIX: Make sure tested_hashes is unpacked here
+    local_best, tested_hashes = get_history_and_best() 
     global_best = memory_bank.get_global_best_score()
     best_score = max(local_best, global_best)
     
     print(f"\n" + "="*50)
     print(f"🚀 STARTING NEW ITERATION | Target to beat: {best_score}")
     print("="*50)
-
+    
     memory_context = get_memory_context(memory_bank)
     thinking, hypothesis = generate_hypothesis(best_score, memory_context)
     
@@ -192,9 +195,14 @@ def run_experiment(memory_bank):
             f"{params_match.group(0)}\n"
         )
         
+        trial_id = get_code_hash(clean_code)
+        if trial_id in tested_hashes:
+            print(f"⚠️ Duplicate Hash Detected ({trial_id}). We have already tested this exact combination! Skipping to force new ideas...")
+            time.sleep(1)
+            return
+        
         with open(STRATEGY_FILE, "w", encoding="utf-8") as f:
             f.write(clean_code)
-        trial_id = get_code_hash(clean_code)
             
     except Exception as e:
         print(f"⚠️ Failed to parse or write: {e}")

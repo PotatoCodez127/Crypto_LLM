@@ -78,7 +78,11 @@ def get_memory_context(memory_bank):
         
         context = "--- HISTORICAL MEMORY BANK ---\n"
         if winners:
-            context += f"🏆 BEST PAST WINNER (Score: {winners[0]['score']}):\n{winners[0]['doc']}\n\n"
+            context += "🏆 TOP PERFORMING STRATEGIES (Analyze these for patterns):\n"
+            # Pass the top 3 winners instead of just the single highest
+            for w in winners[:3]:
+                context += f"- Winning Score {w['score']}: {w['doc']}\n"
+            context += "\n"
         if losers:
             context += "☠️ PAST LANDMINES (DO NOT REPEAT THESE):\n"
             for l in losers[:3]:
@@ -204,7 +208,15 @@ def run_experiment(memory_bank):
     match = re.search(r"FINAL_RESULT:([-\d.]+)", full_output)
     if match:
         score = float(match.group(1))
-        status = "keep" if score > best_score else "discard"
+        
+        # 1. Establish the Tiers
+        if score > best_score:
+            status = "keep_new_best"
+        elif score >= (best_score - 5.0) and score >= 25.0: # Within 5 points of top score, minimum 25% return
+            status = "keep_runner_up"
+        else:
+            status = "discard"
+            
         print(f"\n📊 OOS Result: {score}")
         
         # 📂 SAVE REPORT TO CENTRAL ROOT FOLDER
@@ -226,7 +238,6 @@ def run_experiment(memory_bank):
         score = 0.0
         status = "crash"
         print(f"\n⚠️ Judge crashed or returned invalid output.")
-        # FIX: Un-hide the Python Traceback so you can see exactly what broke!
         print("--- 🚨 CRASH LOGS 🚨 ---")
         print(full_output.strip())
         print("------------------------\n")
@@ -239,17 +250,29 @@ def run_experiment(memory_bank):
         time.sleep(3)
         return
 
-    if status == "keep":
-        print(f"✅ SUCCESS! New high score.")
-        shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE)
-        log_result(trial_id, score, status, "Auto-experiment success")
-        memory_bank.log_trial(trial_id, hypothesis, score, status) 
-    else:
-        print(f"❌ FAILED (Score {score} <= {best_score}). Restoring base...")
+    # 2. Handle the Tiers Appropriately 
+    if status == "keep_new_best":
+        print(f"🏆 NEW GLOBAL BEST! (Score {score} > {best_score})")
+        shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE) # Overwrite baseline file
+        log_result(trial_id, score, "keep", "Auto-experiment new high score")
+        memory_bank.log_trial(trial_id, hypothesis, score, "keep") 
+        
+    elif status == "keep_runner_up":
+        print(f"🥈 RUNNER UP: Highly Profitable Variant! (Score {score})")
+        # We DO NOT overwrite the BEST_CONFIG_FILE here. We want to keep the 42% as the base.
         if os.path.exists(BEST_CONFIG_FILE):
             shutil.copy(BEST_CONFIG_FILE, STRATEGY_FILE)
-        log_result(trial_id, score, status, "Failed attempt logged")
-        memory_bank.log_trial(trial_id, hypothesis, score, status) 
+        log_result(trial_id, score, "keep", "Highly profitable runner-up")
+        # We log it as "keep" in the DB so the AI treats it as a winning formula
+        memory_bank.log_trial(trial_id, hypothesis, score, "keep") 
+
+    else:
+        print(f"❌ FAILED (Score {score} is too low). Restoring base...")
+        if os.path.exists(BEST_CONFIG_FILE):
+            shutil.copy(BEST_CONFIG_FILE, STRATEGY_FILE)
+        log_result(trial_id, score, "discard", "Failed attempt logged")
+        # Logged as a discard so the AI knows to avoid these exact parameters
+        memory_bank.log_trial(trial_id, hypothesis, score, "discard") 
 
     print("Waiting 3 seconds before the next loop...")
     time.sleep(3)

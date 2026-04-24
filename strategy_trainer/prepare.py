@@ -8,7 +8,8 @@ import os
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 
-DATA_FILE = os.path.join(PROJECT_ROOT, "data", "btc_1h_3y_v2.csv")
+# 🔥 FIX 2: Point to the new 15m dataset
+DATA_FILE = os.path.join(PROJECT_ROOT, "data", "btc_15m_3y.csv")
 STRATEGY_FILE = "strategy.py"
 FEES = 0.0002  
 SLIPPAGE = 0.0005
@@ -129,15 +130,19 @@ def run_walk_forward_optimization():
         if 'log_return' not in df.columns:
             df['log_return'] = np.log(df['close'] / df['close'].shift(1)).fillna(0)
     except FileNotFoundError:
-        # Fallback for alternative dataset name
-        df = pd.read_csv(DATA_FILE.replace("btc_1h_3y.csv", "btc_1h_3y_v2.csv"))
+        # 🔥 FIX 3: Clean failure if data is missing, instead of looking for v2
+        print(f"\n❌ FATAL ERROR: Data file not found at {DATA_FILE}")
+        print("Please run fetch_data.py first to download the 15m dataset.")
+        sys.exit(1)
 
     strategy = load_strategy()
 
-    # Define Horizons (1 hour candles)
+    # 🔥 FIX 4: Adjust candle horizons for 15-minute data
+    # 1 Year = 365 days * 24 hours * 4 candles/hour = 35,040
+    # 3 Months = ~90 days * 24 hours * 4 candles/hour = 8,640
     df_3y = df
-    df_1y = df.tail(8760)
-    df_3m = df.tail(2160)
+    df_1y = df.tail(35040)
+    df_3m = df.tail(8640)
 
     # Evaluate Horizons
     ins_3y, oos_3y = evaluate_regime_wfo(df_3y, strategy)

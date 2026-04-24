@@ -12,14 +12,14 @@ from datetime import datetime, timedelta, timezone
 
 # Configuration
 SYMBOL = 'BTC/USDT'
-TIMEFRAME = '1h'
+TIMEFRAME = '15m'
 YEARS_TO_FETCH = 3
-LIMIT_PER_REQUEST = 1000  # Binance max
+LIMIT_PER_REQUEST = 1000
 
-# Pathing (Resolves to the /data folder in your root repo)
+# Pathing
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-OUTPUT_FILE = os.path.join(DATA_DIR, "btc_1h_3y.csv")
+OUTPUT_FILE = os.path.join(DATA_DIR, "btc_15m_3y.csv")
 
 def fetch_historical_data():
     print(f"📡 Initializing connection to Binance via CCXT...")

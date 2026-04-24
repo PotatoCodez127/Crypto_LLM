@@ -123,7 +123,7 @@ def generate_hypothesis(best_score, memory_context):
                         "3. 'n_estimators' MUST be strictly between 100 and 200.\n"
                         "4. 'reg_alpha' (L1) and 'reg_lambda' (L2) MUST be strictly between 1.5 and 2.2.\n"
                         "5. THRESHOLD_PERCENTILE MUST be between 95 and 99.\n\n"
-                        "FEATURE EXPANSION RULE: You MUST retain the core profitable trinity: ['cvd_trend', 'rsi_14', 'macd_line']. However, to break our high score, you are now AUTHORIZED to add 1 or 2 experimental features to this list. DO NOT exceed 5 features total.\n\n"
+                        "FEATURE EXPANSION RULE: You MUST retain the core profitable trinity: ['cvd_trend', 'rsi_14', 'macd_line']. However, to break our high score, you are now AUTHORIZED to add 1 or 2 experimental features to this list. You MUST ONLY choose from this exact list of available features: ['atr_14', 'close_zscore_50', 'volume_zscore_24', 'bb_upper', 'bb_lower', 'log_return']. DO NOT invent feature names or the system will crash.\n\n"
                         "You MUST format your response EXACTLY like this (valid multi-line Python code):\n"
                         "THINKING: [Explain your logic]\n"
                         "HYPOTHESIS:\n"
@@ -164,7 +164,7 @@ def run_experiment(memory_bank):
     print(f"\n" + "="*50)
     print(f"🚀 STARTING NEW ITERATION | Target to beat: {best_score}")
     print("="*50)
-    
+
     memory_context = get_memory_context(memory_bank)
     thinking, hypothesis = generate_hypothesis(best_score, memory_context)
     

@@ -1,83 +1,85 @@
-# src/ai_agent/llm_client.py
-import os
 import json
-from openai import OpenAI
-from typing import Dict, Optional
+import logging
+from typing import Dict, Any
+import litellm
 
-class TradingAgentClient:
-    """Handles communication with the LLM to generate trading decisions from the Semantic Tape."""
+logger = logging.getLogger(__name__)
 
-    def __init__(self, provider: str = "ollama"):
-        """
-        Initializes the client. Defaults to Ollama.
-        """
-        self.provider = provider.lower()
+class TradingBrain:
+    def __init__(self, model_name: str = "gpt-4-turbo", temperature: float = 0.0):
+        self.model_name = model_name
+        self.temperature = temperature
         
-        # Pull the Ollama Cloud URL from .env, or fallback to local if not found
-        base_url = os.environ.get("OLLAMA_HOST_URL", "http://localhost:11434/v1")
-        
-        # We specify the model here, but allow override via .env
-        self.model = os.environ.get("OLLAMA_MODEL", "deepseek-v3.2")
-        # Pull the real API key from .env (fallback to 'ollama' if local)
-        api_key = os.environ.get("OLLAMA_API_KEY", "ollama")
+        self.system_prompt = """You are an elite quantitative trading AI specializing in BTC and US30 market micro-structure. 
+You are receiving a 'Semantic Tape' detailing real-time price action, structural levels, and momentum indicators.
 
-        # Initialize the OpenAI SDK client
-        self.client = OpenAI(
-            base_url=base_url,
-            api_key=api_key 
-        )
-        
+ANALYTICAL FRAMEWORK:
+1. Regime Identification: Determine if the market is trending, ranging, or chopping.
+2. Structural Analysis: Note proximity to key liquidity zones (Daily Open, Order Blocks).
+3. Risk Assessment: Evaluate volatility (ATR) and signal confluence. Capital preservation is your primary directive. If signals conflict, you must remain flat.
 
-        self._build_system_prompt()
+OUTPUT INSTRUCTIONS:
+You must output ONLY a valid JSON object. Do not include markdown blocks or conversational text. 
+Use the following schema:
+{
+    "thought_process": {
+        "market_regime": "<brief assessment>",
+        "key_levels": "<closest support/resistance>",
+        "confluence_check": "<do indicators align with price action?>"
+    },
+    "decision": "LONG" | "SHORT" | "NONE",
+    "confidence": <0-100>,
+    "risk_level": "LOW" | "MEDIUM" | "HIGH",
+    "reasoning": "<1-2 sentence final justification>"
+}"""
 
-    def _build_system_prompt(self):
-        """The core instructions that tell the AI how to behave and format its output."""
-        self.system_prompt = """
-        You are an elite cryptocurrency quantitative trading AI. 
-        You will be provided with a 'Semantic Tape' showing recent price action, volume, and technical indicators.
-        
-        Your task is to analyze this tape and make a trading decision.
-        
-        CRITICAL RULES:
-        1. Capital preservation is paramount. If the tape shows chop, indecision, or conflicting signals, return NONE.
-        2. You must output ONLY valid, raw JSON. 
-        3. Follow this exact JSON schema:
-        
-        {
-            "decision": "LONG" | "SHORT" | "NONE",
-            "confidence": <integer from 0 to 100>,
-            "reasoning": "<A 1-2 sentence explanation of your logic>",
-            "risk_level": "LOW" | "MEDIUM" | "HIGH"
+    def _graceful_degradation(self, reason: str) -> Dict[str, Any]:
+        """Provides a safe default flat state if the LLM or API fails."""
+        logger.error(f"BRAIN FAULT | Degrading to safe state. Reason: {reason}")
+        return {
+            "thought_process": {
+                "market_regime": "UNKNOWN",
+                "key_levels": "UNKNOWN",
+                "confluence_check": "API Timeout or Parsing Failure"
+            },
+            "decision": "NONE",
+            "confidence": 0,
+            "risk_level": "LOW",
+            "reasoning": f"System forced flat due to exception: {reason}"
         }
-        """
 
-    def analyze_tape(self, semantic_tape: str) -> Optional[Dict]:
+    def analyze_tape(self, semantic_tape: str) -> Dict[str, Any]:
         """
-        Sends the tape to the LLM and parses the JSON response.
+        Submits the semantic tape to the LLM, enforcing the JSON CoT schema.
         """
         try:
-            messages = [
-                {"role": "system", "content": self.system_prompt},
-                {"role": "user", "content": f"Here is the latest market tape. Analyze it and return your JSON decision:\n\n{semantic_tape}"}
-            ]
-
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                temperature=0.1, # Keep it low for analytical consistency
-                response_format={"type": "json_object"} # Forces Ollama to lock into JSON mode
+            response = litellm.completion(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": f"SEMANTIC TAPE:\n{semantic_tape}"}
+                ],
+                temperature=self.temperature,
+                # Force JSON mode on supported models (OpenAI, Anthropic, etc.)
+                response_format={ "type": "json_object" }
             )
-
-            raw_response = response.choices[0].message.content.strip()
             
-            # Parse JSON
-            decision_data = json.loads(raw_response)
-            return decision_data
+            raw_response = response.choices[0].message.content
+            
+            # Clean potential markdown fences if the model disobeys prompt bounds
+            if raw_response.startswith("```"):
+                raw_response = raw_response.strip("```json").strip("```")
+                
+            decision_json = json.loads(raw_response)
+            
+            # Schema validation
+            required_keys = ["thought_process", "decision", "confidence", "risk_level", "reasoning"]
+            if not all(key in decision_json for key in required_keys):
+                return self._graceful_degradation("Missing required JSON keys in LLM output.")
+                
+            return decision_json
 
         except json.JSONDecodeError as e:
-            print(f"⚠️ Failed to parse AI JSON response: {e}")
-            print(f"Raw Output was: {raw_response}")
-            return None
+            return self._graceful_degradation(f"JSON Parsing Error: {str(e)}")
         except Exception as e:
-            print(f"⚠️ LLM API Error: {e}")
-            return None
+            return self._graceful_degradation(f"API/Network Error: {str(e)}")

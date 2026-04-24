@@ -55,11 +55,15 @@ class FeatureExtractor:
     def extract_features(self, df):
         """
         Extract all Phase 1 features suitable for XGBoost/LightGBM.
+        Focuses entirely on stationary derivatives and sequence to prevent overfitting.
         """
         feature_df = df.copy()
 
-        # 1. Price Stationarity
+        # 1. Price Stationarity & Sequence 
         feature_df["log_return"] = self.calculate_log_returns(feature_df["close"])
+        feature_df["log_return_lag_1"] = feature_df["log_return"].shift(1)
+        feature_df["log_return_lag_2"] = feature_df["log_return"].shift(2)
+        feature_df["log_return_lag_3"] = feature_df["log_return"].shift(3)
         
         # 2. Volatility Metrics
         feature_df["atr"] = self.calculate_atr(feature_df)
@@ -69,9 +73,8 @@ class FeatureExtractor:
         feature_df["cvd"] = self.calculate_cvd_approximation(feature_df)
         feature_df["cvd_trend"] = feature_df["cvd"].diff(3) # 3-period change in aggressive flow
         
-        # Ensure OI and Funding exist (from handler), then calculate derivatives momentum
+        # Ensure OI and Funding exist, then calculate derivatives momentum
         if 'open_interest' in feature_df.columns:
-            # Prevent ZeroDivisionError by temporarily converting 0s to NaNs before pct_change
             feature_df['oi_change_pct'] = feature_df['open_interest'].replace(0, np.nan).pct_change().fillna(0)
             feature_df['oi_zscore'] = self.z_score_normalize(feature_df['open_interest'], window=50)
             
@@ -81,8 +84,12 @@ class FeatureExtractor:
         # 4. Standard technicals (Z-scored for ML)
         feature_df["volume_zscore"] = self.z_score_normalize(feature_df["volume"], window=50)
         
-        # Drop raw prices (optional, but raw prices cause overfitting in decision trees)
-        # feature_df = feature_df.drop(columns=['open', 'high', 'low', 'close'])
+        # 5. Anti-Overfitting Shield
+        # Drop raw prices and absolute values. XGBoost trees fail when 
+        # deployed on absolute levels they have never seen in training.
+        cols_to_drop = ['open', 'high', 'low', 'close', 'volume', 'atr', 'cvd'] 
+        existing_drops = [c for c in cols_to_drop if c in feature_df.columns]
+        feature_df = feature_df.drop(columns=existing_drops)
 
         return feature_df.fillna(0)
 

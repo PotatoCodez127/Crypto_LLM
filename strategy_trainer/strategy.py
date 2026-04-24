@@ -18,7 +18,11 @@ def get_signals(df):
     if missing_cols:
         raise ValueError(f"\n❌ FATAL DATA ERROR: Missing {missing_cols}.")
         
-    data['target'] = (data['close'].shift(-TARGET_LOOKAHEAD) > data['close']).astype(int)
+    # CRITICAL ALIGNMENT: 
+    # Only label '1' if the forward return exceeds the noise floor (1.0x ATR)
+    forward_return = data['close'].shift(-TARGET_LOOKAHEAD) - data['close']
+    data['target'] = (forward_return > (1.0 * data['atr_14'])).astype(int)
+    
     clean_data = data.dropna(subset=FEATURES + ['target']).copy()
     
     # Require enough data to actually train a model
@@ -29,20 +33,27 @@ def get_signals(df):
     X = clean_data[FEATURES]
     y = clean_data['target']
     
-    # FIX: Align the ML training split (80%) with the Walk-Forward Train/Test ratio (40/10)
+    # Isolate training split to prevent lookahead bias
     split_idx = int(len(clean_data) * 0.8)
     X_train = X.iloc[:split_idx]
     y_train = y.iloc[:split_idx]
+    X_test = X.iloc[split_idx:]
     
     model = xgb.XGBClassifier(**MODEL_PARAMS)
     model.fit(X_train, y_train)
     
-    probs = model.predict_proba(X)[:, 1]
-    threshold = np.percentile(probs, THRESHOLD_PERCENTILE)
+    # STRICT OOS GENERATION: 
+    # Generate probabilities for Train vs Test independently.
+    probs = np.zeros(len(X))
+    probs[:split_idx] = model.predict_proba(X_train)[:, 1]
+    if len(X_test) > 0:
+        probs[split_idx:] = model.predict_proba(X_test)[:, 1]
     
+    # Threshold MUST be calculated only on training data
+    threshold = np.percentile(probs[:split_idx], THRESHOLD_PERCENTILE)
     ml_entries = np.where(probs >= threshold, 1, 0)
     
-    # Map the ML signals back using safe Pandas indexing
+    # Map the ML signals back safely
     data['ml_signal'] = 0
     data.loc[X.index, 'ml_signal'] = ml_entries
     full_entries = data['ml_signal'].values

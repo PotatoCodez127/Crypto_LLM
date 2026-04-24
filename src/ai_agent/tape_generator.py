@@ -1,74 +1,73 @@
-# src/ai_agent/tape_generator.py
 import pandas as pd
+from datetime import datetime
+import pytz
+import logging
 
-class SemanticTapeGenerator:
-    """Translates raw quantitative market data into a semantic story for LLM analysis."""
+logger = logging.getLogger(__name__)
 
+class TapeGenerator:
+    """
+    Translates quantitative ML features (OHLCV + Derivatives) into a textual 
+    Semantic Tape for LLM ingestion, aware of SAST session timings.
+    """
+    
     def __init__(self):
-        pass
+        # SAST reference for regime filtering
+        self.sast_tz = pytz.timezone('Africa/Johannesburg')
 
-    def build_tape(self, df: pd.DataFrame, features_df: pd.DataFrame = None, lookback: int = 5) -> str:
+    def generate_tape(self, current_state: pd.Series) -> str:
         """
-        Generates a textual tape of the last N candles.
+        Builds the Semantic Tape from the latest feature vector.
         """
-        if df.empty or len(df) < lookback:
-            return "Insufficient data to build tape."
-
-        # Get the most recent N candles
-        recent_tape = df.tail(lookback)
-        
-        tape_lines = []
-        tape_lines.append(f"--- MARKET TAPE (Last {lookback} Periods) ---")
-
-        for i in range(len(recent_tape)):
-            row = recent_tape.iloc[i]
-            timestamp = row.name if isinstance(recent_tape.index, pd.DatetimeIndex) else row.get('timestamp', f"T-{lookback-i}")
+        try:
+            # Convert execution time to SAST for the LLM's spatial awareness
+            utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+            sast_now = utc_now.astimezone(self.sast_tz)
             
-            # Formulate timestamp string
-            if isinstance(timestamp, pd.Timestamp):
-                time_str = timestamp.strftime('%H:%M:%S UTC')
-            else:
-                time_str = str(timestamp)
-
-            # Extract OHLC
-            o, h, l, c = row['open'], row['high'], row['low'], row['close']
+            # Extract features safely
+            close_price = current_state.get('close', 0.0)
+            atr = current_state.get('atr', 0.0)
+            atr_norm = current_state.get('atr_normalized', 0.0)
+            cvd_trend = current_state.get('cvd_trend', 0.0)
+            vol_z = current_state.get('volume_zscore', 0.0)
+            ml_signal = current_state.get('ml_signal', 0.0)
             
-            # Calculate price action metrics
-            point_change = c - o
-            total_range = h - l
-            body = abs(c - o)
-            if total_range == 0: total_range = 0.0001 # Prevent division by zero
+            # Assess Momentum Sequence
+            log_returns = [
+                current_state.get('log_return_lag_3', 0.0),
+                current_state.get('log_return_lag_2', 0.0),
+                current_state.get('log_return_lag_1', 0.0),
+                current_state.get('log_return', 0.0)
+            ]
+            momentum_sum = sum(log_returns)
             
-            # Determine Direction
-            direction = "Bullish" if point_change > 0 else "Bearish" if point_change < 0 else "Neutral"
+            # Discretize numerical conditions for the LLM
+            momentum_state = "Strong Bullish" if momentum_sum > 0.01 else "Strong Bearish" if momentum_sum < -0.01 else "Chopping/Ranging"
+            flow_state = "Aggressive Buying" if cvd_trend > 0 else "Aggressive Selling" if cvd_trend < 0 else "Neutral Flow"
+            vol_state = "Expanding (Breakout Risk)" if atr_norm > 1.0 else "Compressing (Mean Reversion)" if atr_norm < -1.0 else "Normal Volatility"
             
-            # Determine Candle Shape
-            if body <= (total_range * 0.25):
-                shape = "Indecision/Doji"
-            elif body >= (total_range * 0.75):
-                shape = "Strong Momentum"
-            else:
-                shape = "Standard Candle"
+            tape = f"""--- MARKET MICRO-STRUCTURE TAPE ---
+Execution Local Time (SAST): {sast_now.strftime('%Y-%m-%d %H:%M:%S %Z')}
 
-            # Base semantic line
-            line = f"[{time_str}] Close: {c:.2f} | {direction} ({point_change:+.2f}) | Shape: {shape}"
+1. PRICE & MOMENTUM CONTEXT
+- Current Asset Price: {close_price:.2f}
+- Cumulative Momentum (4-Period): {momentum_sum:.5f}
+- Regime Assessment: {momentum_state}
 
-            # Append Technical Features if provided
-            if features_df is not None and len(features_df) == len(df):
-                f_row = features_df.tail(lookback).iloc[i]
-                rsi = f_row.get('rsi', 50)
-                macd = f_row.get('macd', 0)
-                
-                # Contextualize RSI
-                if rsi > 70:
-                    rsi_ctx = f"Overbought ({rsi:.1f})"
-                elif rsi < 30:
-                    rsi_ctx = f"Oversold ({rsi:.1f})"
-                else:
-                    rsi_ctx = f"Neutral ({rsi:.1f})"
-                    
-                line += f" | RSI: {rsi_ctx} | MACD: {macd:.2f}"
+2. VOLATILITY & RISK (ATR)
+- Absolute Volatility (ATR): {atr:.2f}
+- Normalized Volatility (Z-Score): {atr_norm:.2f}
+- Volatility State: {vol_state}
 
-            tape_lines.append(line)
+3. ORDER FLOW & LIQUIDITY
+- CVD Trajectory (Aggressive Flow): {cvd_trend:.2f} ({flow_state})
+- Relative Volume (Z-Score): {vol_z:.2f}
+
+4. QUANTITATIVE REFLEX (XGBoost)
+- ML Node Signal Fired: {"YES (Confluence Required)" if ml_signal == 1 else "NO"}
+-----------------------------------"""
+            return tape
             
-        return "\n".join(tape_lines)
+        except Exception as e:
+            logger.error(f"Tape Generation Failed: {str(e)}")
+            return f"SYSTEM FAULT: Unable to generate tape. Error: {str(e)}"

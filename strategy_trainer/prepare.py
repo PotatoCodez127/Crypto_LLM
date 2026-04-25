@@ -4,11 +4,13 @@ import importlib.util
 import sys
 import os
 
-# Clean, foolproof pathing: Jump up exactly one level to the Crypto_LLM root directory
+# Clean, foolproof pathing
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+sys.path.append(PROJECT_ROOT) # Crucial: Allows importing from src/
 
-# 🔥 FIX 2: Point to the new 15m dataset
+from src.features.extractor import FeatureExtractor
+
 DATA_FILE = os.path.join(PROJECT_ROOT, "data", "btc_15m_3y.csv")
 STRATEGY_FILE = "strategy.py"
 FEES = 0.0002  
@@ -22,13 +24,10 @@ def load_strategy():
     return strategy
 
 def calc_metrics(df):
-    """Calculates all institutional metrics for a given train or test dataframe"""
     if 'signal' not in df.columns or len(df) == 0:
         return 0, 0, 0, 0, 0, 0
 
-    # FIX: Reset the index to prevent Pandas .loc collisions from overlapping WFO folds
     df = df.reset_index(drop=True).copy()
-    
     df['position'] = df['signal'].shift(1).fillna(0)
     
     if 'log_return' not in df.columns:
@@ -43,10 +42,8 @@ def calc_metrics(df):
         return 0, 0, 0, 0, 0, 0
 
     total_return = (np.exp(df['strategy_returns'].sum()) - 1) * 100
-
     cum_exp = np.exp(df['strategy_returns'].cumsum())
     max_dd = ((cum_exp / cum_exp.cummax()) - 1).min() * 100
-
     mean_r = df['strategy_returns'].mean()
     std_r = df['strategy_returns'].std()
     sharpe = (mean_r / std_r) * np.sqrt(8760) if std_r > 0 else 0
@@ -71,10 +68,8 @@ def evaluate_window(df_train, df_test, strategy_module):
         print(f"Strategy crashed: {e}")
         return None, None
     
-    # Isolate Train and Test datasets based on the original lengths
     ins_df = combined_df.iloc[:len(df_train)].copy()
     oos_df = combined_df.iloc[len(df_train):].copy()
-    
     return ins_df, oos_df
 
 def evaluate_regime_wfo(regime_df, strategy):
@@ -103,14 +98,9 @@ def evaluate_regime_wfo(regime_df, strategy):
     if not master_oos_list:
         return None, None
 
-    # Concatenate all folds to calculate macro statistics
     master_ins = pd.concat(master_ins_list)
     master_oos = pd.concat(master_oos_list)
-    
-    ins_metrics = calc_metrics(master_ins)
-    oos_metrics = calc_metrics(master_oos)
-    
-    return ins_metrics, oos_metrics
+    return calc_metrics(master_ins), calc_metrics(master_oos)
 
 def print_row(regime, phase, m):
     if m is None or m[5] == 0:
@@ -127,24 +117,22 @@ def run_walk_forward_optimization():
         if 'timestamp' in df.columns:
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             df = df.sort_values('timestamp').reset_index(drop=True)
-        if 'log_return' not in df.columns:
-            df['log_return'] = np.log(df['close'] / df['close'].shift(1)).fillna(0)
     except FileNotFoundError:
-        # 🔥 FIX 3: Clean failure if data is missing, instead of looking for v2
         print(f"\n❌ FATAL ERROR: Data file not found at {DATA_FILE}")
-        print("Please run fetch_data.py first to download the 15m dataset.")
         sys.exit(1)
+
+    # ---> CRITICAL FIX: Extract features over the whole dataset FIRST
+    print("⚙️ Processing Data via FeatureExtractor...")
+    extractor = FeatureExtractor()
+    df = extractor.extract_features(df)
 
     strategy = load_strategy()
 
-    # 🔥 FIX 4: Adjust candle horizons for 15-minute data
-    # 1 Year = 365 days * 24 hours * 4 candles/hour = 35,040
-    # 3 Months = ~90 days * 24 hours * 4 candles/hour = 8,640
+    # Horizons for 15-minute data
     df_3y = df
     df_1y = df.tail(35040)
     df_3m = df.tail(8640)
 
-    # Evaluate Horizons
     ins_3y, oos_3y = evaluate_regime_wfo(df_3y, strategy)
     ins_1y, oos_1y = evaluate_regime_wfo(df_1y, strategy)
     ins_3m, oos_3m = evaluate_regime_wfo(df_3m, strategy)
@@ -154,7 +142,6 @@ def run_walk_forward_optimization():
     print("="*80)
     print("| Horizon | Phase | Trades | Return   | Win Rate | Profit | Max DD   | Sharpe |")
     print("|---------|-------|--------|----------|----------|--------|----------|--------|")
-    
     print_row("3-Year", "Train", ins_3y)
     print_row("3-Year", "Test", oos_3y)
     print("|---------|-------|--------|----------|----------|--------|----------|--------|")
@@ -165,7 +152,6 @@ def run_walk_forward_optimization():
     print_row("3-Month", "Test", oos_3m)
     print("="*80)
 
-    # The AI is judged strictly on the 3-Year Out-Of-Sample Returns
     if oos_3y and oos_3y[5] >= 5: 
         final_score = oos_3y[0]
     else:

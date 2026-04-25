@@ -45,7 +45,7 @@ def get_history_and_best():
         for line in lines:
             parts = line.strip().split("\t")
             if len(parts) >= 3:
-                tested_hashes.add(parts[0]) # Save the trial_id to our duplicate tracker
+                tested_hashes.add(parts[0]) 
                 try:
                     score = float(parts[1])
                     status = parts[2]
@@ -81,7 +81,6 @@ def get_memory_context(memory_bank):
         context = "--- HISTORICAL MEMORY BANK ---\n"
         if winners:
             context += "🏆 TOP PERFORMING STRATEGIES (Analyze these for patterns):\n"
-            # Pass the top 3 winners instead of just the single highest
             for w in winners[:3]:
                 context += f"- Winning Score {w['score']}: {w['doc']}\n"
             context += "\n"
@@ -107,8 +106,8 @@ def generate_hypothesis(best_score, memory_context):
                     "content": (
                         "You are an elite AI Data Scientist tuning an XGBoost trading strategy.\n"
                         "Your job is to tune the XGBoost hyperparameters, select from the available features, "
-                        "and tune the TARGET_LOOKAHEAD and THRESHOLD_PERCENTILE variables to maximize the Out-Of-Sample score.\n"
-                        "CRITICAL: You are currently severely overfitting the training data. You MUST constrain model complexity."
+                        "and tune the Risk Management variables to maximize the Out-Of-Sample score.\n"
+                        "CRITICAL: You must constrain model complexity to prevent overfitting."
                     )
                 },
                 {
@@ -130,7 +129,13 @@ def generate_hypothesis(best_score, memory_context):
                         "FEATURES=['cvd_trend', 'rsi_14', 'macd_line', 'experimental_feature_here']\n"
                         "TARGET_LOOKAHEAD=2\n"
                         "THRESHOLD_PERCENTILE=97\n"
-                        "MODEL_PARAMS={'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 125, 'reg_alpha': 1.6, 'reg_lambda': 1.6}"
+                        "MODEL_PARAMS={'max_depth': 3, 'learning_rate': 0.05, 'n_estimators': 125, 'reg_alpha': 1.6, 'reg_lambda': 1.6}\n"
+                        "SL_ATR_MULTIPLIER=1.5\n"
+                        "TP_ATR_MULTIPLIER=3.0\n\n"
+                        "RULES FOR RISK MULTIPLIERS:\n"
+                        "- SL_ATR_MULTIPLIER: Float between 1.0 and 4.0. Controls the Stop Loss.\n"
+                        "- TP_ATR_MULTIPLIER: Float between 2.0 and 8.0. Controls the Take Profit.\n"
+                        "- Higher TP means larger potential returns but lower win rates. Optimize these based on the market regime!"
                     )
                 }
             ]
@@ -156,7 +161,6 @@ def generate_hypothesis(best_score, memory_context):
         return "System error.", ""
 
 def run_experiment(memory_bank):
-    # 🛑 CRITICAL FIX: Make sure tested_hashes is unpacked here
     local_best, tested_hashes = get_history_and_best() 
     global_best = memory_bank.get_global_best_score()
     best_score = max(local_best, global_best)
@@ -182,17 +186,27 @@ def run_experiment(memory_bank):
         lookahead_match = re.search(r"TARGET_LOOKAHEAD\s*=\s*\d+", hypothesis)
         threshold_match = re.search(r"THRESHOLD_PERCENTILE\s*=\s*\d+", hypothesis)
         params_match = re.search(r"MODEL_PARAMS\s*=\s*\{.*?\}", hypothesis, re.DOTALL)
+        
+        # 🔥 FIX: Extract the new Risk Multipliers
+        sl_match = re.search(r"SL_ATR_MULTIPLIER\s*=\s*[0-9.]+", hypothesis)
+        tp_match = re.search(r"TP_ATR_MULTIPLIER\s*=\s*[0-9.]+", hypothesis)
 
         if not (features_match and lookahead_match and threshold_match and params_match):
             print("⚠️ AI provided incomplete Python variables. Skipping injection.")
             time.sleep(3)
             return
 
+        # 🔥 FIX: Provide safe defaults if the AI hallucinated and forgot them
+        sl_str = sl_match.group(0) if sl_match else "SL_ATR_MULTIPLIER=1.5"
+        tp_str = tp_match.group(0) if tp_match else "TP_ATR_MULTIPLIER=3.0"
+
         clean_code = (
             f"{features_match.group(0)}\n"
             f"{lookahead_match.group(0)}\n"
             f"{threshold_match.group(0)}\n"
             f"{params_match.group(0)}\n"
+            f"{sl_str}\n"
+            f"{tp_str}\n"
         )
         
         trial_id = get_code_hash(clean_code)
@@ -217,17 +231,15 @@ def run_experiment(memory_bank):
     if match:
         score = float(match.group(1))
         
-        # 1. Establish the Tiers
         if score > best_score:
             status = "keep_new_best"
-        elif score >= (best_score - 5.0) and score >= 25.0: # Within 5 points of top score, minimum 25% return
+        elif score >= (best_score - 5.0) and score >= 25.0: 
             status = "keep_runner_up"
         else:
             status = "discard"
             
         print(f"\n📊 OOS Result: {score}")
         
-        # 📂 SAVE REPORT TO CENTRAL ROOT FOLDER
         if score != -999.0 and score != 0.0:
             os.makedirs(RESULTS_DIR, exist_ok=True)
             filename = os.path.join(RESULTS_DIR, f"{score:.4f}_{trial_id}.txt")
@@ -258,20 +270,17 @@ def run_experiment(memory_bank):
         time.sleep(3)
         return
 
-    # 2. Handle the Tiers Appropriately 
     if status == "keep_new_best":
         print(f"🏆 NEW GLOBAL BEST! (Score {score} > {best_score})")
-        shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE) # Overwrite baseline file
+        shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE) 
         log_result(trial_id, score, "keep", "Auto-experiment new high score")
         memory_bank.log_trial(trial_id, hypothesis, score, "keep") 
         
     elif status == "keep_runner_up":
         print(f"🥈 RUNNER UP: Highly Profitable Variant! (Score {score})")
-        # We DO NOT overwrite the BEST_CONFIG_FILE here. We want to keep the 42% as the base.
         if os.path.exists(BEST_CONFIG_FILE):
             shutil.copy(BEST_CONFIG_FILE, STRATEGY_FILE)
         log_result(trial_id, score, "keep", "Highly profitable runner-up")
-        # We log it as "keep" in the DB so the AI treats it as a winning formula
         memory_bank.log_trial(trial_id, hypothesis, score, "keep") 
 
     else:
@@ -279,7 +288,6 @@ def run_experiment(memory_bank):
         if os.path.exists(BEST_CONFIG_FILE):
             shutil.copy(BEST_CONFIG_FILE, STRATEGY_FILE)
         log_result(trial_id, score, "discard", "Failed attempt logged")
-        # Logged as a discard so the AI knows to avoid these exact parameters
         memory_bank.log_trial(trial_id, hypothesis, score, "discard") 
 
     print("Waiting 3 seconds before the next loop...")
@@ -292,7 +300,6 @@ if __name__ == "__main__":
     if not os.path.exists(BEST_CONFIG_FILE) and os.path.exists(STRATEGY_FILE):
         shutil.copy(STRATEGY_FILE, BEST_CONFIG_FILE)
     
-    # Initialize DB (pointing Chroma to the ROOT directory so all workers share it)
     import chromadb
     client = chromadb.PersistentClient(path=os.path.join(ROOT_DIR, "shared_chroma_db"))
     

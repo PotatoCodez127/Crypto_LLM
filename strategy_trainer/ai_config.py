@@ -1,24 +1,26 @@
 # ai_config.py
-# The AI will modify these parameters to find edge.
-
 FEATURES = [
     'cvd_trend', 
-    'atr_14', 
-    'close_zscore_50', 
+    'rsi_14', 
+    'macd_line', 
+    'bb_upper',
+    'bb_lower',
     'volume_zscore_24',
-    'rsi_14',        
-    'macd_line',     
-    'bb_lower',      
-    'bb_upper'       
+    'log_return',
+    'atr_14'
 ]
 
-TARGET_LOOKAHEAD = 1
-THRESHOLD_PERCENTILE = 80
+TARGET_LOOKAHEAD = 2
+THRESHOLD_PERCENTILE = 95
 
 MODEL_PARAMS = {
     'max_depth': 3,
     'learning_rate': 0.05,
-    'n_estimators': 100,
-    'random_state': 42,
-    'n_jobs': -1
+    'n_estimators': 125,
+    'reg_alpha': 1.6,
+    'reg_lambda': 1.6
 }
+
+# --- NEW: EXPOSED RISK MANAGEMENT PARAMETERS ---
+SL_ATR_MULTIPLIER = 1.5
+TP_ATR_MULTIPLIER = 3.0

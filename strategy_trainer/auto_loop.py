@@ -118,7 +118,7 @@ def generate_hypothesis(best_score, memory_context):
                         f"{memory_context}\n\n"
                         "ANTI-OVERFITTING RULES (STRICT):\n"
                         "1. TARGET_LOOKAHEAD MUST be strictly 2.\n"
-                        "2. 'max_depth' MUST be exactly 3 or 4. Do not exceed 4.\n"
+                        "2. 'max_depth' MUST be a raw integer, exactly 3 or 4. DO NOT wrap it in brackets, LaTeX, or escape characters (e.g., no \\(3\\) or |3|).\n"
                         "3. 'n_estimators' MUST be strictly between 100 and 200.\n"
                         "4. 'reg_alpha' (L1) and 'reg_lambda' (L2) MUST be strictly between 1.5 and 2.2.\n"
                         "5. THRESHOLD_PERCENTILE MUST be between 95 and 99.\n\n"
@@ -196,6 +196,9 @@ def run_experiment(memory_bank):
             time.sleep(3)
             return
 
+        # 🔥 FIX: Sanitize MODEL_PARAMS to remove rogue LaTeX/Markdown formatting
+        safe_params = params_match.group(0).replace(r"\(", "").replace(r"\)", "").replace("|", "").replace("\\", "")
+
         # 🔥 FIX: Provide safe defaults if the AI hallucinated and forgot them
         sl_str = sl_match.group(0) if sl_match else "SL_ATR_MULTIPLIER=1.5"
         tp_str = tp_match.group(0) if tp_match else "TP_ATR_MULTIPLIER=3.0"
@@ -204,7 +207,7 @@ def run_experiment(memory_bank):
             f"{features_match.group(0)}\n"
             f"{lookahead_match.group(0)}\n"
             f"{threshold_match.group(0)}\n"
-            f"{params_match.group(0)}\n"
+            f"{safe_params}\n"
             f"{sl_str}\n"
             f"{tp_str}\n"
         )

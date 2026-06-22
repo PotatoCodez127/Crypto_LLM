@@ -4,7 +4,6 @@ Logging utility for the trading system.
 
 import logging
 import os
-from datetime import datetime
 
 
 class TradingLogger:
@@ -25,7 +24,7 @@ class TradingLogger:
         if not self.logger.handlers:
             # Create file handler
             # file_handler = logging.FileHandler(log_file)
-            file_handler = logging.FileHandler(log_file, encoding='utf-8')
+            file_handler = logging.FileHandler(log_file, encoding="utf-8")
             file_formatter = logging.Formatter(
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
@@ -34,9 +33,7 @@ class TradingLogger:
 
             # Create console handler
             console_handler = logging.StreamHandler()
-            console_formatter = logging.Formatter(
-                "%(asctime)s - %(levelname)s - %(message)s"
-            )
+            console_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
             console_handler.setFormatter(console_formatter)
             self.logger.addHandler(console_handler)
 

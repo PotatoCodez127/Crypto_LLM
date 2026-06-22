@@ -3,7 +3,7 @@ Setup script for the trading system.
 """
 
 import os
-import sys
+
 from config.settings import DATA_STORAGE_PATH
 
 

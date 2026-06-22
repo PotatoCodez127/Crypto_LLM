@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 # 1. Load the keys from .env
@@ -16,7 +17,6 @@ os.environ["LITELLM_VERIFY_SSL"] = "False"
 #     os.system("litellm --config litellm_config.yaml")
 
 
-
 # 3. Verify and Start (Check all keys)
 # Advanced way: Automatically find ALL keys starting with "KEY_"
 available_keys = [k for k in os.environ if k.startswith("KEY_")]
@@ -24,5 +24,7 @@ available_keys = [k for k in os.environ if k.startswith("KEY_")]
 if not available_keys:
     print("[!] ERROR: No variables starting with 'KEY_' found in .env!")
 else:
-    print(f"[OK] Found {len(available_keys)} keys: {', '.join(available_keys)}. Initializing Proxy...")
+    print(
+        f"[OK] Found {len(available_keys)} keys: {', '.join(available_keys)}. Initializing Proxy..."
+    )
     os.system("litellm --config litellm_config.yaml")

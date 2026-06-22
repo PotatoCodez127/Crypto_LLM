@@ -1,15 +1,17 @@
 import json
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
+
 import litellm
 
 logger = logging.getLogger(__name__)
+
 
 class TradingBrain:
     def __init__(self, model_name: str = "gpt-4-turbo", temperature: float = 0.0):
         self.model_name = model_name
         self.temperature = temperature
-        
+
         self.system_prompt = """You are an elite quantitative trading AI specializing in BTC and US30 market micro-structure. 
 You are receiving a 'Semantic Tape' detailing real-time price action, structural levels, and momentum indicators.
 
@@ -40,12 +42,12 @@ Use the following schema:
             "thought_process": {
                 "market_regime": "UNKNOWN",
                 "key_levels": "UNKNOWN",
-                "confluence_check": "API Timeout or Parsing Failure"
+                "confluence_check": "API Timeout or Parsing Failure",
             },
             "decision": "NONE",
             "confidence": 0,
             "risk_level": "LOW",
-            "reasoning": f"System forced flat due to exception: {reason}"
+            "reasoning": f"System forced flat due to exception: {reason}",
         }
 
     def analyze_tape(self, semantic_tape: str) -> Dict[str, Any]:
@@ -57,26 +59,26 @@ Use the following schema:
                 model=self.model_name,
                 messages=[
                     {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": f"SEMANTIC TAPE:\n{semantic_tape}"}
+                    {"role": "user", "content": f"SEMANTIC TAPE:\n{semantic_tape}"},
                 ],
                 temperature=self.temperature,
                 # Force JSON mode on supported models (OpenAI, Anthropic, etc.)
-                response_format={ "type": "json_object" }
+                response_format={"type": "json_object"},
             )
-            
+
             raw_response = response.choices[0].message.content
-            
+
             # Clean potential markdown fences if the model disobeys prompt bounds
             if raw_response.startswith("```"):
                 raw_response = raw_response.strip("```json").strip("```")
-                
+
             decision_json = json.loads(raw_response)
-            
+
             # Schema validation
             required_keys = ["thought_process", "decision", "confidence", "risk_level", "reasoning"]
             if not all(key in decision_json for key in required_keys):
                 return self._graceful_degradation("Missing required JSON keys in LLM output.")
-                
+
             return decision_json
 
         except json.JSONDecodeError as e:

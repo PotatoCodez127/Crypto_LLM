@@ -30,8 +30,9 @@ select = ["E", "F", "I"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-# Protect initialization configurations from unused import cleanups
 "__init__.py" = ["F401"]
+"tests/*" = ["E402"]
+"strategy_trainer/*" = ["E402"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"

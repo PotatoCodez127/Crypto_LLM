@@ -1,0 +1,43 @@
+name: Quantitative Pipeline Core CI
+
+# Trigger the quality gating pipeline on pushes and pull requests to main tracking branches
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  pipeline-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Fetch the absolute repository tracking branch code
+    - name: Checkout Codebase Source
+      uses: actions/checkout@v4
+
+    # 2. Spin up an isolated, pure Python 3.11 build node matching Docker specifications
+    - name: Setup Python 3.11 Environment
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip' # Automatically caches dependency trees for optimized future execution speed
+
+    # 3. Pull down required packages and core quality tools
+    - name: Install Architecture Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install black ruff pytest
+        if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+
+    # 4. Enforce strict PEP 8 formatting layout rules
+    - name: Verify Layout Alignment (Black Check)
+      run: python -m black --check .
+
+    # 5. Audit code logic for dead structures, circular routes, or syntax bugs
+    - name: Static Syntax Compilation Audit (Ruff Check)
+      run: python -m ruff check .
+
+    # 6. Execute your unit test suite to verify feature math and mock handling
+    - name: Run Mathematical Unit Tests (Pytest Runner)
+      run: python -m pytest

@@ -45,7 +45,8 @@ def get_history_and_best():
     with open(RESULTS_FILE, "r") as f:
         lines = f.readlines()[1:]
         for line in lines:
-            parts = line.strip().split("\t")
+            # Upgraded from strict string splitting to layout-agnostic regex parsing
+            parts = re.split(r"\s+", line.strip(), maxsplit=3)
             if len(parts) >= 3:
                 tested_hashes.add(parts[0])
                 try:

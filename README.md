@@ -1,4 +1,4 @@
-# 📈 Crypto_LLM: Autonomous AI Multi-Agent Swarm Trading Engine
+# 📈 crypto-llm-swarm-engine: Autonomous AI Multi-Agent Swarm Trading Engine
 
 An enterprise-grade quantitative research framework that bridges advanced technical indicator feature engineering with LLM reasoning. The system runs autonomous multi-processed simulation loops ("Swarms") to discover, backtest, and optimize algorithmic trading strategies in parallel.
 
@@ -51,8 +51,8 @@ python -m ruff check . --fix
 ### Local Installation & Simulation
 1. Clone the repository and install the production package sheet:
 ```bash
-git clone [https://github.com/PotatoCodez127/Crypto_LLM.git](https://github.com/PotatoCodez127/Crypto_LLM.git)
-cd Crypto_LLM
+git clone [https://github.com/PotatoCodez127/crypto-llm-swarm-engine.git](https://github.com/PotatoCodez127/crypto-llm-swarm-engine.git)
+cd crypto-llm-swarm-engine
 pip install -r requirements.txt
 ```
 
@@ -70,12 +70,12 @@ python start_swarm.py
 The application includes a production-ready container blueprint to guarantee environment isolation across remote cloud nodes.
 1. Compile the lightweight container image:
 ```bash
-docker build -t crypto-llm-engine .
+docker build -t crypto-llm-swarm-enginee .
 ```
 
 2. Compile the lightweight container image:
 ```bash
-docker run -d --name live-quant-container --env-file .env crypto-llm-engine
+docker run -d --name live-quant-container --env-file .env crypto-llm-swarm-engine
 ```
 
 ---

@@ -1,0 +1,34 @@
+# Version Control
+.git
+.gitignore
+.github/
+
+# Local Python Environments & Virtual Files
+.venv
+venv/
+env/
+ENV/
+uv.lock
+.uv/
+
+# Python Runtime Compilations
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Quality Assurance & Linter Caches
+.pytest_cache/
+.ruff_cache/
+.vscode/
+.idea/
+
+# Dynamic Worker Workspaces & Temporary Training Nodes
+worker_node_*/
+strategy_trainer/worker_node_*/
+
+# Local Active Databases & Persistent State Ledgers
+shared_chroma_db/
+strategy_trainer/shared_chroma_db/
+results/
+*.db

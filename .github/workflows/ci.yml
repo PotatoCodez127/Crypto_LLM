@@ -23,12 +23,12 @@ jobs:
         python-version: '3.11'
         cache: 'pip' # Automatically caches dependency trees for optimized future execution speed
 
-    # 3. Pull down required packages and core quality tools
+    # 3. Pull down project dependencies first, then overlay the upgraded toolchain
     - name: Install Architecture Dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install black ruff pytest
         if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+        python -m pip install --upgrade pathspec black ruff pytest
 
     # 4. Enforce strict PEP 8 formatting layout rules
     - name: Verify Layout Alignment (Black Check)

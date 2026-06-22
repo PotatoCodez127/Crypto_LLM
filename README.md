@@ -1,92 +1,87 @@
-# Crypto LLM: AI-Native Quantitative Trading Engine
+# 📈 Crypto_LLM: Autonomous AI Multi-Agent Swarm Trading Engine
 
-An advanced cryptocurrency trading bot that bridges the gap between traditional quantitative analysis and Large Language Models (LLMs). 
-
-Unlike standard algorithmic bots that rely purely on hardcoded indicator thresholds, this engine translates live market data into a "Semantic Tape"—a readable narrative of price action and volatility—allowing an AI agent to make context-aware trading decisions augmented by RAG (Retrieval-Augmented Generation) memory.
+An enterprise-grade quantitative research framework that bridges advanced technical indicator feature engineering with LLM reasoning. The system runs autonomous multi-processed simulation loops ("Swarms") to discover, backtest, and optimize algorithmic trading strategies in parallel.
 
 ---
 
-## 🏗️ System Architecture
+## 🧠 Core Architecture Concepts
 
-The codebase is strictly modular, separating the continuous execution loop, quantitative math, AI translation, and offline model training.
+### 1. The Semantic Tape Generator
+Instead of feeding raw, noisy numerical matrix arrays directly to an AI model, this engine leverages a **Semantic Tape Generator**. It processes historical financial data, derives key technical indicators, and translates market states into a structured textual narrative stream designed specifically for Large Language Model (LLM) pattern extraction and cross-horizon contextual comprehension.
 
-    crypto_llm/
-    ├── src/
-    │   ├── ai_agent/              # 🧠 LLM Prompts & Semantic Tape translation
-    │   │   └── tape_generator.py  # Translates OHLCV/indicators into text
-    │   ├── config/                # ⚙️ Global variables and API keys
-    │   │   └── settings.py
-    │   ├── core/                  # 🚀 The execution engine and logging
-    │   │   ├── engine.py
-    │   │   └── logger.py
-    │   ├── data_feed/             # 📡 Exchange connections (ccxt)
-    │   │   └── handler.py
-    │   ├── database/              # 🗄️ (WIP) Supabase & ChromaDB (RAG)
-    │   ├── features/              # 🧮 Technical indicator math
-    │   │   └── extractor.py
-    │   └── strategy/              # 🎯 (WIP) State machine & time filters
-    ├── tests/                     # 🧪 Unit testing
-    ├── strategy_trainer/          # 🔬 PyTorch LLM pre-training & research
-    ├── main_live.py               # ▶️ The 24/7 continuous execution loop
-    ├── main_backtest.py           # ⏪ The historical strategy evaluator
-    └── requirements.txt
+### 2. Autonomous Hyperparameter Research Loop
+The project features a self-directed optimization machine managed by an AI Lead Quant agent (`strategy_trainer/auto_loop.py`):
+- **Hypothesis Generation:** The agent reviews recent historical performance data and queries an internal LLM to generate fresh structural parameter configurations.
+- **Direct Code Injection:** Hypotheses are converted into valid Python variables and injected directly into the running strategy code space.
+- **Walk-Forward Judge:** The new strategy is passed to a Multi-Timeframe Walk-Forward Optimization matrix that evaluates model returns against strict data slippage and exchange fees.
+- **Vectorized RAG Memory Bank:** Loop metrics are committed to a local persistent `ChromaDB` index. Future generations query this memory bank to identify profitable paths ("Winners") and actively avoid historical failure zones ("Landmines").
+
+### 3. Parallel Worker Swarm Core
+Utilizing `start_swarm.py`, the engine can spawn decentralized, isolated directory workspaces (`worker_node_1`, `worker_node_2`, etc.) across native operating system subprocesses. This creates a high-throughput simulation swarm where separate nodes can investigate independent strategy iterations simultaneously without memory leaks or process crashes.
 
 ---
 
-## 📊 Current State
-
-**Version:** 0.1.0 (Architecture Overhaul)
-**Status:** Live Engine Active (Read-Only)
-
-- [x] **Modular Architecture:** Successfully decoupled execution, math, and data handling.
-- [x] **Continuous Live Loop:** `main_live.py` runs as a 24/7 daemon, fetching market data and updating features without crashing.
-- [x] **Quantitative Feature Extraction:** Standard indicators (RSI, MACD, ATR, BB) calculate correctly in real-time.
-- [x] **Semantic Tape Generator:** Raw market data is successfully translated into a textual "story" format designed for LLM consumption.
+## 🛠️ Tech Stack
+- **Core Quant Stack:** Python, Pandas, NumPy, XGBoost, CCXT
+- **AI Core:** LiteLLM (Unified inference layer targeting DeepSeek-V3/OpenAI), ChromaDB (Vectorized RAG State)
+- **Infrastructure:** Pytest, Gunicorn, Docker
+- **Automation:** GitHub Actions Continuous Integration
 
 ---
 
-## 🗺️ Roadmap & Next Steps
+## 🧹 Code Quality & Standards
+Development controls are managed centrally within the root `pyproject.toml` layout:
+- **Black:** Enforces rigorous PEP 8 visual compliance across dense mathematical extraction files.
+- **Ruff:** Monitors static compilation syntax health, sorts import hierarchies automatically via Isort, and prevents cross-module circular routing anomalies.
 
-### Phase 1: The AI Brain (In Progress)
-- [ ] **LLM Integration (`llm_client.py`):** Pass the generated Semantic Tape to an LLM (Ollama/OpenAI) to receive a structured `LONG`, `SHORT`, or `NONE` decision.
-- [ ] **RAG Memory Bank (`ChromaDB`):** Store historical semantic tapes and their actual PnL outcomes. Query the database before every trade so the AI can recall similar past setups.
-
-### Phase 2: State Tracking & Logic
-- [ ] **State Machine:** Track specific structural levels (Daily Open, Previous Day High/Low, Order Blocks) rather than relying purely on lagging indicators.
-- [ ] **Time/Regime Filters:** Hardcode logic to prevent the AI from trading during notorious low-liquidity periods (e.g., Asian session weekends).
-
-### Phase 3: Execution & Telemetry
-- [ ] **Supabase Integration:** Log every trade, including the AI's full "thought process" and RAG context, to a PostgreSQL database for forensic debugging.
-- [ ] **Execution Routing:** Connect the engine's buy/sell decisions to actual exchange orders via `ccxt`.
+```bash
+# Execute local quality checks
+python -m black .
+python -m ruff check . --fix
+```
 
 ---
 
-## 🚀 How to Run
+## ⚙️ Setup & Execution Guide
 
-### Live Monitoring (Daemon)
-To start the continuous live market scanner and Semantic Tape generator:
-bash
-python main_live.py
+### Prerequisites
+- Python 3.11+
+- LiteLLM proxy instance configured locally or cloud API access credentials.
 
+### Local Installation & Simulation
+1. Clone the repository and install the production package sheet:
+```bash
+git clone [https://github.com/PotatoCodez127/Crypto_LLM.git](https://github.com/PotatoCodez127/Crypto_LLM.git)
+cd Crypto_LLM
+pip install -r requirements.txt
+```
 
-### Run Unit Tests
-To verify the Semantic Tape is generating correctly with mock data:
-bash
-python tests/test_semantic_tape.py
+2. Initialize a single-threaded research loop instance:
+```bash
+python strategy_trainer/auto_loop.py
+```
 
+3. Or launch a multi-processed parallel worker swarm:
+```bash
+python start_swarm.py
+```
+
+### Production Container Deployment
+The application includes a production-ready container blueprint to guarantee environment isolation across remote cloud nodes.
+1. Compile the lightweight container image:
+```bash
+docker build -t crypto-llm-engine .
+```
+
+2. Compile the lightweight container image:
+```bash
+docker run -d --name live-quant-container --env-file .env crypto-llm-engine
+```
 
 ---
 
-## 📝 Changelog
+## 🤖 Continuous Integration (CI/CD)
 
-### [v0.1.0] - Architecture Overhaul
-- Completely restructured the repository into a `src/` module format.
-- Extracted offline PyTorch training logic into `strategy_trainer/`.
-- Created `main_live.py` continuous execution loop.
-- Built `SemanticTapeGenerator` to translate quantitative features into LLM-readable text.
-- Fixed absolute/relative import routing across all `src` modules.
+Automated testing gates are managed natively through GitHub Actions (.github/workflows/ci.yml). Every codebase update triggers an isolated Ubuntu container matrix that runs environment builds, strict Black check verifications, Ruff syntax compilation audits, and parallel Pytest execution trackers to verify absolute pipeline stability on push.
 
-### [Pre-v0.1.0] - Initial Prototype
-- Basic quantitative backtesting framework established.
-- `ccxt` data ingestion and localized CSV storage implemented.
-- Base technical indicators (RSI, MACD, Bollinger Bands) written in pandas.
+---
